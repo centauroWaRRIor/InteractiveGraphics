@@ -14,7 +14,19 @@ private:
   void cb_DBG_i(Fl_Button*, void*);
   static void cb_DBG(Fl_Button*, void*);
 public:
+  Fl_Button *TestRot;
+private:
+  void cb_TestRot_i(Fl_Button*, void*);
+  static void cb_TestRot(Fl_Button*, void*);
+public:
+  Fl_Button *TestRaster;
+private:
+  void cb_TestRaster_i(Fl_Button*, void*);
+  static void cb_TestRaster(Fl_Button*, void*);
+public:
   void show();
   void DBG_cb();
+  void TestRot_cb();
+  void TestRaster_cb();
 };
 #endif

@@ -132,6 +132,7 @@
   <ItemGroup>
     <ClCompile Include="framebuffer.cpp" />
     <ClCompile Include="gui.cxx" />
+    <ClCompile Include="lodepng.cpp" />
     <ClCompile Include="m33.cpp" />
     <ClCompile Include="scene.cpp" />
     <ClCompile Include="v3.cpp" />
@@ -140,6 +141,7 @@
     <ClInclude Include="framebuffer.h" />
     <ClInclude Include="glext.h" />
     <ClInclude Include="gui.h" />
+    <ClInclude Include="lodepng.h" />
     <ClInclude Include="m33.h" />
     <ClInclude Include="scene.h" />
     <ClInclude Include="v3.h" />
