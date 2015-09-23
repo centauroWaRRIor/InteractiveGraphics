@@ -117,12 +117,7 @@ V3 M33::getColumn(int j) const {
 	for (int i = 0; i < 3; i++) {
 		// have to use the exclusive read func as opposed to using read/write
 		// [] operator in order to honor the const in this func signature
-		if (j == 0)
-			returnColumnVector[i] = rows[i].getX();
-		else if (j == 1) 
-			returnColumnVector[i] = rows[i].getY();
-		else if (j == 2)
-			returnColumnVector[i] = rows[i].getZ();
+		returnColumnVector[i] = rows[i].getComp(j);
 	}
 	return returnColumnVector;
 }
@@ -132,12 +127,7 @@ void M33::setColumn(const V3 &columnVector, int j) {
 	for (int i = 0; i < 3; i++) {
 		// have to use the exclusive read func as opposed to using read/write
 		// [] operator in order to honor the const in this func signature
-		if (j == 0)
-			rows[i][j] = columnVector.getX();
-		else if (j == 1)
-			rows[i][j] = columnVector.getY();
-		else if (j == 2)
-			rows[i][j] = columnVector.getZ();
+		rows[i][j] = columnVector.getComp(i);
 	}
 }
 

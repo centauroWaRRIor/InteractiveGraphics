@@ -5,14 +5,16 @@
 #include <FL/Fl.H>
 #include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Button.H>
+#include <FL/Fl_Menu_Bar.H>
 
 class GUI {
 public:
   GUI();
   Fl_Double_Window *uiw;
+  Fl_Button *dbgButton;
 private:
-  void cb_DBG_i(Fl_Button*, void*);
-  static void cb_DBG(Fl_Button*, void*);
+  void cb_dbgButton_i(Fl_Button*, void*);
+  static void cb_dbgButton(Fl_Button*, void*);
 public:
   Fl_Button *TestRot;
 private:
@@ -23,6 +25,17 @@ public:
 private:
   void cb_TestRaster_i(Fl_Button*, void*);
   static void cb_TestRaster(Fl_Button*, void*);
+  static Fl_Menu_Item menu_Main[];
+public:
+  static Fl_Menu_Item *A1TestRot;
+private:
+  void cb_A1TestRot_i(Fl_Menu_*, void*);
+  static void cb_A1TestRot(Fl_Menu_*, void*);
+public:
+  static Fl_Menu_Item *A1TestRaster;
+private:
+  void cb_A1TestRaster_i(Fl_Menu_*, void*);
+  static void cb_A1TestRaster(Fl_Menu_*, void*);
 public:
   void show();
   void DBG_cb();

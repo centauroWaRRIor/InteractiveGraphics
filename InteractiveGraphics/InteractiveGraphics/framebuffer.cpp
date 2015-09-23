@@ -1,4 +1,5 @@
 #include "framebuffer.h"
+#include "scene.h"
 #include "lodepng.h"
 #include "scene.h"
 #include <iostream>
@@ -17,7 +18,6 @@ FrameBuffer::FrameBuffer(int u0, int v0,
   w = _w;
   h = _h;
   pix = new unsigned int[w*h];
-
 }
 
 FrameBuffer::~FrameBuffer()
@@ -53,23 +53,75 @@ int FrameBuffer::handle(int event)  {
 
 void FrameBuffer::KeyboardHandle() {
 
-  int key = Fl::event_key();
-  switch (key) {
-    case FL_Left: {
-      cerr << "pressed left arrow" << endl;
-      break;
-    }
-    case 'a': {
-      cerr << "pressed a" << endl;
-      break;
-    }
-    default:
-    cerr << "INFO: do not understand keypress" << endl;
-  }
+	float tiltAmount = 1.0f;
+	float rollAmount = 1.0f;
+	float panAmount = 1.0f;
+	float moveRightAmount = 0.5f;
+	float moveUpAmount = 0.5f;
+	float moveForwardAmount = 0.5f;
+	float zoomFactor = 0.99f;
+	int key = Fl::event_key();
+	if (scene) {
+		switch (key) {
+		case FL_Control_L: // avoids printing an error message when this is pressed
+		case FL_Left:
+		case FL_Right:
+			// if ctrl + left or ctrl + right
+			if (Fl::get_key(FL_Control_L) && 
+				(key == FL_Left || key == FL_Right)) {
+				rollAmount = (key == FL_Left) ? rollAmount : -1.0f * rollAmount;
+				scene->getCamera()->roll(rollAmount);
+				scene->dbgDraw();
+			}
+			// if only left or only right
+			else if ((key == FL_Left || key == FL_Right)) {
+				panAmount = (key == FL_Left) ? panAmount : -1.0f * panAmount;
+				scene->getCamera()->pan(panAmount);
+				scene->dbgDraw();
+				//cerr << "pressed left arrow" << endl;
+			}
+			break;
+		case FL_Up:
+		case FL_Down:
+			tiltAmount = (key == FL_Up) ? tiltAmount : -1.0f * tiltAmount;
+			scene->getCamera()->tilt(tiltAmount);
+			scene->dbgDraw();
+			break;
+		case 'd':
+		case 'a':
+			moveRightAmount = (key == 'd') ? moveRightAmount : -1.0f * moveRightAmount;
+			scene->getCamera()->moveRight(moveRightAmount);
+			scene->dbgDraw();
+			//cerr << "Eyepoint: " << scene->getCamera()->getEyePoint() << endl;
+			//cerr << "pressed a" << endl;
+			break;
+		case 'w':
+		case 's':
+			moveForwardAmount = (key == 'w') ? moveForwardAmount : -1.0f * moveForwardAmount;
+			scene->getCamera()->moveForward(moveForwardAmount);
+			scene->dbgDraw();
+			break;
+		case 'q':
+		case 'e':
+			moveUpAmount = (key == 'q') ? moveUpAmount : -1.0f * moveUpAmount;
+			scene->getCamera()->moveUp(moveUpAmount);
+			scene->dbgDraw();
+			break;
+		case 'z':
+		case 'x':
+			zoomFactor = (key == 'z') ? 1 + (1 - zoomFactor) : zoomFactor;
+			scene->getCamera()->zoom(zoomFactor);
+			scene->dbgDraw();
+			break;
+
+		default:
+			cerr << "INFO: do not understand keypress" << endl;
+		}
+	}
 }
 
 // clear to background color
-void FrameBuffer::Set(unsigned int color) {
+void FrameBuffer::set(unsigned int color) {
 
   for (int i = 0; i < w*h; i++) {
     pix[i] = color;
@@ -78,23 +130,23 @@ void FrameBuffer::Set(unsigned int color) {
 }
 
 // set pixel with coordinates u v to color provided as parameter
-void FrameBuffer::SetSafe(int u, int v, unsigned int color) {
+void FrameBuffer::setSafe(int u, int v, unsigned int color) {
 
   if (u < 0 || u > w-1 || v < 0 || v > h-1)
     return;
 
-  Set(u, v, color);
+  set(u, v, color);
 
 }
 
-void FrameBuffer::Set(int u, int v, unsigned int color) {
+void FrameBuffer::set(int u, int v, unsigned int color) {
 
   pix[(h-1-v)*w+u] = color;
 
 }
 
 // set to checkboard
-void FrameBuffer::SetCheckerboard(int checkerSize, unsigned int color0, 
+void FrameBuffer::setCheckerboard(int checkerSize, unsigned int color0, 
   unsigned int color1) {
 
   for (int v = 0; v < h; v++) {
@@ -102,10 +154,10 @@ void FrameBuffer::SetCheckerboard(int checkerSize, unsigned int color0,
       int cu = u / checkerSize;
       int cv = v / checkerSize;
       if (((cu + cv) % 2) == 0) {
-        Set(u, v, color0);
+        set(u, v, color0);
       }
       else {
-        Set(u, v, color1);
+        set(u, v, color1);
       }
     }
   }
@@ -113,7 +165,7 @@ void FrameBuffer::SetCheckerboard(int checkerSize, unsigned int color0,
 }
 
 // draw circle
-void FrameBuffer::DrawCircle(float cuf, float cvf, float radius, 
+void FrameBuffer::drawCircle(float cuf, float cvf, float radius, 
   unsigned int color) {
 
     // axis aligned bounding box (AABB) of circle (it's a square parallel to axes)
@@ -142,13 +194,13 @@ void FrameBuffer::DrawCircle(float cuf, float cvf, float radius,
         float d2 = (cvf-vf)*(cvf-vf)+(cuf-uf)*(cuf-uf);
         if (d2 > radius2)
           continue;
-        Set(u, v, color);
+        set(u, v, color);
       }
     }
 }
 
 // draw axis aligned rectangle
-void FrameBuffer::DrawRectangle(
+void FrameBuffer::drawRectangle(
 	float llu, 
 	float llv, 
 	float width, 
@@ -177,12 +229,12 @@ void FrameBuffer::DrawRectangle(
 		for (int u = left; u <= right; u++) {
 			float uf = .5f + (float)u;
 			float vf = .5f + (float)v;
-			Set(u, v, color);
+			set(u, v, color);
 		}
 	}
 }
 
-void FrameBuffer::DrawTriangle(float * xCoords, float * yCoords, unsigned int color)
+void FrameBuffer::drawTriangle(const float * xCoords, const float * yCoords, unsigned int color)
 {
 	float a[3], b[3], c[3]; // a,b,c for the three edge expressions
 	// establish the three edge equations
@@ -289,13 +341,87 @@ void FrameBuffer::DrawTriangle(float * xCoords, float * yCoords, unsigned int co
 			}
 			else {
 				// found pixel inside of triangle; set it to right color
-				Set(currPixX, currPixY, color);
+				set(currPixX, currPixY, color);
 			}
 		}
 	}
 }
 
-void FrameBuffer::SaveAsPng(string fname) {
+void FrameBuffer::drawVertexDots(const TMesh *tm, float dotSize, const PPC *ppc) {
+
+	// Draw vertices as cricles
+	for (int vi = 0; vi < tm->getVertsN(); vi++) {
+		V3 projV, projP;
+		if (!ppc->project(tm->getVertex(vi), projP))
+			continue;
+		drawCircle(projP[0], projP[1], dotSize, tm->getVertexColor(vi).getColor());
+	}
+}
+
+void FrameBuffer::drawWireFrame(const TMesh *tm, const PPC *ppc) {
+
+	// Draw vertices connections as line segments
+	for (int tri = 0; tri < tm->getTrisN(); tri++) {
+		V3 currvs[3];
+		// grab current triangle vertices
+		currvs[0] = tm->getVertex(tm->getTriangleIndex(3 * tri + 0));
+		currvs[1] = tm->getVertex(tm->getTriangleIndex(3 * tri + 1));
+		currvs[2] = tm->getVertex(tm->getTriangleIndex(3 * tri + 2));
+		V3 currcols[3];
+		// grab current triangle vertex colors
+		currcols[0] = tm->getVertexColor(tm->getTriangleIndex(3 * tri + 0));
+		currcols[1] = tm->getVertexColor(tm->getTriangleIndex(3 * tri + 1));
+		currcols[2] = tm->getVertexColor(tm->getTriangleIndex(3 * tri + 2));
+		// draw edges between vertices of this triangle
+		// e1 = 0,1  e2 = 1,2  e3 = 2,0 (hence the %3)
+		for (int ei = 0; ei < 3; ei++) {
+			draw3DSegment(currvs[ei], currcols[ei],
+				currvs[(ei + 1) % 3], currcols[(ei + 1) % 3], ppc);
+		}
+	}
+}
+
+void FrameBuffer::draw3DSegment(const V3 &v0, const V3 &c0, const V3 &v1, const V3 &c1, const PPC *ppc) {
+
+	V3 projv0, projv1;
+	if (!ppc->project(v0, projv0))
+		return;
+	if (!ppc->project(v1, projv1))
+		return;
+	draw2DSegment(projv0, c0, projv1, c1);
+
+}
+
+void FrameBuffer::draw2DSegment(const V3 &v0, const V3 &c0, const V3 &v1, const V3 &c1) {
+
+	int stepsN;
+	float duf = fabsf(v0.getX() - v1.getX());
+	float dvf = fabsf(v0.getY() - v1.getY());
+	if (duf > dvf) {
+		// 1 because we want one pixel no matter what
+		stepsN = 1 + (int)duf;
+	}
+	else {
+		// 1 because we want one pixel no matter what
+		stepsN = 1 + (int)dvf;
+	}
+
+	// corner case
+	if (stepsN == 1) {
+		setSafe((int)v0.getX(), (int)v0.getY(), c0.getColor());
+		return;
+	}
+
+	// lerp point along segment as well as its color
+	for (int i = 0; i < stepsN; i++) {
+		float frac = (float)i / (float)(stepsN - 1);
+		V3 p = v0 + (v1 - v0)*frac;
+		V3 c = c0 + (c1 - c0)*frac;
+		setSafe((int)p[0], (int)p[1], c.getColor());
+	}
+}
+
+void FrameBuffer::saveAsPng(string fname) const {
 
 	vector<unsigned char> image;
 	image.reserve(w * h * 4);
@@ -331,7 +457,7 @@ void FrameBuffer::SaveAsPng(string fname) {
 	
 }
 
-void FrameBuffer::LoadFromPng(string fname) {
+void FrameBuffer::loadFromPng(string fname) {
 	
 	vector<unsigned char> image; //the raw pixels
 	unsigned width, height;
@@ -365,7 +491,7 @@ void FrameBuffer::LoadFromPng(string fname) {
 
 				//pix[(i*width) + j] = color;
 
-				Set(j, i, color);
+				set(j, i, color);
 			}
 		}
 	}

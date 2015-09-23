@@ -2,11 +2,11 @@
 
 #include "gui.h"
 
-void GUI::cb_DBG_i(Fl_Button*, void*) {
+void GUI::cb_dbgButton_i(Fl_Button*, void*) {
   DBG_cb();
 }
-void GUI::cb_DBG(Fl_Button* o, void* v) {
-  ((GUI*)(o->parent()->user_data()))->cb_DBG_i(o,v);
+void GUI::cb_dbgButton(Fl_Button* o, void* v) {
+  ((GUI*)(o->parent()->user_data()))->cb_dbgButton_i(o,v);
 }
 
 void GUI::cb_TestRot_i(Fl_Button*, void*) {
@@ -22,26 +22,55 @@ void GUI::cb_TestRaster_i(Fl_Button*, void*) {
 void GUI::cb_TestRaster(Fl_Button* o, void* v) {
   ((GUI*)(o->parent()->user_data()))->cb_TestRaster_i(o,v);
 }
+
+void GUI::cb_A1TestRot_i(Fl_Menu_*, void*) {
+  TestRot_cb();
+}
+void GUI::cb_A1TestRot(Fl_Menu_* o, void* v) {
+  ((GUI*)(o->parent()->user_data()))->cb_A1TestRot_i(o,v);
+}
+
+void GUI::cb_A1TestRaster_i(Fl_Menu_*, void*) {
+  TestRaster_cb();
+}
+void GUI::cb_A1TestRaster(Fl_Menu_* o, void* v) {
+  ((GUI*)(o->parent()->user_data()))->cb_A1TestRaster_i(o,v);
+}
+
+Fl_Menu_Item GUI::menu_Main[] = {
+ {"Previous Assignments", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"A1", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Test Rotation", 0,  (Fl_Callback*)GUI::cb_A1TestRot, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Test Rasterization", 0,  (Fl_Callback*)GUI::cb_A1TestRaster, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {0,0,0,0,0,0,0,0,0},
+ {0,0,0,0,0,0,0,0,0},
+ {0,0,0,0,0,0,0,0,0}
+};
+Fl_Menu_Item* GUI::A1TestRot = GUI::menu_Main + 2;
+Fl_Menu_Item* GUI::A1TestRaster = GUI::menu_Main + 3;
 #include "scene.h"
 
 GUI::GUI() {
   { uiw = new Fl_Double_Window(265, 290, "GUI");
     uiw->user_data((void*)(this));
-    { Fl_Button* o = new Fl_Button(15, 15, 225, 40, "DBG");
-      o->selection_color(FL_DARK_RED);
-      o->callback((Fl_Callback*)cb_DBG);
-    } // Fl_Button* o
-    { TestRot = new Fl_Button(20, 75, 215, 60, "Test Rotation");
+    { dbgButton = new Fl_Button(20, 65, 225, 40, "DBG");
+      dbgButton->selection_color(FL_DARK_RED);
+      dbgButton->callback((Fl_Callback*)cb_dbgButton);
+    } // Fl_Button* dbgButton
+    { TestRot = new Fl_Button(30, 125, 215, 60, "Test Rotation");
       TestRot->down_box(FL_ENGRAVED_BOX);
       TestRot->color((Fl_Color)29);
       TestRot->selection_color((Fl_Color)137);
       TestRot->callback((Fl_Callback*)cb_TestRot);
     } // Fl_Button* TestRot
-    { TestRaster = new Fl_Button(20, 150, 215, 60, "Test Rasterization");
+    { TestRaster = new Fl_Button(25, 200, 215, 60, "Test Rasterization");
       TestRaster->color((Fl_Color)38);
       TestRaster->selection_color((Fl_Color)137);
       TestRaster->callback((Fl_Callback*)cb_TestRaster);
     } // Fl_Button* TestRaster
+    { Fl_Menu_Bar* o = new Fl_Menu_Bar(5, 5, 255, 25, "Main Menu");
+      o->menu(menu_Main);
+    } // Fl_Menu_Bar* o
     uiw->end();
   } // Fl_Double_Window* uiw
 }
@@ -56,13 +85,13 @@ void GUI::show() {
 }
 
 void GUI::DBG_cb() {
-  scene->DBG();
+  scene->dbgDraw();
 }
 
 void GUI::TestRot_cb() {
-  scene->TestRot();
+  scene->testRot();
 }
 
 void GUI::TestRaster_cb() {
-	scene->TestRaster();
+  scene->testRaster();
 }

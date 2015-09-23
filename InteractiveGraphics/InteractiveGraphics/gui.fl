@@ -8,23 +8,48 @@ class GUI {open
   Function {GUI()} {open
   } {
     Fl_Window uiw {
-      label GUI open selected
-      xywh {675 144 265 290} type Double visible
+      label GUI open
+      xywh {627 326 265 290} type Double visible
     } {
-      Fl_Button {} {
+      Fl_Button dbgButton {
         label DBG
         callback {DBG_cb()}
-        xywh {15 15 225 40} selection_color 72
+        xywh {20 65 225 40} selection_color 72
       }
       Fl_Button TestRot {
         label {Test Rotation}
         callback {TestRot_cb()}
-        xywh {20 75 215 60} down_box ENGRAVED_BOX color 29 selection_color 137
+        xywh {30 125 215 60} down_box ENGRAVED_BOX color 29 selection_color 137
       }
       Fl_Button TestRaster {
         label {Test Rasterization}
         callback {TestRaster_cb()}
-        xywh {20 150 215 60} color 38 selection_color 137
+        xywh {25 200 215 60} color 38 selection_color 137
+      }
+      Fl_Menu_Bar {} {
+        label {Main Menu} open
+        xywh {5 5 255 25}
+      } {
+        Submenu {} {
+          label {Previous Assignments} open
+          xywh {0 0 62 20}
+        } {
+          Submenu {} {
+            label A1 open
+            xywh {0 0 62 20}
+          } {
+            MenuItem A1TestRot {
+              label {Test Rotation}
+              callback {TestRot_cb()}
+              xywh {0 0 30 20}
+            }
+            MenuItem A1TestRaster {
+              label {Test Rasterization}
+              callback {TestRaster_cb()}
+              xywh {0 0 30 20}
+            }
+          }
+        }
       }
     }
   }
@@ -34,12 +59,17 @@ class GUI {open
   Function {show()} {} {
     code {uiw->show();} {}
   }
-  Function {DBG_cb()} {} {
-    code {scene->DBG();} {}
+  Function {DBG_cb()} {open
+  } {
+    code {scene->dbgDraw();} {selected
+    }
   }
   Function {TestRot_cb()} {open
   } {
-    code {scene->NewB();} {}
+    code {scene->testRot();} {}
   }
-  Function {TestRaster_cb()} {} {}
+  Function {TestRaster_cb()} {open
+  } {
+    code {scene->testRaster();} {}
+  }
 } 

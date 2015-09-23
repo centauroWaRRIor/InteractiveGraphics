@@ -1,4 +1,7 @@
 #include <cmath>
+#include <iostream>
+using std::cerr;
+using std::endl;
 #include "v3.h"
 #include "m33.h"
 
@@ -58,7 +61,7 @@ float V3::operator*(const V3 &right) const {
 V3 V3::operator^(const V3 &right) const {
 
    return
-      V3(xyz[1] * right.xyz[2] - right.xyz[1] * xyz[2],  // x
+      V3(xyz[1] * right.xyz[2] - xyz[2] * right.xyz[1],  // x
          xyz[2] * right.xyz[0] - xyz[0] * right.xyz[2],  // y
          xyz[0] * right.xyz[1] - xyz[1] * right.xyz[0]); // z
 }
@@ -72,12 +75,16 @@ V3 V3::operator*(float scalar) const
 
 V3 V3::operator/(float scalar) const
 {
-	if (scalar != 0)
-		return V3(xyz[0] * scalar,
-			xyz[1] * scalar,
-			xyz[2] * scalar);
-	else
+	if (scalar != 0) {
+		return V3(xyz[0] / scalar,
+			xyz[1] / scalar,
+			xyz[2] / scalar);
+	}
+	else {
+		cerr << "ERROR: Attempting to divide a vector by a zero scalar. Zero vector returned..." << endl;
 		return V3();
+	}
+		
 }
 
 void V3::normalize(void)
@@ -128,8 +135,12 @@ void V3::rotateThisPointAboutAxis(const V3 &axisOrigin, const V3 &axisDirection,
 	// axisOrigin is interpreted to be a point representing origin of axis
 	// axisDirection is interpreted to be a vector representing axis direction
 
-	// TBD: May need to normalize axisDirection here or at least enforce with
-	// an assert
+	// quit early if axisDirection is not unit length
+	if (!((fabs(axisDirection.length()) - 1.0f) < epsilonNormalizedError)) {
+		cerr << "ERROR: Attempting to rotate about a non-normalized vector. Zero vector produced..." << endl;
+		*this = V3();
+		return;
+	}
 
 	// step 1 create new coordinate system with axisOrigin and axisDirection
 	// as one of its axis
@@ -212,6 +223,17 @@ unsigned int V3::getColor() const {
 	return ret;
 }
 
+float V3::getComp(int i) const
+{
+	if (i >= 0 && i < 3) {
+		return xyz[i];
+	}
+	else {
+		cerr << "ERROR: Attempting to get invalid vector component. Zero returned..." << endl;
+		return 0.0f;
+	}
+}
+
 void V3::setFromColor(unsigned int color) {
 
 	float redf = (float)(((unsigned char*)(&color))[0]);
@@ -251,6 +273,6 @@ istream& operator>>(istream &input, V3 &vector) {
 	input >> vector[1];
 	input.ignore(2); // skip ', '
 	input >> vector[2];
-	input.ignore(); // skip ')'
+	input.ignore(2); // skip ')'
 	return input; // enables cin >> a >> b >> c;
 }

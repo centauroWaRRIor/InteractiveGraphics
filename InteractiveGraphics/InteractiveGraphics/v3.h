@@ -4,6 +4,8 @@
 using std::ostream;
 using std::istream;
 
+const float epsilonNormalizedError = 0.00001f;
+
 class V3 {
 	// this allows to overload the * for scalars that are to the left of vector
 	friend V3 operator*(float scalarLeft, V3 &vectorRight);
@@ -80,6 +82,7 @@ public:
 	float getX() const { return xyz[0]; }
 	float getY() const { return xyz[1]; }
 	float getZ() const { return xyz[2]; }
+	float getComp(int i) const;
 
 	// set and get color using unsigned int format
 	void setFromColor(unsigned int color);
