@@ -36,6 +36,9 @@
     <ClCompile Include="ppc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="tmesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framebuffer.h">
@@ -60,6 +63,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ppc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tmesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
