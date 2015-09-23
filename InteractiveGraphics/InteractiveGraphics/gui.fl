@@ -1,0 +1,45 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0108 
+header_name {.h} 
+code_name {.cxx}
+class GUI {open
+} {
+  decl {\#include "scene.h"} {}
+  Function {GUI()} {open
+  } {
+    Fl_Window uiw {
+      label GUI open selected
+      xywh {675 144 265 290} type Double visible
+    } {
+      Fl_Button {} {
+        label DBG
+        callback {DBG_cb()}
+        xywh {15 15 225 40} selection_color 72
+      }
+      Fl_Button TestRot {
+        label {Test Rotation}
+        callback {TestRot_cb()}
+        xywh {20 75 215 60} down_box ENGRAVED_BOX color 29 selection_color 137
+      }
+      Fl_Button TestRaster {
+        label {Test Rasterization}
+        callback {TestRaster_cb()}
+        xywh {20 150 215 60} color 38 selection_color 137
+      }
+    }
+  }
+  Function {} {} {
+    code {scene = new Scene;} {}
+  }
+  Function {show()} {} {
+    code {uiw->show();} {}
+  }
+  Function {DBG_cb()} {} {
+    code {scene->DBG();} {}
+  }
+  Function {TestRot_cb()} {open
+  } {
+    code {scene->NewB();} {}
+  }
+  Function {TestRaster_cb()} {} {}
+} 
