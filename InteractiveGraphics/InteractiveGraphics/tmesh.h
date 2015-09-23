@@ -33,6 +33,10 @@ public:
 	// returns triangle index at index i or -1 when initialized
 	int getTriangleIndex(int i) const;
 
+	// drawing functionality
+	// draws triangle mesh in filled mode using screen space interpolation of colors
+	//void drawFilledScreenLerp() const
+	
 	// constructs a tetrahedron with the given vertices
 	void createTetrahedronMesh(V3 *_verts, V3 *_cols);
 };
