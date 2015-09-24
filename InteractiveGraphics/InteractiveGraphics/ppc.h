@@ -1,6 +1,7 @@
 #pragma once
 
 #include "v3.h"
+#include "m33.h"
 #include <string>
 using std::string;
 
@@ -12,6 +13,10 @@ private:
 	V3 c; // vector from the eye to the top left corner of the image
 	V3 C; // eye position
 	int w, h; // image resolution
+	// projection matrix
+	M33 projM;
+	// projection matrix is only built when a, b, or c change due to rotations
+	void buildProjM(void);
 public:
 	// constructor from resolution and horizontal field of view
 	PPC(float _hfovDeg, int _w, int _h);

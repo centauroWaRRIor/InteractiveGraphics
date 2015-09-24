@@ -562,7 +562,7 @@ void FrameBuffer::draw2DFlatBarycentricTriangle(
 				interpolatedZBufferDepth = abcDepth[0] * currPixX + abcDepth[1] * currPixY + abcDepth[2];
 
 				//set(currPixX, currPixY, interpolatedColor.getColor()); // ignores depth test
-				setIfCloser(V3(currPixX, currPixY, interpolatedZBufferDepth), interpolatedColor);
+				setIfCloser(V3((float)currPixX, (float)currPixY, interpolatedZBufferDepth), interpolatedColor);
 			}
 		}
 	}

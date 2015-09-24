@@ -10,7 +10,15 @@ using std::ifstream;
 #include <cstdlib>
 using std::exit;
 #include "ppc.h"
-#include "m33.h"
+
+void PPC::buildProjM(void)
+{
+	// three equations, three unknowns (look at slide 8 in PHC.pdf)
+	projM.setColumn(a, 0);
+	projM.setColumn(b, 1);
+	projM.setColumn(c, 2);
+	projM.setInverted();
+}
 
 PPC::PPC(float _hfovDeg, int _w, int _h) :
 	w(_w),
@@ -22,6 +30,7 @@ PPC::PPC(float _hfovDeg, int _w, int _h) :
 	C = V3(0.0f, 0.0f, 0.0f); // eye is set at the origin by construction
 	// little c is is the vector from the eye to the top left corner of the image
 	c = V3((float)-w/2.0f, (float)h/2.0f, -(float)w/(2.0f*tan(hfovRadians/2.0f)));
+	buildProjM();
 }
 
 PPC::PPC(string cameraFilename)
@@ -117,11 +126,7 @@ void PPC::moveUp(float step)
 
 void PPC::moveForward(float step)
 {
-	// a and b will lose precision after other rotation operation normalize axb
-	// or just in case a and b are not unit length (not square pixels)
-	V3 aCrossB = a ^ b;
-	aCrossB.normalize();
-	C = (C + aCrossB * step);
+	C = (C + (getViewDir() * step));
 }
 
 void PPC::pan(float angleDeg)
@@ -131,6 +136,8 @@ void PPC::pan(float angleDeg)
 	a.rotateThisVectorAboutDirection(-1.0f * b, angleDeg);
 	b.rotateThisVectorAboutDirection(-1.0f * b, angleDeg);
 	c.rotateThisVectorAboutDirection(-1.0f * b, angleDeg);
+	// update projection matrix
+	buildProjM();
 }
 
 void PPC::tilt(float angleDeg)
@@ -140,16 +147,18 @@ void PPC::tilt(float angleDeg)
 	a.rotateThisVectorAboutDirection(a, angleDeg);
 	b.rotateThisVectorAboutDirection(a, angleDeg);
 	c.rotateThisVectorAboutDirection(a, angleDeg);
+	// update projection matrix
+	buildProjM();
 }
 
 void PPC::roll(float angleDeg)
 {
-	// a and b will lose precision after other rotation operation normalize axb
-	V3 aCrossB = a ^ b;
-	aCrossB.normalize();
-	a.rotateThisVectorAboutDirection(aCrossB, angleDeg);
-	b.rotateThisVectorAboutDirection(aCrossB, angleDeg);
-	c.rotateThisVectorAboutDirection(aCrossB, angleDeg);
+	V3 viewDir = getViewDir();
+	a.rotateThisVectorAboutDirection(viewDir, angleDeg);
+	b.rotateThisVectorAboutDirection(viewDir, angleDeg);
+	c.rotateThisVectorAboutDirection(viewDir, angleDeg);
+	// update projection matrix
+	buildProjM();
 }
 
 void PPC::zoom(float zoomFactor)
@@ -163,6 +172,8 @@ void PPC::zoom(float zoomFactor)
 	float PPv = principalPoint.getY();
 	c = -1.0f * (PPu * a) - (PPv * b) +
 		viewDirection*newFocalLength;
+	// update projection matrix
+	buildProjM();
 }
 
 void PPC::positionRelativeToPoint(
@@ -198,6 +209,9 @@ void PPC::positionRelativeToPoint(
 	float PPv = principalPoint.getY();
 	c = -1.0f * (PPu * a) - (PPv * b) +
 		vd*focalLength;
+
+	// update projection matrix
+	buildProjM();
 }
 
 void PPC::setByInterpolation(PPC  &ppc0, PPC &ppc1, int i, int n)
@@ -230,16 +244,15 @@ void PPC::setByInterpolation(PPC  &ppc0, PPC &ppc1, int i, int n)
 	// ci
 	c = -1.0f * (PPu * a) - (PPv * b) +
 		vdi*f;
+	// update projection matrix
+	buildProjM();
 }
 
 // projects given point, returns false if point behind head
 bool PPC::project(const V3 &P, V3& projP) const {
-	M33 abc;
-	// three equations, three unknowns (look at slide 8 in PHC.pdf)
-	abc.setColumn(a, 0);
-	abc.setColumn(b, 1);
-	abc.setColumn(c, 2);
-	V3 q = abc.getInverted()*(P - C);
+
+	// project point (assunes projM is up to date)
+	V3 q = projM * (P - C);
 
 	// no projection since point is behind camera or exactly at C
 	if (q[2] <= 0.0f)
@@ -271,6 +284,8 @@ void PPC::loadCameraFromFile(string fName)
 	inFile >> C;
 	inFile >> w;
 	inFile >> h;
+
+	buildProjM();
 
 	return; // ifstram destructor closes file
 }
