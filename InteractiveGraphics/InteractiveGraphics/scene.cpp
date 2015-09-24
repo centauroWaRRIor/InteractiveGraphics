@@ -68,8 +68,9 @@ void Scene::dbgDraw() {
 		doOnce = true;
 	}
 	fb->set(0xFFFFFFFF);
-	fb->drawWireFrame(tms[0], ppc);
-	//fb->drawVertexDots(tms[0], 7.0f, ppc);
+	//fb->drawWireFrame(tms[0], ppc); // replace with tmesh->drawWireframe
+	//tms[0]->drawWireframe(*fb, *ppc);
+	tms[0]->drawVertexDots(*fb, *ppc, 7.0f);
 	fb->redraw();
 	return;
 }
@@ -272,7 +273,7 @@ void Scene::testCameraLerp(void)
 
 		fb->set(0xFFFFFFFF);
 		ppc->setByInterpolation(ppc0, ppc1, i, n);
-		fb->drawWireFrame(tms[0], ppc);
+		//fb->drawWireFrame(tms[0], ppc); // replace with tmesh->drawWireFrame
 		fb->redraw();
 		Fl::check();
 		Fl::wait(0.09);	

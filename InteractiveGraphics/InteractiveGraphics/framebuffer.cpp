@@ -347,40 +347,6 @@ void FrameBuffer::drawTriangle(const float * xCoords, const float * yCoords, uns
 	}
 }
 
-void FrameBuffer::drawVertexDots(const TMesh *tm, float dotSize, const PPC *ppc) {
-
-	// Draw vertices as cricles
-	for (int vi = 0; vi < tm->getVertsN(); vi++) {
-		V3 projV, projP;
-		if (!ppc->project(tm->getVertex(vi), projP))
-			continue;
-		drawCircle(projP[0], projP[1], dotSize, tm->getVertexColor(vi).getColor());
-	}
-}
-
-void FrameBuffer::drawWireFrame(const TMesh *tm, const PPC *ppc) {
-
-	// Draw vertices connections as line segments
-	for (int tri = 0; tri < tm->getTrisN(); tri++) {
-		V3 currvs[3];
-		// grab current triangle vertices
-		currvs[0] = tm->getVertex(tm->getTriangleIndex(3 * tri + 0));
-		currvs[1] = tm->getVertex(tm->getTriangleIndex(3 * tri + 1));
-		currvs[2] = tm->getVertex(tm->getTriangleIndex(3 * tri + 2));
-		V3 currcols[3];
-		// grab current triangle vertex colors
-		currcols[0] = tm->getVertexColor(tm->getTriangleIndex(3 * tri + 0));
-		currcols[1] = tm->getVertexColor(tm->getTriangleIndex(3 * tri + 1));
-		currcols[2] = tm->getVertexColor(tm->getTriangleIndex(3 * tri + 2));
-		// draw edges between vertices of this triangle
-		// e1 = 0,1  e2 = 1,2  e3 = 2,0 (hence the %3)
-		for (int ei = 0; ei < 3; ei++) {
-			draw3DSegment(currvs[ei], currcols[ei],
-				currvs[(ei + 1) % 3], currcols[(ei + 1) % 3], ppc);
-		}
-	}
-}
-
 void FrameBuffer::draw3DSegment(const V3 &v0, const V3 &c0, const V3 &v1, const V3 &c1, const PPC *ppc) {
 
 	V3 projv0, projv1;

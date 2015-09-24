@@ -1,6 +1,7 @@
 #pragma once
-
 #include "v3.h"
+#include "ppc.h"
+#include "framebuffer.h"
 
 // Implements a triangle mesh class that stores shared vertices and triangle 
 // connectivity data.
@@ -35,7 +36,9 @@ public:
 
 	// drawing functionality
 	// draws triangle mesh in filled mode using screen space interpolation of colors
-	//void drawFilledScreenLerp() const
+	void drawFilledScreenLerp(void) const;
+	void drawWireframe(FrameBuffer &fb, PPC &ppc) const;
+	void drawVertexDots(FrameBuffer &fb, PPC &ppc, float dotSize) const;
 	
 	// constructs a tetrahedron with the given vertices
 	void createTetrahedronMesh(V3 *_verts, V3 *_cols);

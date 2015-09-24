@@ -5,7 +5,6 @@
 #include <GL/glut.h>
 #include <string>
 using std::string;
-#include "tmesh.h"
 #include "ppc.h"
 
 // framebuffer + window class
@@ -47,11 +46,6 @@ public:
 	void drawRectangle(float llu, float llv, float width, float height, unsigned int color);
 	// draw 2D triangle. Quick note on pointers vs references: int &x =  y is the same as const int * x = &y
 	void drawTriangle(const float *uCoords, const float *vCoords, unsigned int color);
-
-	// draw TMesh in wire frame
-	void drawWireFrame(const TMesh *tm, const PPC *ppc);
-	// draw TMesh vertices as dots
-	void drawVertexDots(const TMesh *tm, float dotSize, const PPC *ppc);
 
 	// draw 3D segment specified by 2 points, each with own color
 	void draw3DSegment(const V3 &v0, const V3 &c0, const V3 &v1, const V3 &c1, const PPC *ppc);

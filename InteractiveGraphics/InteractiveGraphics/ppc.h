@@ -1,6 +1,8 @@
 #pragma once
 
 #include "v3.h"
+#include <string>
+using std::string;
 
 // Implements a planar pinhole camera (PPC)
 class PPC {

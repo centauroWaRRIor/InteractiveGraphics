@@ -121,7 +121,6 @@ void TMesh::loadBin(const char * fname)
 	// clean in case it had other stuff already loaded
 	this->cleanUp();
 
-
 	ifstream ifs(fname, ios::binary);
 	if (ifs.fail()) {
 		cerr << "INFO: cannot open triangle mesh bin file: " << fname << endl;
@@ -192,3 +191,52 @@ void TMesh::loadBin(const char * fname)
 	delete[]normals;
 }
 
+void TMesh::drawFilledScreenLerp(void) const {
+
+}
+
+void TMesh::drawWireframe(FrameBuffer &fb, PPC &ppc) const {
+
+	if ((vertsN == 0) || (trisN < 1) || (cols == nullptr)) {
+		cerr << "ERROR: Attempted to to draw an empty mesh. "
+			<< "drawWireframe() command was aborted." << endl;
+		return;
+	}
+
+	// Draw vertices connections as line segments
+	for (int tri = 0; tri < trisN; tri++) {
+		V3 currvs[3];
+		// grab current triangle vertices
+		currvs[0] = verts[tris[3 * tri + 0]];
+		currvs[1] = verts[tris[3 * tri + 1]];
+		currvs[2] = verts[tris[3 * tri + 2]];
+		V3 currcols[3];
+		// grab current triangle vertex colors
+		currcols[0] = cols[tris[3 * tri + 0]];
+		currcols[1] = cols[tris[3 * tri + 1]];
+		currcols[2] = cols[tris[3 * tri + 2]];
+		// draw edges between vertices of this triangle
+		// e1 = 0,1  e2 = 1,2  e3 = 2,0 (hence the %3)
+		for (int ei = 0; ei < 3; ei++) {
+			fb.draw3DSegment(currvs[ei], currcols[ei],
+				currvs[(ei + 1) % 3], currcols[(ei + 1) % 3], &ppc);
+		}
+	}
+}
+
+void TMesh::drawVertexDots(FrameBuffer &fb, PPC &ppc, float dotSize) const {
+
+	if ((vertsN == 0) || (trisN < 1) || (cols == nullptr)) {
+		cerr << "ERROR: Attempted to to draw an empty mesh. "
+			<< "drawVertexDots() command was aborted." << endl;
+		return;
+	}
+
+	// Draw vertices as cricles
+	for (int vi = 0; vi < vertsN; vi++) {
+		V3 projV, projP;
+		if (!ppc.project(verts[vi], projP))
+			continue;
+		fb.drawCircle(projP[0], projP[1], dotSize, verts[vi].getColor());
+	}
+}

@@ -7,8 +7,6 @@ using std::ios;
 #include <fstream>
 using std::ofstream;
 using std::ifstream;
-#include <string>
-using std::string;
 #include <cstdlib>
 using std::exit;
 #include "ppc.h"
