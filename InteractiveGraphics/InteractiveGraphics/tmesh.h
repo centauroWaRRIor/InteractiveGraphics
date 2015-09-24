@@ -38,7 +38,7 @@ public:
 	// draws triangle mesh in filled mode using a single color
 	void drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color) const;
 	// draws triangle mesh in filled mode using screen space interpolation of colors
-	void drawFilledScreenColorLerp(FrameBuffer &fb, const PPC &ppc) const;
+	void drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc) const;
 	// draws triangle mesh in wireframe mode
 	void drawWireframe(FrameBuffer &fb, const PPC &ppc) const;
 	// draws the triangle mesh vertices as dots

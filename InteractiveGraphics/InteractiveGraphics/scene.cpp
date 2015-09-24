@@ -252,7 +252,7 @@ void Scene::testRaster() {
 		xCoords[1] = xCoords[1] - steps;
 		xCoords[2] = xCoords[2] - steps;
 
-		fb->draw2DSimpleTriangle(xCoords, yCoords, triangleColor);
+		fb->draw2DFlatTriangle(xCoords, yCoords, triangleColor);
 		fb->redraw();
 		Fl::check();
 	}

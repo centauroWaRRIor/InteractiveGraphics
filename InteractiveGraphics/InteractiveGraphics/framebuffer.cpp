@@ -234,7 +234,7 @@ void FrameBuffer::draw2DRectangle(
 	}
 }
 
-void FrameBuffer::draw2DSimpleTriangle(const float * xCoords, const float * yCoords, unsigned int color)
+void FrameBuffer::draw2DFlatTriangle(const float * xCoords, const float * yCoords, unsigned int color)
 {
 	float a[3], b[3], c[3]; // a,b,c for the three edge expressions
 	// establish the three edge equations
@@ -347,7 +347,120 @@ void FrameBuffer::draw2DSimpleTriangle(const float * xCoords, const float * yCoo
 	}
 }
 
-void FrameBuffer::draw3DSimpleTriangle(
+void FrameBuffer::draw2DFlatBarycentricTriangle(const float * xCoords, const float * yCoords, unsigned int color)
+{
+	float a[3], b[3], c[3]; // a,b,c for the three edge expressions
+							// establish the three edge equations
+							// edge that goes through vertices 0 and 1
+	a[0] = yCoords[1] - yCoords[0];
+	b[0] = -xCoords[1] + xCoords[0];
+	c[0] = -xCoords[0] * yCoords[1] + yCoords[0] * xCoords[1];
+	// edge that goes through vertices 1 and 2
+	a[1] = yCoords[2] - yCoords[1];
+	b[1] = -xCoords[2] + xCoords[1];
+	c[1] = -xCoords[1] * yCoords[2] + yCoords[1] * xCoords[2];
+	// edge that goes through vertices 2 and 0
+	a[2] = yCoords[0] - yCoords[2];
+	b[2] = -xCoords[0] + xCoords[2];
+	c[2] = -xCoords[2] * yCoords[0] + yCoords[2] * xCoords[0];
+
+	// temporary used to establish correct sidedness
+	float sidedness;
+	sidedness = a[0] * xCoords[2] + b[0] * yCoords[2] + c[0];
+	// I need to investigate if this special case has to do with the
+	// order in which the vertices are specified (i.e., cw vs ccw)
+	if (sidedness < 0) { // special case, normally inside half space is positive
+						 // flip
+		a[0] = -a[0];
+		b[0] = -b[0];
+		c[0] = -c[0];
+	}
+	sidedness = a[1] * xCoords[0] + b[1] * yCoords[0] + c[1];
+	if (sidedness < 0) { // special case, normally inside half space is positive
+						 // flip
+		a[1] = -a[1];
+		b[1] = -b[1];
+		c[1] = -c[1];
+	}
+	sidedness = a[2] * xCoords[1] + b[2] * yCoords[1] + c[2];
+	if (sidedness < 0) { // special case, normally inside half space is positive
+						 // flip
+		a[2] = -a[2];
+		b[2] = -b[2];
+		c[2] = -c[2];
+	}
+
+	// compute screen axes-aligned bounding box for triangle
+	float bbox[2][2]; // for each x and y, store the min and max values
+	bbox[0][0] = FLT_MAX;
+	bbox[0][1] = FLT_MIN; // take into account that y is inverted in screen coordinates
+	bbox[1][0] = FLT_MIN;
+	bbox[1][1] = FLT_MAX; // take into account that y is inverted in screen coordinates
+	for (int i = 0; i < 3; i++) {
+		// find min x
+		if (xCoords[i] < bbox[0][0])
+			bbox[0][0] = xCoords[i];
+		// find min y
+		if (yCoords[i] > bbox[0][1])
+			bbox[0][1] = yCoords[i];
+		// find max x
+		if (xCoords[i] > bbox[1][0])
+			bbox[1][0] = xCoords[i];
+		// find max y
+		if (yCoords[i] < bbox[1][1])
+			bbox[1][1] = yCoords[i];
+	}
+
+	// clip bounding box to screen boundaries
+	if (bbox[1][1] > (h - 1) || bbox[0][1] < 0 || bbox[1][0] < 0 || (bbox[0][0] > w - 1))
+		return;
+	if (bbox[0][0] < 0)
+		bbox[0][0] = 0;
+	if (bbox[1][0] > w - 1)
+		bbox[1][0] = (float)w - 1;
+	if (bbox[1][1] < 0)
+		bbox[1][1] = 0;
+	if (bbox[0][1] > h - 1)
+		bbox[0][1] = (float)h - 1;
+
+	int left = (int)(bbox[0][0] + 0.5);
+	int right = (int)(bbox[1][0] - 0.5);
+	int top = (int)(bbox[1][1] + 0.5);
+	int bottom = (int)(bbox[0][1] - 0.5);
+
+	int currPixX, currPixY; // current pixel considered
+	float currEELS[3], currEE[3]; // edge expression values for the line starts and within line
+	for (currPixY = top,
+		currEELS[0] = a[0] * (left + 0.5f) + b[0] * (top + 0.5f) + c[0],
+		currEELS[1] = a[1] * (left + 0.5f) + b[1] * (top + 0.5f) + c[1],
+		currEELS[2] = a[2] * (left + 0.5f) + b[2] * (top + 0.5f) + c[2];
+		currPixY <= bottom;
+		currPixY++,
+		currEELS[0] += b[0],
+		currEELS[1] += b[1],
+		currEELS[2] += b[2]) {
+		for (currPixX = left,
+			currEE[0] = currEELS[0],
+			currEE[1] = currEELS[1],
+			currEE[2] = currEELS[2];
+			currPixX <= right;
+			currPixX++,
+			currEE[0] += a[0],
+			currEE[1] += a[1],
+			currEE[2] += a[2]) {
+
+			if (currEE[0] < 0 || currEE[1] < 0 || currEE[2] < 0) {
+				continue; // outside triangle
+			}
+			else {
+				// found pixel inside of triangle; set it to right color
+				set(currPixX, currPixY, color);
+			}
+		}
+	}
+}
+
+void FrameBuffer::draw3DFlatTriangle(
 	const V3 &v1,
 	const V3 &v2,
 	const V3 &v3,
@@ -367,11 +480,11 @@ void FrameBuffer::draw3DSimpleTriangle(
 		v[0] = projV1.getY();
 		v[1] = projV2.getY();
 		v[2] = projV3.getY();
-		draw2DSimpleTriangle(u, v, color);
+		draw2DFlatTriangle(u, v, color);
 	}
 }
 
-void FrameBuffer::draw3DLerpColorTriangle(
+void FrameBuffer::draw3DFlatBarycentricTriangle(
 	const V3 & v1, const V3 & c1, 
 	const V3 & v2, const V3 & c2, 
 	const V3 & v3, const V3 & c3,
@@ -390,7 +503,7 @@ void FrameBuffer::draw3DLerpColorTriangle(
 		v[0] = projV1.getY();
 		v[1] = projV2.getY();
 		v[2] = projV3.getY();
-		draw2DSimpleTriangle(u, v, 0xFF0000FF);
+		draw2DFlatTriangle(u, v, 0xFF0000FF);
 	}
 }
 

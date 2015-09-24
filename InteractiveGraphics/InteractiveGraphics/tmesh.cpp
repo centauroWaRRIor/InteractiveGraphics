@@ -212,7 +212,7 @@ void TMesh::drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color) 
 		currcols[1] = cols[tris[3 * tri + 1]];
 		currcols[2] = cols[tris[3 * tri + 2]];
 
-		fb.draw3DSimpleTriangle(
+		fb.draw3DFlatTriangle(
 			currvs[0], 
 			currvs[1], 
 			currvs[2], 
@@ -221,7 +221,7 @@ void TMesh::drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color) 
 	}
 }
 
-void TMesh::drawFilledScreenColorLerp(FrameBuffer &fb, const PPC &ppc) const {
+void TMesh::drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc) const {
 
 	if ((vertsN == 0) || (trisN < 1) || (cols == nullptr)) {
 		cerr << "ERROR: Attempted to to draw an empty mesh. "
@@ -243,7 +243,7 @@ void TMesh::drawFilledScreenColorLerp(FrameBuffer &fb, const PPC &ppc) const {
 		currcols[1] = cols[tris[3 * tri + 1]];
 		currcols[2] = cols[tris[3 * tri + 2]];
 
-		fb.draw3DLerpColorTriangle(	currvs[0], currcols[0],
+		fb.draw3DFlatBarycentricTriangle(	currvs[0], currcols[0],
 									currvs[1], currcols[1],
 									currvs[2], currcols[2],
 									ppc);

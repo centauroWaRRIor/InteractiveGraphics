@@ -45,17 +45,19 @@ public:
 	// draw axis aligned rectangle
 	void draw2DRectangle(float llu, float llv, float width, float height, unsigned int color);
 	// draw single color 2D triangle. Quick note on pointers vs references: int &x =  y is the same as const int * x = &y
-	void draw2DSimpleTriangle(const float *uCoords, const float *vCoords, unsigned int color);
+	void draw2DFlatTriangle(const float *uCoords, const float *vCoords, unsigned int color);
+	// draw 2D triangle using barycentric interpolation of colors (screen space interpolation) */
+	void draw2DFlatBarycentricTriangle(const float *uCoords, const float *vCoords, unsigned int color);
 
 	// draws 3D triangle filled with a single color
-	void draw3DSimpleTriangle(
+	void draw3DFlatTriangle(
 		const V3 &v1, 
 		const V3 &v2, 
 		const V3 &v3, 
 		const PPC &ppc,
 		unsigned int color);
 	// draws 3D triangle filled with linearly interpolated colors in screen space
-	void draw3DLerpColorTriangle(
+	void draw3DFlatBarycentricTriangle(
 		const V3 &v1, const V3 &c1,
 		const V3 &v2, const V3 &c2,
 		const V3 &v3, const V3 &c3, 
