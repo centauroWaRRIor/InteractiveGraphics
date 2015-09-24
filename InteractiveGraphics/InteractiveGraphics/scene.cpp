@@ -68,9 +68,10 @@ void Scene::dbgDraw() {
 		doOnce = true;
 	}
 	fb->set(0xFFFFFFFF);
-	//fb->drawWireFrame(tms[0], ppc); // replace with tmesh->drawWireframe
+	//tms[0]->drawFilledScreenColorLerp(*fb, *ppc);
+	tms[0]->drawFilledFlat(*fb, *ppc, 0xFF0000FF);
 	//tms[0]->drawWireframe(*fb, *ppc);
-	tms[0]->drawVertexDots(*fb, *ppc, 7.0f);
+	//tms[0]->drawVertexDots(*fb, *ppc, 7.0f);
 	fb->redraw();
 	return;
 }
@@ -140,13 +141,13 @@ void Scene::testRot() {
 		// clear screen
 		fb->set(0xFFFFFFFF);
 		// draw origin point
-		fb->drawCircle(axisOrigin[0], axisOrigin[1], pointRadius, originColor);
+		fb->draw2DCircle(axisOrigin[0], axisOrigin[1], pointRadius, originColor);
 		// draw original point
-		fb->drawCircle(point[0], point[1], pointRadius, pointColor);
+		fb->draw2DCircle(point[0], point[1], pointRadius, pointColor);
 
 		// draw rotating point about z-axis (makes a circle)
 		point.rotateThisPointAboutAxis(axisOrigin, axisDirection, (float)stepsi);
-		fb->drawCircle(point[0], point[1], pointRadius, movingPointColor1);
+		fb->draw2DCircle(point[0], point[1], pointRadius, movingPointColor1);
 		// store new breadcrumb
 		if (stepsi % 5 == 0) {
 			breadcrumbsCircle.push_back(point);
@@ -157,7 +158,7 @@ void Scene::testRot() {
 		point = originalPoint;
 		axisDirection = rotMatrix * axisDirection;
 		point.rotateThisPointAboutAxis(axisOrigin, axisDirection, (float)stepsi);
-		fb->drawCircle(point[0], point[1], pointRadius, movingPointColor2);
+		fb->draw2DCircle(point[0], point[1], pointRadius, movingPointColor2);
 		// store new breadcrumb
 		if (stepsi % 5 == 0) {
 			breadcrumbsEllipse.push_back(point);
@@ -166,13 +167,13 @@ void Scene::testRot() {
 		// draw circle breadcrums so far collected (gives nice hint of point trajectory)
 		for (vector<V3>::iterator it = breadcrumbsCircle.begin(); it != breadcrumbsCircle.end(); ++it) {
 			V3 &breadcrumb = *it;
-			fb->drawCircle(breadcrumb[0], breadcrumb[1], pointRadius/2.0f, breadCrumbColor1);
+			fb->draw2DCircle(breadcrumb[0], breadcrumb[1], pointRadius/2.0f, breadCrumbColor1);
 		}
 
 		// draw ellipse breadcrums so far collected (gives nice hint of point trajectory)
 		for (vector<V3>::iterator it = breadcrumbsEllipse.begin(); it != breadcrumbsEllipse.end(); ++it) {
 			V3 &breadcrumb = *it;
-			fb->drawCircle(breadcrumb[0], breadcrumb[1], pointRadius / 2.0f, breadCrumbColor2);
+			fb->draw2DCircle(breadcrumb[0], breadcrumb[1], pointRadius / 2.0f, breadCrumbColor2);
 		}
 		// uncomment here to save video
 		//pngFilename = string("pngs\\movieFrame");
@@ -201,7 +202,7 @@ void Scene::testRaster() {
 		// clear screen
 		fb->set(0xFFFFFFFF);
 		// draw circle
-		fb->drawCircle(	circleCenter[0] + steps,
+		fb->draw2DCircle(	circleCenter[0] + steps,
 						circleCenter[1], 
 						circleRadius,
 						circleColor);
@@ -220,7 +221,7 @@ void Scene::testRaster() {
 		// clear screen
 		fb->set(0xFFFFFFFF);
 		// draw rectangle
-		fb->drawRectangle(	lowerLeft[0], 
+		fb->draw2DRectangle(	lowerLeft[0], 
 							lowerLeft[1] + steps,
 							rectangleWidth,
 							rectangleHeight,
@@ -251,7 +252,7 @@ void Scene::testRaster() {
 		xCoords[1] = xCoords[1] - steps;
 		xCoords[2] = xCoords[2] - steps;
 
-		fb->drawTriangle(xCoords, yCoords, triangleColor);
+		fb->draw2DSimpleTriangle(xCoords, yCoords, triangleColor);
 		fb->redraw();
 		Fl::check();
 	}

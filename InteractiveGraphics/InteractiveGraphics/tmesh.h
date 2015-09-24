@@ -35,10 +35,14 @@ public:
 	int getTriangleIndex(int i) const;
 
 	// drawing functionality
+	// draws triangle mesh in filled mode using a single color
+	void drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color) const;
 	// draws triangle mesh in filled mode using screen space interpolation of colors
-	void drawFilledScreenLerp(void) const;
-	void drawWireframe(FrameBuffer &fb, PPC &ppc) const;
-	void drawVertexDots(FrameBuffer &fb, PPC &ppc, float dotSize) const;
+	void drawFilledScreenColorLerp(FrameBuffer &fb, const PPC &ppc) const;
+	// draws triangle mesh in wireframe mode
+	void drawWireframe(FrameBuffer &fb, const PPC &ppc) const;
+	// draws the triangle mesh vertices as dots
+	void drawVertexDots(FrameBuffer &fb, const PPC &ppc, float dotSize) const;
 	
 	// constructs a tetrahedron with the given vertices
 	void createTetrahedronMesh(V3 *_verts, V3 *_cols);

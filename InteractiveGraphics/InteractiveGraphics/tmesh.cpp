@@ -191,11 +191,66 @@ void TMesh::loadBin(const char * fname)
 	delete[]normals;
 }
 
-void TMesh::drawFilledScreenLerp(void) const {
+void TMesh::drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color) const
+{
+	if ((vertsN == 0) || (trisN < 1) || (cols == nullptr)) {
+		cerr << "ERROR: Attempted to to draw an empty mesh. "
+			<< "drawWireframe() command was aborted." << endl;
+		return;
+	}
 
+	// Draw filled triangles with single color (provided)
+	for (int tri = 0; tri < trisN; tri++) {
+		V3 currvs[3];
+		// grab current triangle vertices
+		currvs[0] = verts[tris[3 * tri + 0]];
+		currvs[1] = verts[tris[3 * tri + 1]];
+		currvs[2] = verts[tris[3 * tri + 2]];
+		V3 currcols[3];
+		// grab current triangle vertex colors
+		currcols[0] = cols[tris[3 * tri + 0]];
+		currcols[1] = cols[tris[3 * tri + 1]];
+		currcols[2] = cols[tris[3 * tri + 2]];
+
+		fb.draw3DSimpleTriangle(
+			currvs[0], 
+			currvs[1], 
+			currvs[2], 
+			ppc,
+			color);
+	}
 }
 
-void TMesh::drawWireframe(FrameBuffer &fb, PPC &ppc) const {
+void TMesh::drawFilledScreenColorLerp(FrameBuffer &fb, const PPC &ppc) const {
+
+	if ((vertsN == 0) || (trisN < 1) || (cols == nullptr)) {
+		cerr << "ERROR: Attempted to to draw an empty mesh. "
+			<< "drawWireframe() command was aborted." << endl;
+		return;
+	}
+
+	// Draw filled triangles with color linearly interpolated 
+	// in screen space.
+	for (int tri = 0; tri < trisN; tri++) {
+		V3 currvs[3];
+		// grab current triangle vertices
+		currvs[0] = verts[tris[3 * tri + 0]];
+		currvs[1] = verts[tris[3 * tri + 1]];
+		currvs[2] = verts[tris[3 * tri + 2]];
+		V3 currcols[3];
+		// grab current triangle vertex colors
+		currcols[0] = cols[tris[3 * tri + 0]];
+		currcols[1] = cols[tris[3 * tri + 1]];
+		currcols[2] = cols[tris[3 * tri + 2]];
+
+		fb.draw3DLerpColorTriangle(	currvs[0], currcols[0],
+									currvs[1], currcols[1],
+									currvs[2], currcols[2],
+									ppc);
+	}
+}
+
+void TMesh::drawWireframe(FrameBuffer &fb, const PPC &ppc) const {
 
 	if ((vertsN == 0) || (trisN < 1) || (cols == nullptr)) {
 		cerr << "ERROR: Attempted to to draw an empty mesh. "
@@ -224,7 +279,7 @@ void TMesh::drawWireframe(FrameBuffer &fb, PPC &ppc) const {
 	}
 }
 
-void TMesh::drawVertexDots(FrameBuffer &fb, PPC &ppc, float dotSize) const {
+void TMesh::drawVertexDots(FrameBuffer &fb,const PPC &ppc, float dotSize) const {
 
 	if ((vertsN == 0) || (trisN < 1) || (cols == nullptr)) {
 		cerr << "ERROR: Attempted to to draw an empty mesh. "
@@ -237,6 +292,6 @@ void TMesh::drawVertexDots(FrameBuffer &fb, PPC &ppc, float dotSize) const {
 		V3 projV, projP;
 		if (!ppc.project(verts[vi], projP))
 			continue;
-		fb.drawCircle(projP[0], projP[1], dotSize, verts[vi].getColor());
+		fb.draw2DCircle(projP[0], projP[1], dotSize, verts[vi].getColor());
 	}
 }

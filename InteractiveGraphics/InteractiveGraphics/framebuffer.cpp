@@ -165,7 +165,7 @@ void FrameBuffer::setCheckerboard(int checkerSize, unsigned int color0,
 }
 
 // draw circle
-void FrameBuffer::drawCircle(float cuf, float cvf, float radius, 
+void FrameBuffer::draw2DCircle(float cuf, float cvf, float radius, 
   unsigned int color) {
 
     // axis aligned bounding box (AABB) of circle (it's a square parallel to axes)
@@ -200,7 +200,7 @@ void FrameBuffer::drawCircle(float cuf, float cvf, float radius,
 }
 
 // draw axis aligned rectangle
-void FrameBuffer::drawRectangle(
+void FrameBuffer::draw2DRectangle(
 	float llu, 
 	float llv, 
 	float width, 
@@ -234,7 +234,7 @@ void FrameBuffer::drawRectangle(
 	}
 }
 
-void FrameBuffer::drawTriangle(const float * xCoords, const float * yCoords, unsigned int color)
+void FrameBuffer::draw2DSimpleTriangle(const float * xCoords, const float * yCoords, unsigned int color)
 {
 	float a[3], b[3], c[3]; // a,b,c for the three edge expressions
 	// establish the three edge equations
@@ -344,6 +344,53 @@ void FrameBuffer::drawTriangle(const float * xCoords, const float * yCoords, uns
 				set(currPixX, currPixY, color);
 			}
 		}
+	}
+}
+
+void FrameBuffer::draw3DSimpleTriangle(
+	const V3 &v1,
+	const V3 &v2,
+	const V3 &v3,
+	const PPC &ppc,
+	unsigned int color)
+{
+	V3 projV1, projV2, projV3;
+	// project triangle vertices
+	bool isVisible = ppc.project(v1, projV1);
+	isVisible &= ppc.project(v2, projV2);
+	isVisible &= ppc.project(v3, projV3);
+	if (isVisible) {
+		float u[3], v[3];
+		u[0] = projV1.getX();
+		u[1] = projV2.getX();
+		u[2] = projV3.getX();
+		v[0] = projV1.getY();
+		v[1] = projV2.getY();
+		v[2] = projV3.getY();
+		draw2DSimpleTriangle(u, v, color);
+	}
+}
+
+void FrameBuffer::draw3DLerpColorTriangle(
+	const V3 & v1, const V3 & c1, 
+	const V3 & v2, const V3 & c2, 
+	const V3 & v3, const V3 & c3,
+	const PPC &ppc)
+{
+	V3 projV1, projV2, projV3;
+	// project triangle vertices
+	bool isVisible = ppc.project(v1, projV1);
+	isVisible &= ppc.project(v2, projV2);
+	isVisible &= ppc.project(v3, projV3);
+	if (isVisible) {
+		float u[3], v[3];
+		u[0] = projV1.getX();
+		u[1] = projV2.getX();
+		u[2] = projV3.getX();
+		v[0] = projV1.getY();
+		v[1] = projV2.getY();
+		v[2] = projV3.getY();
+		draw2DSimpleTriangle(u, v, 0xFF0000FF);
 	}
 }
 
