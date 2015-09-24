@@ -2,6 +2,7 @@
 #include "scene.h"
 #include "lodepng.h"
 #include "scene.h"
+#include "m33.h"
 #include <iostream>
 #include <math.h>
 #include <cfloat>
@@ -347,11 +348,42 @@ void FrameBuffer::draw2DFlatTriangle(const float * xCoords, const float * yCoord
 	}
 }
 
-void FrameBuffer::draw2DFlatBarycentricTriangle(const float * xCoords, const float * yCoords, unsigned int color)
+void FrameBuffer::draw2DFlatBarycentricTriangle(
+	const V3 &v1, const V3 &c1,
+	const V3 &v2, const V3 &c2,
+	const V3 &v3, const V3 &c3)
 {
-	float a[3], b[3], c[3]; // a,b,c for the three edge expressions
-							// establish the three edge equations
-							// edge that goes through vertices 0 and 1
+	float xCoords[3], yCoords[3]; // this format is more triangle edge equation friendly 
+	xCoords[0] = v1.getX();
+	xCoords[1] = v2.getX();
+	xCoords[2] = v3.getX();
+	yCoords[0] = v1.getY();
+	yCoords[1] = v2.getY();
+	yCoords[2] = v3.getY();
+
+	// build rasterization parameters to be lerped in screen space
+	V3 redParameters(c1.getX(), c2.getX(), c3.getX());
+	V3 greenParameters(c1.getY(), c2.getY(), c3.getY());
+	V3 blueParameters(c1.getZ(), c2.getZ(), c3.getZ());
+
+	// build barycentric interpolation matrix
+	M33 baryMatrixInverse(
+		V3(xCoords[0], yCoords[0], 1),
+		V3(xCoords[1], yCoords[1], 1),
+		V3(xCoords[2], yCoords[2], 1));
+	baryMatrixInverse.setInverted();
+
+	// abc coefficients for the raster parameter interpolation
+	V3 abcRed = baryMatrixInverse * redParameters;
+	V3 abcGreen = baryMatrixInverse * greenParameters;
+	V3 abcBlue = baryMatrixInverse * blueParameters;
+
+	V3 interpolatedColor;
+
+	float a[3], b[3], c[3]; // a,b,c for the three triangle edge expressions
+							
+	// establish the three edge equations 
+	// edge that goes through vertices 0 and 1
 	a[0] = yCoords[1] - yCoords[0];
 	b[0] = -xCoords[1] + xCoords[0];
 	c[0] = -xCoords[0] * yCoords[1] + yCoords[0] * xCoords[1];
@@ -452,9 +484,15 @@ void FrameBuffer::draw2DFlatBarycentricTriangle(const float * xCoords, const flo
 			if (currEE[0] < 0 || currEE[1] < 0 || currEE[2] < 0) {
 				continue; // outside triangle
 			}
-			else {
-				// found pixel inside of triangle; set it to right color
-				set(currPixX, currPixY, color);
+			else { // found pixel inside of triangle; set it to interpolated color
+				
+				// find interpolated color by plugging abc coefficients and u,vs into
+				// barycentric interpolation equation
+				interpolatedColor[0] = abcRed[0] * currPixX + abcRed[1] * currPixY + abcRed[2];
+				interpolatedColor[1] = abcGreen[0] * currPixX + abcGreen[1] * currPixY + abcGreen[2];
+				interpolatedColor[2] = abcBlue[0] * currPixX + abcBlue[1] * currPixY + abcBlue[2];
+
+				set(currPixX, currPixY, interpolatedColor.getColor());
 			}
 		}
 	}
@@ -496,14 +534,10 @@ void FrameBuffer::draw3DFlatBarycentricTriangle(
 	isVisible &= ppc.project(v2, projV2);
 	isVisible &= ppc.project(v3, projV3);
 	if (isVisible) {
-		float u[3], v[3];
-		u[0] = projV1.getX();
-		u[1] = projV2.getX();
-		u[2] = projV3.getX();
-		v[0] = projV1.getY();
-		v[1] = projV2.getY();
-		v[2] = projV3.getY();
-		draw2DFlatTriangle(u, v, 0xFF0000FF);
+		draw2DFlatBarycentricTriangle(
+			projV1, c1,
+			projV2, c2,
+			projV3, c3);
 	}
 }
 

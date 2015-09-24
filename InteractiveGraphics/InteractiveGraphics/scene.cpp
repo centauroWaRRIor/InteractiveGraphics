@@ -68,8 +68,8 @@ void Scene::dbgDraw() {
 		doOnce = true;
 	}
 	fb->set(0xFFFFFFFF);
-	//tms[0]->drawFilledScreenColorLerp(*fb, *ppc);
-	tms[0]->drawFilledFlat(*fb, *ppc, 0xFF0000FF);
+	tms[0]->drawFilledFlatBarycentric(*fb, *ppc);
+	//tms[0]->drawFilledFlat(*fb, *ppc, 0xFF0000FF);
 	//tms[0]->drawWireframe(*fb, *ppc);
 	//tms[0]->drawVertexDots(*fb, *ppc, 7.0f);
 	fb->redraw();

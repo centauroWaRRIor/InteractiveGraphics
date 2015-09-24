@@ -47,7 +47,10 @@ public:
 	// draw single color 2D triangle. Quick note on pointers vs references: int &x =  y is the same as const int * x = &y
 	void draw2DFlatTriangle(const float *uCoords, const float *vCoords, unsigned int color);
 	// draw 2D triangle using barycentric interpolation of colors (screen space interpolation) */
-	void draw2DFlatBarycentricTriangle(const float *uCoords, const float *vCoords, unsigned int color);
+	void draw2DFlatBarycentricTriangle(
+		const V3 &v1, const V3 &c1,
+		const V3 &v2, const V3 &c2,
+		const V3 &v3, const V3 &c3);
 
 	// draws 3D triangle filled with a single color
 	void draw3DFlatTriangle(
