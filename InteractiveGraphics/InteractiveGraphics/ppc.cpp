@@ -109,18 +109,12 @@ V3 PPC::getPrincipalPoint(void) const
 void PPC::moveRight(float step)
 {
 	// assumes a is unit length
-	// a will lose precision after other rotation operations so renormalize
-	// or just in case a and b are not unit length (not square pixels)
-	a.normalize();
 	C = (C + a*step);
 }
 
 void PPC::moveUp(float step)
 {
 	// assumes b is unit length
-	// b will lose precision after other rotation operations so renormalize
-	// or just in case a and b are not unit length (not square pixels)
-	b.normalize();
 	C = (C - b*step);
 }
 
