@@ -12,6 +12,7 @@ using std::string;
 class FrameBuffer : public Fl_Gl_Window {
 private:
 	unsigned int *pix; // SW color buffer
+	float *zb; // zbuffer for visibility
 	int w, h; // image resolution
 public:
 	FrameBuffer(int u0, int v0, unsigned int _w, unsigned int _h); // constructor, top left coords and resolution
@@ -32,6 +33,8 @@ public:
 
 	// clear to background color
 	void set(unsigned int color);
+	// clear z buffer to far distance, corresponding to background
+	void clearZB(float farz);
 	// set one pixel function, check for frame boundaries
 	void setSafe(int u, int c, unsigned int color);
 	// set one pixel function
@@ -39,9 +42,13 @@ public:
 	// set to checkboard
 	void setCheckerboard(int checkerSize, unsigned int color0,
 		unsigned int color1);
+	// sets pixel to color c if wins z test
+	void setIfCloser(const V3 &p, const V3 &c);
 
-	// draw circle
+	// draw 2D circle
 	void draw2DCircle(float cuf, float cvf, float radius, unsigned int color);
+	// draw 2D circle only where its closer
+	void draw2DCircleIfCloser(const V3 &p, float radius, const V3 &color);
 	// draw axis aligned rectangle
 	void draw2DRectangle(float llu, float llv, float width, float height, unsigned int color);
 	// draw single color 2D triangle. Quick note on pointers vs references: int &x =  y is the same as const int * x = &y

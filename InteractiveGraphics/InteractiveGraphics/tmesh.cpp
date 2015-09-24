@@ -243,10 +243,11 @@ void TMesh::drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc) const {
 		currcols[1] = cols[tris[3 * tri + 1]];
 		currcols[2] = cols[tris[3 * tri + 2]];
 
-		fb.draw3DFlatBarycentricTriangle(	currvs[0], currcols[0],
-									currvs[1], currcols[1],
-									currvs[2], currcols[2],
-									ppc);
+		fb.draw3DFlatBarycentricTriangle(	
+			currvs[0], currcols[0],
+			currvs[1], currcols[1],
+			currvs[2], currcols[2],
+			ppc);
 	}
 }
 
@@ -289,9 +290,9 @@ void TMesh::drawVertexDots(FrameBuffer &fb,const PPC &ppc, float dotSize) const 
 
 	// Draw vertices as cricles
 	for (int vi = 0; vi < vertsN; vi++) {
-		V3 projV, projP;
+		V3 projP;
 		if (!ppc.project(verts[vi], projP))
 			continue;
-		fb.draw2DCircle(projP[0], projP[1], dotSize, verts[vi].getColor());
+		fb.draw2DCircleIfCloser(projP, dotSize, cols[vi]);
 	}
 }

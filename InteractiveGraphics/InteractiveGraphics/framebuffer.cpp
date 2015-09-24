@@ -19,11 +19,13 @@ FrameBuffer::FrameBuffer(int u0, int v0,
   w = _w;
   h = _h;
   pix = new unsigned int[w*h];
+  zb = new float[w*h];
 }
 
 FrameBuffer::~FrameBuffer()
 {
 	delete[] pix;
+	delete[] zb;
 }
 
 // rendering callback; see header file comment
@@ -130,6 +132,13 @@ void FrameBuffer::set(unsigned int color) {
 
 }
 
+void FrameBuffer::clearZB(float farz)
+{
+	for (int i = 0; i < w*h; i++) {
+		zb[i] = farz;
+	}
+}
+
 // set pixel with coordinates u v to color provided as parameter
 void FrameBuffer::setSafe(int u, int v, unsigned int color) {
 
@@ -165,6 +174,25 @@ void FrameBuffer::setCheckerboard(int checkerSize, unsigned int color0,
 
 }
 
+// sets pixel at p[0], p[1] to color c if and only if 
+// p[2] is closer than zb value at that pixel
+void FrameBuffer::setIfCloser(const V3 & p, const V3 & c)
+{
+	if ((p.getX() < 0.0f) || (p.getX() >= w) || 
+		(p.getY() < 0.0f) || (p.getY() >= h))
+		return;
+
+	int u = (int)p.getX();
+	int v = (int)p.getY();
+
+	// remember that the z component of the projected point is 1/z or 1/w
+	if (zb[(h - 1 - v)*w + u] >= p.getZ())
+		return; // nothing to draw, already saw a surface closer at that pixel
+
+	zb[(h - 1 - v)*w + u] = p.getZ(); // set z at pixel to new closest surface value
+	set(u, v, c.getColor());
+}
+
 // draw circle
 void FrameBuffer::draw2DCircle(float cuf, float cvf, float radius, 
   unsigned int color) {
@@ -195,9 +223,44 @@ void FrameBuffer::draw2DCircle(float cuf, float cvf, float radius,
         float d2 = (cvf-vf)*(cvf-vf)+(cuf-uf)*(cuf-uf);
         if (d2 > radius2)
           continue;
-        set(u, v, color);
+        set(u, v, color); // ignores z-buffer
       }
     }
+}
+
+// draw 2D circle only where it wins the z-fight
+void FrameBuffer::draw2DCircleIfCloser(const V3 &p, float radius, const V3 &color) {
+
+	// axis aligned bounding box (AABB) of circle (it's a square parallel to axes)
+	int top = (int)(p.getY() - radius + 0.5f);
+	int bottom = (int)(p.getY() + radius - 0.5f);
+	int left = (int)(p.getX() - radius + 0.5f);
+	int right = (int)(p.getX() + radius - 0.5f);
+
+	// clip AABB with frame
+	if (top > h - 1 || bottom < 0 || right < 0 || left > w - 1)
+		return;
+	if (left < 0)
+		left = 0;
+	if (right > w - 1)
+		right = w - 1;
+	if (top < 0)
+		top = 0;
+	if (bottom > h - 1)
+		bottom = h - 1;
+
+	float radius2 = radius*radius;
+	for (int v = top; v <= bottom; v++) {
+		for (int u = left; u <= right; u++) {
+			float uf = .5f + (float)u;
+			float vf = .5f + (float)v;
+			float d2 = (p.getY() - vf)*(p.getY() - vf) + 
+				(p.getX() - uf)*(p.getX() - uf);
+			if (d2 > radius2)
+				continue;
+			setIfCloser(V3(uf,vf, p.getZ()), color);
+		}
+	}
 }
 
 // draw axis aligned rectangle
@@ -559,17 +622,11 @@ void FrameBuffer::draw2DSegment(const V3 &v0, const V3 &c0, const V3 &v1, const 
 	float dvf = fabsf(v0.getY() - v1.getY());
 	if (duf > dvf) {
 		// 1 because we want one pixel no matter what
-		stepsN = 1 + (int)duf;
+		stepsN = 2 + (int)duf;
 	}
 	else {
 		// 1 because we want one pixel no matter what
-		stepsN = 1 + (int)dvf;
-	}
-
-	// corner case
-	if (stepsN == 1) {
-		setSafe((int)v0.getX(), (int)v0.getY(), c0.getColor());
-		return;
+		stepsN = 2 + (int)dvf;
 	}
 
 	// lerp point along segment as well as its color
@@ -577,7 +634,9 @@ void FrameBuffer::draw2DSegment(const V3 &v0, const V3 &c0, const V3 &v1, const 
 		float frac = (float)i / (float)(stepsN - 1);
 		V3 p = v0 + (v1 - v0)*frac;
 		V3 c = c0 + (c1 - c0)*frac;
-		setSafe((int)p[0], (int)p[1], c.getColor());
+		
+		setIfCloser(p, c);
+		//setSafe((int)p[0], (int)p[1], c.getColor()); // ignores z-buffer
 	}
 }
 
