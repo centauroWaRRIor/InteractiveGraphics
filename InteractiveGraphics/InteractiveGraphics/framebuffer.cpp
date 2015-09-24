@@ -428,6 +428,7 @@ void FrameBuffer::draw2DFlatBarycentricTriangle(
 	V3 redParameters(c1.getX(), c2.getX(), c3.getX());
 	V3 greenParameters(c1.getY(), c2.getY(), c3.getY());
 	V3 blueParameters(c1.getZ(), c2.getZ(), c3.getZ());
+	V3 oneOverWParameters(v1.getZ(), v2.getZ(), v3.getZ());
 
 	// build barycentric interpolation matrix
 	M33 baryMatrixInverse(
@@ -440,8 +441,11 @@ void FrameBuffer::draw2DFlatBarycentricTriangle(
 	V3 abcRed = baryMatrixInverse * redParameters;
 	V3 abcGreen = baryMatrixInverse * greenParameters;
 	V3 abcBlue = baryMatrixInverse * blueParameters;
+	V3 abcDepth = baryMatrixInverse * oneOverWParameters;
 
+	// final raster parameter interpolated result stored here
 	V3 interpolatedColor;
+	float interpolatedZBufferDepth;
 
 	float a[3], b[3], c[3]; // a,b,c for the three triangle edge expressions
 							
@@ -550,12 +554,15 @@ void FrameBuffer::draw2DFlatBarycentricTriangle(
 			else { // found pixel inside of triangle; set it to interpolated color
 				
 				// find interpolated color by plugging abc coefficients and u,vs into
-				// barycentric interpolation equation
+				// barycentric color interpolation equation
 				interpolatedColor[0] = abcRed[0] * currPixX + abcRed[1] * currPixY + abcRed[2];
 				interpolatedColor[1] = abcGreen[0] * currPixX + abcGreen[1] * currPixY + abcGreen[2];
 				interpolatedColor[2] = abcBlue[0] * currPixX + abcBlue[1] * currPixY + abcBlue[2];
 
-				set(currPixX, currPixY, interpolatedColor.getColor());
+				interpolatedZBufferDepth = abcDepth[0] * currPixX + abcDepth[1] * currPixY + abcDepth[2];
+
+				//set(currPixX, currPixY, interpolatedColor.getColor()); // ignores depth test
+				setIfCloser(V3(currPixX, currPixY, interpolatedZBufferDepth), interpolatedColor);
 			}
 		}
 	}

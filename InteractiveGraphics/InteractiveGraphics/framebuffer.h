@@ -45,15 +45,17 @@ public:
 	// sets pixel to color c if wins z test
 	void setIfCloser(const V3 &p, const V3 &c);
 
-	// draw 2D circle
+	// draw 2D circle with no depth test
 	void draw2DCircle(float cuf, float cvf, float radius, unsigned int color);
 	// draw 2D circle only where its closer
 	void draw2DCircleIfCloser(const V3 &p, float radius, const V3 &color);
-	// draw axis aligned rectangle
+	// draw axis aligned rectangle with no depth test
 	void draw2DRectangle(float llu, float llv, float width, float height, unsigned int color);
-	// draw single color 2D triangle. Quick note on pointers vs references: int &x =  y is the same as const int * x = &y
+	// draw single color 2D triangle with no depth test
+	// Quick note on pointers vs references: int &x =  y is the same as const int * x = &y
 	void draw2DFlatTriangle(const float *uCoords, const float *vCoords, unsigned int color);
-	// draw 2D triangle using barycentric interpolation of colors (screen space interpolation) */
+	// draw 2D triangle using barycentric interpolation of colors (screen space interpolation)
+	// and depth test
 	void draw2DFlatBarycentricTriangle(
 		const V3 &v1, const V3 &c1,
 		const V3 &v2, const V3 &c2,
