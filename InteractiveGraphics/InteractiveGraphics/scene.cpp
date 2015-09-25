@@ -69,7 +69,7 @@ void Scene::dbgDraw() {
 	}
 	fb->set(0xFFFFFFFF);
 	fb->clearZB(0.0f);
-	tms[0]->drawAABB(*fb, *ppc, 0xFF00FF00, 0xFF000000);
+	//tms[0]->drawAABB(*fb, *ppc, 0xFF00FF00, 0xFF000000);
 	tms[0]->drawFilledFlatBarycentric(*fb, *ppc);
 	//tms[0]->drawFilledFlat(*fb, *ppc, 0xFF0000FF);
 	//tms[0]->drawWireframe(*fb, *ppc);
@@ -101,11 +101,11 @@ void Scene::dbgInit() {
 	tms[0]->translate(V3(10.0f, -10.0f, 0.0f));
 	tms[0]->scale(1.0);
 
-	// test fitToAABB
-	AABB testAABB(tms[0]->getAABB());
-	testAABB.translate(V3(-40.0f, 0.0f, 0.0f));
-	testAABB.scale(2.0f);
-	tms[0]->setToFitAABB(testAABB);
+	//// test fitToAABB
+	//AABB testAABB(tms[0]->getAABB());
+	//testAABB.translate(V3(-40.0f, 0.0f, 0.0f));
+	//testAABB.scale(2.0f);
+	//tms[0]->setToFitAABB(testAABB);
 
 	// test camera positioning functionality (works fine)
 	//ppc->positionRelativeToPoint(

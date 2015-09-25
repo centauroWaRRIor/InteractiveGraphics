@@ -17,6 +17,12 @@ class V3 {
 	// overloaded stram extraction operator; cannot be member function
 	// if we want to invoke it using cout >> someVector
 	friend istream& operator>>(istream &, V3 &);
+
+	// overload equality operator
+	friend inline bool operator==(const V3 &lhs, const V3 &rhs) 
+	{ return	((lhs.xyz[0] == rhs.xyz[0]) && 
+				 (lhs.xyz[1] == rhs.xyz[1]) && 
+				 (lhs.xyz[2] == rhs.xyz[2])); }
 private:
 	// depending on context: vector xyz components or point coordinates
 	float xyz[3];

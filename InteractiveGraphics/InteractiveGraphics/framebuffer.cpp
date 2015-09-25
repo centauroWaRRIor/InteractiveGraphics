@@ -445,7 +445,7 @@ void FrameBuffer::draw2DFlatBarycentricTriangle(
 
 	// final raster parameter interpolated result stored here
 	V3 interpolatedColor;
-	float interpolatedZBufferDepth;
+	float interpolatedZBufferDepth = 0.0f;
 
 	float a[3], b[3], c[3]; // a,b,c for the three triangle edge expressions
 							

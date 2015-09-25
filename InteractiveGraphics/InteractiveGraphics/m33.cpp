@@ -135,12 +135,20 @@ M33 M33::getInverted(void) const {
 
 	// This formaula gets inverse matrix of any matrix, remember
 	// that the inverse matrix of a rotation matrix is its transpose
-	// so no need to call this function when dealing with rot matrices
+	// so no need to call this function when dealing exclusively with 
+	// rot matrices
 	M33 ret;
 	V3 a = getColumn(0), b = getColumn(1), c = getColumn(2);
 	V3 _a = b ^ c; _a = _a / (a * _a);
 	V3 _b = c ^ a; _b = _b / (b * _b);
 	V3 _c = a ^ b; _c = _c / (c * _c);
+	//V3 tempZero, A(a*(b^c)), B(b*(c^a)), C(c*(a ^ b));
+	//if (A == tempZero || B == tempZero || C == tempZero) {
+	//	V3 tempOne(b ^ c), tempTwo(c ^ a), tempThree(a ^ b);
+	//	V3 tempFour = a ^ b;
+	//	V3 tempFive = c*tempFour;
+	//	return ret;
+	//}
 	ret[0] = _a;
 	ret[1] = _b;
 	ret[2] = _c;

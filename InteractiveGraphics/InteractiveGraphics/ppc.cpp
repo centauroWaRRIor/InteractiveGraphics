@@ -244,7 +244,7 @@ void PPC::setByInterpolation(PPC  &ppc0, PPC &ppc1, int i, int n)
 
 // projects given point, returns false if point behind head
 bool PPC::project(const V3 &P, V3& projP) const {
-
+	
 	// project point (assunes projM is up to date)
 	V3 q = projM * (P - C);
 

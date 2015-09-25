@@ -75,7 +75,7 @@ V3 V3::operator*(float scalar) const
 
 V3 V3::operator/(float scalar) const
 {
-	if (scalar != 0) {
+	if (scalar != 0.0f) {
 		return V3(xyz[0] / scalar,
 			xyz[1] / scalar,
 			xyz[2] / scalar);

@@ -422,7 +422,6 @@ void TMesh::setToFitAABB(const AABB & aabb)
 	// find AABB center
 	V3 corner1 = aabb.getFristCorner();
 	V3 corner2 = aabb.getSecondCorner();
-
 	V3 aabbCenter = corner1 + ((corner2 - corner1) * (0.5f));
 
 	// find this Tmesh center
