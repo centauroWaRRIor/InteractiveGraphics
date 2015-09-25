@@ -55,8 +55,13 @@ public:
 		const PPC &ppc,
 		unsigned int colorNear,
 		unsigned int colorFar) const;
-	// returns center of mass of vertices
+	// returns center of mass (also called centroid) of vertices
 	V3 getCenter(void) const;
+
+	// scale this triangle mesh vertices
+	void scale(float scaleFactor);
+	// translate this triangle mesh vertices by translation vector
+	void translate(const V3 &translationVector);
 	
 	// constructs a tetrahedron with the given vertices
 	void createTetrahedronMesh(V3 *_verts, V3 *_cols);

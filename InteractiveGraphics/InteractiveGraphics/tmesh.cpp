@@ -400,3 +400,17 @@ V3 TMesh::getCenter(void) const
 	ret = ret / (float)vertsN;
 	return ret;
 }
+
+void TMesh::scale(float scaleFactor)
+{
+	for (int vi = 0; vi < vertsN; vi++) {
+		verts[vi] = verts[vi] * scaleFactor;
+	}
+}
+
+void TMesh::translate(const V3 & translationVector)
+{
+	for (int vi = 0; vi < vertsN; vi++) {
+		verts[vi] = verts[vi] + translationVector;
+	}
+}

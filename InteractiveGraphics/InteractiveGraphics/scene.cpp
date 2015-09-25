@@ -95,9 +95,11 @@ void Scene::dbgInit() {
 	//tms[0]->createTetrahedronMesh(verts, colors);
 
 	// test teapot
-	ppc->moveForward(-200.0f); 
+	ppc->moveForward(-200.0f);
 	//ppc->moveUp(0.0f);// = V3(0.0f, 20.0f, 200.0f);
 	tms[0]->loadBin("geometry/teapot1K.bin");
+	tms[0]->translate(V3(10.0f, -10.0f, 0.0f));
+	tms[0]->scale(1.0);
 
 	// test positioning functionality (works fine)
 	//ppc->positionRelativeToPoint(
