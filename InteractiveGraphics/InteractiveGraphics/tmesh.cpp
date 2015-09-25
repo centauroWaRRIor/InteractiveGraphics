@@ -313,6 +313,78 @@ AABB TMesh::computeAABB(void) const
 	}
 }
 
+void TMesh::drawAABB(FrameBuffer & fb, const PPC & ppc, unsigned int colorNear, unsigned int colorFar) const
+{
+	V3 cnear;
+	cnear.setFromColor(colorNear);
+	V3 cfar;
+	cfar.setFromColor(colorFar);
+
+	V3 p0, p1;
+
+	AABB aabb = computeAABB();
+	V3 corner1 = aabb.getFristCorner();
+	V3 corner2 = aabb.getSecondCorner();
+
+	p0 = V3(corner1[0], corner2[1], corner2[2]);
+	p1 = V3(corner1[0], corner1[1], corner2[2]);
+	fb.draw3DSegment(p0, cnear, p1, cnear, &ppc);
+
+	p0 = V3(corner1[0], corner1[1], corner2[2]);
+	p1 = V3(corner2[0], corner1[1], corner2[2]);
+	fb.draw3DSegment(p0, cnear, p1, cnear, &ppc);
+
+	p0 = V3(corner2[0], corner1[1], corner2[2]);
+	p1 = V3(corner2[0], corner2[1], corner2[2]);
+	fb.draw3DSegment(p0, cnear, p1, cnear, &ppc);
+
+	p0 = V3(corner2[0], corner2[1], corner2[2]);
+	p1 = V3(corner1[0], corner2[1], corner2[2]);
+	fb.draw3DSegment(p0, cnear, p1, cnear, &ppc);
+
+	p0 = V3(corner1[0], corner2[1], corner1[2]);
+	p1 = V3(corner1[0], corner1[1], corner1[2]);
+	fb.draw3DSegment(p0, cfar, p1, cfar, &ppc);
+
+	p0 = V3(corner1[0], corner1[1], corner1[2]);
+	p1 = V3(corner2[0], corner1[1], corner1[2]);
+	fb.draw3DSegment(p0, cfar, p1, cfar, &ppc);
+
+	p0 = V3(corner2[0], corner1[1], corner1[2]);
+	p1 = V3(corner2[0], corner2[1], corner1[2]);
+	fb.draw3DSegment(p0, cfar, p1, cfar, &ppc);
+
+	p0 = V3(corner2[0], corner2[1], corner1[2]);
+	p1 = V3(corner1[0], corner2[1], corner1[2]);
+	fb.draw3DSegment(p0, cfar, p1, cfar, &ppc);
+
+	p0 = V3(corner1[0], corner2[1], corner2[2]);
+	p1 = V3(corner1[0], corner2[1], corner1[2]);
+	fb.draw3DSegment(p0, cnear, p1, cfar, &ppc);
+
+	p0 = V3(corner1[0], corner1[1], corner2[2]);
+	p1 = V3(corner1[0], corner1[1], corner1[2]);
+	fb.draw3DSegment(p0, cnear, p1, cfar, &ppc);
+
+	p0 = V3(corner2[0], corner1[1], corner2[2]);
+	p1 = V3(corner2[0], corner1[1], corner1[2]);
+	fb.draw3DSegment(p0, cnear, p1, cfar, &ppc);
+
+	p0 = V3(corner2[0], corner2[1], corner2[2]);
+	p1 = V3(corner2[0], corner2[1], corner1[2]);
+	fb.draw3DSegment(p0, cnear, p1, cfar, &ppc);
+
+#if 0
+	4		7
+
+0-------3
+|	5	|	6
+|		|
+1-------2
+#endif
+
+}
+
 V3 TMesh::getCenter(void) const
 {
 	if (vertsN == 0) {

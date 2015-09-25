@@ -12,7 +12,9 @@ private:
 	int vertsN; // number of vertices
 	unsigned int *tris; // triangle indices array of size trisN*3
 	int trisN; // number of triangle (not number of indices in array)
+
 	void cleanUp(void); // helper function for destructor
+	AABB computeAABB(void) const; // computes a bounding box of the centers
 public:	
 	// empty constructor
 	TMesh();
@@ -45,8 +47,14 @@ public:
 	// draws the triangle mesh vertices as dots
 	void drawVertexDots(FrameBuffer &fb, const PPC &ppc, float dotSize) const;
 
-	// computes a bounding box of the centers
-	AABB computeAABB(void) const;
+	// get this triangle mesh's AABB
+	AABB getAABB(void) const { return computeAABB(); }
+	// draw this triangle mesh's AABB
+	void drawAABB(
+		FrameBuffer &fb,
+		const PPC &ppc,
+		unsigned int colorNear,
+		unsigned int colorFar) const;
 	// returns center of mass of vertices
 	V3 getCenter(void) const;
 	
