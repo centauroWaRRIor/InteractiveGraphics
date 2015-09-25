@@ -1,6 +1,7 @@
 #pragma once
 #include "v3.h"
 #include "ppc.h"
+#include "aabb.h"
 #include "framebuffer.h"
 
 // Implements a triangle mesh class that stores shared vertices and triangle 
@@ -43,6 +44,11 @@ public:
 	void drawWireframe(FrameBuffer &fb, const PPC &ppc) const;
 	// draws the triangle mesh vertices as dots
 	void drawVertexDots(FrameBuffer &fb, const PPC &ppc, float dotSize) const;
+
+	// computes a bounding box of the centers
+	AABB computeAABB(void) const;
+	// returns center of mass of vertices
+	V3 getCenter(void) const;
 	
 	// constructs a tetrahedron with the given vertices
 	void createTetrahedronMesh(V3 *_verts, V3 *_cols);

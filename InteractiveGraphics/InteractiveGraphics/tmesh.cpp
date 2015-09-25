@@ -194,7 +194,7 @@ void TMesh::loadBin(const char * fname)
 void TMesh::drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color) const
 {
 	if ((vertsN == 0) || (trisN < 1) || (cols == nullptr)) {
-		cerr << "ERROR: Attempted to to draw an empty mesh. "
+		cerr << "ERROR: Attempted to draw an empty mesh. "
 			<< "drawWireframe() command was aborted." << endl;
 		return;
 	}
@@ -224,7 +224,7 @@ void TMesh::drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color) 
 void TMesh::drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc) const {
 
 	if ((vertsN == 0) || (trisN < 1) || (cols == nullptr)) {
-		cerr << "ERROR: Attempted to to draw an empty mesh. "
+		cerr << "ERROR: Attempted to draw an empty mesh. "
 			<< "drawWireframe() command was aborted." << endl;
 		return;
 	}
@@ -254,7 +254,7 @@ void TMesh::drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc) const {
 void TMesh::drawWireframe(FrameBuffer &fb, const PPC &ppc) const {
 
 	if ((vertsN == 0) || (trisN < 1) || (cols == nullptr)) {
-		cerr << "ERROR: Attempted to to draw an empty mesh. "
+		cerr << "ERROR: Attempted to draw an empty mesh. "
 			<< "drawWireframe() command was aborted." << endl;
 		return;
 	}
@@ -283,7 +283,7 @@ void TMesh::drawWireframe(FrameBuffer &fb, const PPC &ppc) const {
 void TMesh::drawVertexDots(FrameBuffer &fb,const PPC &ppc, float dotSize) const {
 
 	if ((vertsN == 0) || (trisN < 1) || (cols == nullptr)) {
-		cerr << "ERROR: Attempted to to draw an empty mesh. "
+		cerr << "ERROR: Attempted to draw an empty mesh. "
 			<< "drawVertexDots() command was aborted." << endl;
 		return;
 	}
@@ -295,4 +295,36 @@ void TMesh::drawVertexDots(FrameBuffer &fb,const PPC &ppc, float dotSize) const 
 			continue;
 		fb.draw2DCircleIfCloser(projP, dotSize, cols[vi]);
 	}
+}
+
+AABB TMesh::computeAABB(void) const
+{
+	if (vertsN == 0) {
+		cerr << "ERROR: Attempted to compute AABB from an empty mesh. "
+			<< "Returning empty AABB" << endl;
+		return AABB(V3());
+	}
+	else {
+		AABB ret(verts[0]);
+		for (int vi = 0; vi < vertsN; vi++) {
+			ret.AddPoint(verts[vi]);
+		}
+		return ret;
+	}
+}
+
+V3 TMesh::getCenter(void) const
+{
+	if (vertsN == 0) {
+		cerr << "ERROR: Attempted to get center from an empty mesh. "
+			<< "Returning zero vector" << endl;
+		return V3();
+	}
+
+	V3 ret(0.0f, 0.0f, 0.0f);
+	for (int vi = 0; vi < vertsN; vi++) {
+		ret = ret + verts[vi];
+	}
+	ret = ret / (float)vertsN;
+	return ret;
 }
