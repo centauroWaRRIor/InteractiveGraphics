@@ -12,4 +12,7 @@ public:
 	void AddPoint(const V3 &newPoint);
 	V3 getFristCorner(void) const { return corners[0]; }
 	V3 getSecondCorner(void) const { return corners[1]; }
+
+	void scale(float scaleFactor);
+	void translate(const V3 &translationVector);
 };

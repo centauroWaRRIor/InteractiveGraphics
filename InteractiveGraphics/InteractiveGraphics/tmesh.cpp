@@ -414,3 +414,41 @@ void TMesh::translate(const V3 & translationVector)
 		verts[vi] = verts[vi] + translationVector;
 	}
 }
+
+void TMesh::setToFitAABB(const AABB & aabb)
+{
+	// 1) figure out translation vector
+
+	// find AABB center
+	V3 corner1 = aabb.getFristCorner();
+	V3 corner2 = aabb.getSecondCorner();
+
+	V3 aabbCenter = corner1 + ((corner2 - corner1) * (0.5f));
+
+	// find this Tmesh center
+	V3 thisCenter = getCenter();
+
+	// find the translation vector from centroid to 
+	// center of AABB
+	V3 translationVector = aabbCenter - thisCenter;
+
+	// 2) figure out the scaling factor:
+
+	// compute length of aabb's diagonal
+	V3 aabbDiag(corner2 - corner1);
+	float aabbDiagLength = aabbDiag.length();
+	
+	// compute length of this aabb's diagonal
+	AABB thisAABB(computeAABB());
+	V3 thisCorner1 = thisAABB.getFristCorner();
+	V3 thisCorner2 = thisAABB.getSecondCorner();
+	V3 thisAabbDiag(thisCorner2 - thisCorner1);
+	float thisAabbDiagLength = thisAabbDiag.length();
+	
+	// extract scale factor
+	float scaleFactor = aabbDiagLength / thisAabbDiagLength;
+
+	// 3) apply scale and translate
+	scale(scaleFactor);
+	translate(translationVector);
+}

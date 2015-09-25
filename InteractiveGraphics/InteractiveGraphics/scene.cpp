@@ -101,7 +101,13 @@ void Scene::dbgInit() {
 	tms[0]->translate(V3(10.0f, -10.0f, 0.0f));
 	tms[0]->scale(1.0);
 
-	// test positioning functionality (works fine)
+	// test fitToAABB
+	AABB testAABB(tms[0]->getAABB());
+	testAABB.translate(V3(-40.0f, 0.0f, 0.0f));
+	testAABB.scale(2.0f);
+	tms[0]->setToFitAABB(testAABB);
+
+	// test camera positioning functionality (works fine)
 	//ppc->positionRelativeToPoint(
 	//	verts[0], 
 	//	V3(0.0f, -1.0f, 0.0f), 

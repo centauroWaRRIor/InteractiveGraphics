@@ -62,6 +62,8 @@ public:
 	void scale(float scaleFactor);
 	// translate this triangle mesh vertices by translation vector
 	void translate(const V3 &translationVector);
+	// places the centroid at a given position and scales to given AABB size
+	void setToFitAABB(const AABB &aabb);
 	
 	// constructs a tetrahedron with the given vertices
 	void createTetrahedronMesh(V3 *_verts, V3 *_cols);

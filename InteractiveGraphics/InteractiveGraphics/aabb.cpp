@@ -17,3 +17,15 @@ void AABB::AddPoint(const V3 &newPoint) {
 			corners[0][i] = newPointCopy[i];
 	}
 }
+
+void AABB::scale(float scaleFactor)
+{
+	corners[0] = corners[0] * scaleFactor;
+	corners[1] = corners[1] * scaleFactor;
+}
+
+void AABB::translate(const V3 & translationVector)
+{
+	corners[0] = corners[0] + translationVector;
+	corners[1] = corners[1] + translationVector;
+}
