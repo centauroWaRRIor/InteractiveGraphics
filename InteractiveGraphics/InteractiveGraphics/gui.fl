@@ -9,26 +9,16 @@ class GUI {open
   } {
     Fl_Window uiw {
       label GUI open
-      xywh {627 326 265 290} type Double visible
+      xywh {381 183 258 290} type Double visible
     } {
       Fl_Button dbgButton {
         label DBG
         callback {DBG_cb()}
-        xywh {20 65 225 40} selection_color 72
-      }
-      Fl_Button TestRot {
-        label {Test Rotation}
-        callback {TestRot_cb()}
-        xywh {30 125 215 60} down_box ENGRAVED_BOX color 29 selection_color 137
-      }
-      Fl_Button TestRaster {
-        label {Test Rasterization}
-        callback {TestRaster_cb()}
-        xywh {25 200 215 60} color 38 selection_color 137
+        xywh {15 40 225 40} selection_color 72
       }
       Fl_Menu_Bar {} {
         label {Main Menu} open
-        xywh {5 5 255 25}
+        xywh {0 0 315 30}
       } {
         Submenu {} {
           label {Previous Assignments} open
@@ -51,6 +41,35 @@ class GUI {open
           }
         }
       }
+      Fl_Group CameraFBSaveGroup {open
+        xywh {10 195 240 90} box ENGRAVED_BOX
+      } {
+        Fl_Button SaveCameraButton {
+          image {pngs/Camera-icon.png} xywh {25 210 95 60}
+        }
+        Fl_Button SaveFBButotn {
+          image {pngs/Eye-Scan-icon.png} xywh {135 210 95 60}
+        }
+      }
+      Fl_Group RenderingOptionsGroup {open
+        xywh {10 90 240 90} box EMBOSSED_FRAME
+      } {
+        Fl_Round_Button WireframeRadialButton {
+          label Wireframe
+          callback {DrawMode_cb(1)} selected
+          xywh {30 100 140 15} type Radio down_box ROUND_DOWN_BOX value 1
+        }
+        Fl_Round_Button FlatRadialButton {
+          label Flat
+          callback {DrawMode_cb(2)}
+          xywh {30 122 140 15} type Radio down_box ROUND_DOWN_BOX
+        }
+        Fl_Round_Button ScreenSpaceLerpRadialButton {
+          label {ScreenSpace Interpolation}
+          callback {DrawMode_cb(3)}
+          xywh {30 145 140 15} type Radio down_box ROUND_DOWN_BOX
+        }
+      }
     }
   }
   Function {} {} {
@@ -61,8 +80,8 @@ class GUI {open
   }
   Function {DBG_cb()} {open
   } {
-    code {scene->dbgDraw();} {selected
-    }
+    code {scene->dbgDraw();
+scene->regFuncForKbRedraw(Scenes::DBG);} {}
   }
   Function {TestRot_cb()} {open
   } {
@@ -71,5 +90,9 @@ class GUI {open
   Function {TestRaster_cb()} {open
   } {
     code {scene->testRaster();} {}
+  }
+  Function {DrawMode_cb(int mode)} {open
+  } {
+    code {scene->setDrawMode(mode);} {}
   }
 } 

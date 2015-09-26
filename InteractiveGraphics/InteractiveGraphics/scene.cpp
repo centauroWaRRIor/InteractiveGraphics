@@ -48,6 +48,8 @@ Scene::Scene():
   // position UI window
   gui->uiw->position(fb->getWidth()+u0 + 2*20, v0);
 
+  // set default draw mode wireframe
+  currentDrawMode = DrawModes::WIREFRAME;
 }
 
 Scene::~Scene()
@@ -382,5 +384,24 @@ void Scene::currentSceneRedraw(void)
 	default:
 		dbgDraw();
 		break; // this statement is optional for default
+	}
+}
+
+void Scene::setDrawMode(int mode)
+{
+	switch (mode) {
+
+	case 1: 
+		currentDrawMode = DrawModes::WIREFRAME;
+		break;
+	case 2:
+		currentDrawMode = DrawModes::WIREFRAME;
+		break;
+	case 3:
+		currentDrawMode = DrawModes::WIREFRAME;
+		break;
+	default:
+		currentDrawMode = DrawModes::WIREFRAME;
+		break; // optional statement for default
 	}
 }

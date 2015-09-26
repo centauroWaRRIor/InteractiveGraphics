@@ -7,6 +7,7 @@ using namespace std;
 #include "tmesh.h"
 
 enum class Scenes { DBG, A1, A2 };
+enum class DrawModes { WIREFRAME, FLAT, SCREENSCAPELERP };
 
 class Scene {
 private:
@@ -16,6 +17,7 @@ private:
 	TMesh **tms; // an array of pointers to TMesh objects
 	int tmsN; // how many TMeshes there are
 	Scenes currentScene; // used for keyboard callback to invokate the correct redraw
+	DrawModes currentDrawMode; // controls how to draw current scene
 public:
 	Scene();
 	~Scene();
@@ -31,6 +33,7 @@ public:
 		currentScene = newScene;
 	}
 	void currentSceneRedraw(void);
+	void setDrawMode(int mode);
 	PPC* getCamera(void) { return ppc; }
 };
 
