@@ -54,7 +54,7 @@ int TMesh::getTriangleIndex(int i) const {
 }
 
 // constructs a tetrahedron with the given vertices
-void TMesh::createTetrahedronMesh(V3 *_verts, V3 *_cols)
+void TMesh::createTetrahedronTestMesh(void)
 {
 	this->cleanUp();
 
@@ -64,13 +64,18 @@ void TMesh::createTetrahedronMesh(V3 *_verts, V3 *_cols)
 	// allocate colors array
 	cols = new V3[vertsN];
 
-	// copy data from client
-	for (int i = 0; i < 4; i++) {
-		verts[i] = _verts[i];
-		cols[i] = _cols[i];
-	}
+	// following vertices define a sample tetrahedron
+	verts[0] = V3(0.0f, 35.0f, -100.0f);
+	cols[0] = V3(0.0f, 0.0f, 0.0f);
+	verts[1] = V3(-20.0f, -15.0f, -100.0f);
+	cols[1] = V3(1.0f, 0.0f, 0.0f);
+	verts[2] = V3(7.0f, -15.0f, -50.0f);
+	cols[2] = V3(0.0f, 1.0f, 0.0f);
+	verts[3] = V3(40.0f, -15.0f, -130.0f);
+	cols[3] = V3(0.0f, 0.0f, 1.0f);
 
 	trisN = 4;
+
 	// allocate triangle indices array
 	tris = new unsigned int[3 * trisN];
 

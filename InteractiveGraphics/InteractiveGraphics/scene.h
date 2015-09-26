@@ -21,6 +21,7 @@ public:
   void testRot();
   void testRaster();
   void testCameraLerp();
+  void A2();
   PPC* getCamera(void) { return ppc; }
 };
 

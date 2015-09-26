@@ -69,8 +69,8 @@ public:
 	// places the centroid at a given position and scales to given AABB size
 	void setToFitAABB(const AABB &aabb);
 	
-	// constructs a tetrahedron with the given vertices
-	void createTetrahedronMesh(V3 *_verts, V3 *_cols);
+	// constructs a tetrahedron for testing purposes
+	void createTetrahedronTestMesh(void);
 
 	// small static utitlities
 	// self note: because they are static no need for object instance.

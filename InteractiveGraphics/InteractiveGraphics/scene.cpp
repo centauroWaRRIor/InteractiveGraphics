@@ -70,36 +70,26 @@ void Scene::dbgDraw() {
 	fb->set(0xFFFFFFFF);
 	fb->clearZB(0.0f);
 	tms[0]->drawAABB(*fb, *ppc, 0xFF00FF00, 0xFF000000);
-	//tms[0]->drawFilledFlatBarycentric(*fb, *ppc);
+	tms[0]->drawFilledFlatBarycentric(*fb, *ppc);
 	//tms[0]->drawFilledFlat(*fb, *ppc, 0xFF0000FF);
-	tms[0]->drawWireframe(*fb, *ppc);
+	//tms[0]->drawWireframe(*fb, *ppc);
 	//tms[0]->drawVertexDots(*fb, *ppc, 3.0f);
 	fb->redraw();
 	return;
 }
 
 void Scene::dbgInit() {
-	// following vertices define a sample tetrahedron
-	V3 verts[4], colors[4];
-	verts[0] = V3(0.0f, 35.0f, -100.0f);
-	colors[0] = V3(0.0f, 0.0f, 0.0f);
-	verts[1] = V3(-20.0f, -15.0f, -100.0f);
-	colors[1] = V3(1.0f, 0.0f, 0.0f);
-	verts[2] = V3(7.0f, -15.0f, -50.0f);
-	colors[2] = V3(0.0f, 1.0f, 0.0f);
-	verts[3] = V3(40.0f, -15.0f, -130.0f);
-	colors[3] = V3(0.0f, 0.0f, 1.0f);
-	tms[0] = new TMesh();
 
+	tms[0] = new TMesh();
 	// test tetrahedron
-	//tms[0]->createTetrahedronMesh(verts, colors);
+	tms[0]->createTetrahedronTestMesh();
 
 	// test teapot
-	ppc->moveForward(-200.0f);
+	//ppc->moveForward(-200.0f);
 	//ppc->moveUp(0.0f);// = V3(0.0f, 20.0f, 200.0f);
-	tms[0]->loadBin("geometry/teapot1K.bin");
-	tms[0]->translate(V3(10.0f, -10.0f, 0.0f));
-	tms[0]->scale(1.0);
+	//tms[0]->loadBin("geometry/teapot1K.bin");
+	//tms[0]->translate(V3(10.0f, -10.0f, 0.0f));
+	//tms[0]->scale(1.0);
 
 	//// test fitToAABB
 	//AABB testAABB(tms[0]->getAABB());
@@ -290,4 +280,8 @@ void Scene::testCameraLerp(void)
 		Fl::wait(0.09);	
 	}
 	return;
+}
+
+void Scene::A2()
+{
 }
