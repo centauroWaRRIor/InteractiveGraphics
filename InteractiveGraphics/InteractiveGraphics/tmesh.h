@@ -15,6 +15,8 @@ private:
 
 	void cleanUp(void); // helper function for destructor
 	AABB computeAABB(void) const; // computes a bounding box of the centers
+	float compute3DTriangleArea(const V3 &v1, const V3 &v2, const V3 &v3) const;
+	float compute2DTriangleArea(V3 v1, V3 v2, V3 v3) const;
 public:	
 	// empty constructor
 	TMesh();

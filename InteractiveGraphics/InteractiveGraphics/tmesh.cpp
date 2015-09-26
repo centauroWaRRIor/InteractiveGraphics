@@ -223,6 +223,8 @@ void TMesh::drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color) 
 
 void TMesh::drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc) const {
 
+	const float epsilonMinArea = 0.01f;
+
 	if ((vertsN == 0) || (trisN < 1) || (cols == nullptr)) {
 		cerr << "ERROR: Attempted to draw an empty mesh. "
 			<< "drawWireframe() command was aborted." << endl;
@@ -243,11 +245,35 @@ void TMesh::drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc) const {
 		currcols[1] = cols[tris[3 * tri + 1]];
 		currcols[2] = cols[tris[3 * tri + 2]];
 
-		fb.draw3DFlatBarycentricTriangle(	
-			currvs[0], currcols[0],
-			currvs[1], currcols[1],
-			currvs[2], currcols[2],
-			ppc);
+		//fb.draw3DFlatBarycentricTriangle(	// TODO delete this
+		//	currvs[0], currcols[0],
+		//	currvs[1], currcols[1],
+		//	currvs[2], currcols[2],
+		//	ppc);
+
+		V3 projV1, projV2, projV3;
+		// project triangle vertices
+		bool isVisible = ppc.project(currvs[0], projV1);
+		isVisible &= ppc.project(currvs[1], projV2);
+		isVisible &= ppc.project(currvs[2], projV3);
+		if (isVisible) {
+
+			// The discriminat of the matrix used in screen space interpolation 
+			// is the area of the projected triangle. When that is 0, the matrix 
+			// cannot be inverted, as one cannot compute the screen space variation
+			// for a triangle with collinear or coincident vertices.
+			// Therefore, rasterizer should reject triangles whose screen footprint is very small.
+			float projTriangleArea = compute2DTriangleArea(projV1, projV2, projV3);
+			if (projTriangleArea > epsilonMinArea) {
+
+				fb.draw2DFlatBarycentricTriangle(
+					projV1, currcols[0],
+					projV2, currcols[1],
+					projV3, currcols[2]);
+			}
+			else 
+				cerr << "WARNING: Triangle screen footprint is stoo small, discarding..." << endl;
+		}
 	}
 }
 
@@ -311,6 +337,22 @@ AABB TMesh::computeAABB(void) const
 		}
 		return ret;
 	}
+}
+
+float TMesh::compute3DTriangleArea(const V3 & v1, const V3 & v2, const V3 & v3) const
+{
+	V3 areaCrossProduct = (v2 - v1) ^ (v3 - v1);
+	float area = areaCrossProduct.length() / 2;
+	return area;
+}
+
+float TMesh::compute2DTriangleArea(V3 v1, V3 v2, V3 v3) const
+{
+	// take 3D triangle and ignore z-component
+	v1[2] = 0.0f;
+	v2[2] = 0.0f;
+	v3[2] = 0.0f;
+	return compute3DTriangleArea(v1, v2, v3);
 }
 
 void TMesh::drawAABB(FrameBuffer & fb, const PPC & ppc, unsigned int colorNear, unsigned int colorFar) const

@@ -142,13 +142,6 @@ M33 M33::getInverted(void) const {
 	V3 _a = b ^ c; _a = _a / (a * _a);
 	V3 _b = c ^ a; _b = _b / (b * _b);
 	V3 _c = a ^ b; _c = _c / (c * _c);
-	//V3 tempZero, A(a*(b^c)), B(b*(c^a)), C(c*(a ^ b));
-	//if (A == tempZero || B == tempZero || C == tempZero) {
-	//	V3 tempOne(b ^ c), tempTwo(c ^ a), tempThree(a ^ b);
-	//	V3 tempFour = a ^ b;
-	//	V3 tempFive = c*tempFour;
-	//	return ret;
-	//}
 	ret[0] = _a;
 	ret[1] = _b;
 	ret[2] = _c;
@@ -165,10 +158,6 @@ void M33::setInverted(void) {
 M33 M33::getTranspose(void) const {
 
 	M33 returnMatrix;
-
-	V3 tempVec = this->getColumn(0); // TODO: Delete this debug line
-	tempVec = this->getColumn(1); // TODO: Delete this debug line
-	tempVec = this->getColumn(2); // TODO: Delete this debug line
 
 	returnMatrix.rows[0] = this->getColumn(0);
 	returnMatrix.rows[1] = this->getColumn(1);
