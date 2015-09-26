@@ -339,22 +339,6 @@ AABB TMesh::computeAABB(void) const
 	}
 }
 
-float TMesh::compute3DTriangleArea(const V3 & v1, const V3 & v2, const V3 & v3) const
-{
-	V3 areaCrossProduct = (v2 - v1) ^ (v3 - v1);
-	float area = areaCrossProduct.length() / 2;
-	return area;
-}
-
-float TMesh::compute2DTriangleArea(V3 v1, V3 v2, V3 v3) const
-{
-	// take 3D triangle and ignore z-component
-	v1[2] = 0.0f;
-	v2[2] = 0.0f;
-	v3[2] = 0.0f;
-	return compute3DTriangleArea(v1, v2, v3);
-}
-
 void TMesh::drawAABB(FrameBuffer & fb, const PPC & ppc, unsigned int colorNear, unsigned int colorFar) const
 {
 	V3 cnear;
@@ -493,3 +477,4 @@ void TMesh::setToFitAABB(const AABB & aabb)
 	scale(scaleFactor);
 	translate(translationVector);
 }
+

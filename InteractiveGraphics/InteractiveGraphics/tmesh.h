@@ -15,8 +15,6 @@ private:
 
 	void cleanUp(void); // helper function for destructor
 	AABB computeAABB(void) const; // computes a bounding box of the centers
-	float compute3DTriangleArea(const V3 &v1, const V3 &v2, const V3 &v3) const;
-	float compute2DTriangleArea(V3 v1, V3 v2, V3 v3) const;
 public:	
 	// empty constructor
 	TMesh();
@@ -69,4 +67,23 @@ public:
 	
 	// constructs a tetrahedron with the given vertices
 	void createTetrahedronMesh(V3 *_verts, V3 *_cols);
+
+	// small static utitlities
+	// self note: because they are static no need for object instance.
+	// To call these just do TMesh::comppute3DTriangleArea(...)
+	static float compute3DTriangleArea(const V3 & v1, const V3 & v2, const V3 & v3)
+	{
+		V3 areaCrossProduct = (v2 - v1) ^ (v3 - v1);
+		float area = areaCrossProduct.length() / 2;
+		return area;
+	}
+
+	static float compute2DTriangleArea(V3 v1, V3 v2, V3 v3)
+	{
+		// take 3D triangle and ignore z-component
+		v1[2] = 0.0f;
+		v2[2] = 0.0f;
+		v3[2] = 0.0f;
+		return compute3DTriangleArea(v1, v2, v3);
+	}
 };
