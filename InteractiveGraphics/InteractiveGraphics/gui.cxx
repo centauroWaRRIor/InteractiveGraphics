@@ -85,8 +85,9 @@ void GUI::show() {
 }
 
 void GUI::DBG_cb() {
-  //scene->dbgDraw();
-	scene->A2();
+	//scene->dbgDraw();
+	scene->a2Draw();
+	scene->regFuncForKbRedraw(Scenes::A2);
 }
 
 void GUI::TestRot_cb() {

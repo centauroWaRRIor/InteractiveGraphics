@@ -37,9 +37,11 @@ Scene::Scene():
   ppc = new PPC(hfov, w, h);
 
   // allocate pointer of TMesh objects
-  tmsN = 1;
+  tmsN = 5;
   tms = new TMesh*[tmsN];
-  tms[0] = nullptr;
+  for (int i = 0; i < 5; i++) {
+	  tms[i] = nullptr;
+  }
 
   fb->show();
   
@@ -70,10 +72,10 @@ void Scene::dbgDraw() {
 	fb->set(0xFFFFFFFF);
 	fb->clearZB(0.0f);
 	tms[0]->drawAABB(*fb, *ppc, 0xFF00FF00, 0xFF000000);
-	tms[0]->drawFilledFlatBarycentric(*fb, *ppc);
+	//tms[0]->drawFilledFlatBarycentric(*fb, *ppc);
 	//tms[0]->drawFilledFlat(*fb, *ppc, 0xFF0000FF);
 	//tms[0]->drawWireframe(*fb, *ppc);
-	//tms[0]->drawVertexDots(*fb, *ppc, 3.0f);
+	tms[0]->drawVertexDots(*fb, *ppc, 3.0f);
 	fb->redraw();
 	return;
 }
@@ -82,12 +84,14 @@ void Scene::dbgInit() {
 
 	tms[0] = new TMesh();
 	// test tetrahedron
-	tms[0]->createTetrahedronTestMesh();
+	//tms[0]->createTetrahedronTestMesh();
 
 	// test teapot
-	//ppc->moveForward(-200.0f);
+	ppc->moveForward(-200.0f);
+	//ppc->moveForward(-1.0f);
 	//ppc->moveUp(0.0f);// = V3(0.0f, 20.0f, 200.0f);
-	//tms[0]->loadBin("geometry/teapot1K.bin");
+	tms[0]->loadBin("geometry/teapot1K.bin");
+	
 	//tms[0]->translate(V3(10.0f, -10.0f, 0.0f));
 	//tms[0]->scale(1.0);
 
@@ -282,41 +286,79 @@ void Scene::testCameraLerp(void)
 	return;
 }
 
-void Scene::A2Init()
+void Scene::a2Init()
 {
-	tms[0] = new TMesh();
+	tms[0] = new TMesh("geometry/teapot1K.bin");
+	tms[1] = new TMesh("geometry/happy4.bin");
 	// test tetrahedron
-	tms[0]->createTetrahedronTestMesh();
+	//tms[0]->createTetrahedronTestMesh();
+
+	AABB teapotAABB = tms[0]->getAABB();
+	//teapotAABB.translate(V3(20.0f, 0.0f, 0.0f));
+	tms[1]->setToFitAABB(teapotAABB);
+
 	ppc->moveForward(-200.0f);
 }
 
-void Scene::A2()
+void Scene::a2Draw()
 {
 	static bool doOnce = false;
 	if (!doOnce) {
-		dbgInit();
+		a2Init();
 		doOnce = true;
 	}
+	
+	//// rotates the mesh
+	//int stepsN = 361;
+	//float theta = 1.0f;
+	//V3 center = tms[0]->getCenter();
+	//V3 aDir(1.0f, 1.0f, 0.0f);
+	//aDir.normalize();
+	//for (int si = 0; si < stepsN; si++) {
+	//	fb->set(0xFFFFFFFF);
+	//	fb->clearZB(0.0f);
+	//	//tms[0]->drawWireframe(*fb, *ppc);
+	//	//tms[0]->drawAABB(*fb, *ppc, 0xFF00FF00, 0xFF000000);
+	//	//tms[0]->drawFilledFlatBarycentric(*fb, *ppc);
+	//	//tms[0]->drawFilledFlat(*fb, *ppc, 0xFF0000FF);
+	//	tms[0]->drawVertexDots(*fb, *ppc, 3.0f);
+	//	fb->redraw();
+	//	Fl::check();
+	//	tms[0]->rotateAboutAxis(center, aDir, theta);
+	//}
+
 	fb->set(0xFFFFFFFF);
 	fb->clearZB(0.0f);
-	
-	int stepsN = 361;
-	float theta = 1.0f;
-	V3 center = tms[0]->getCenter();
-	V3 aDir(1.0f, 1.0f, 0.0f);
-	aDir.normalize();
 
-	for (int si = 0; si < stepsN; si++) {
-		fb->set(0xFFFFFFFF);
-		fb->clearZB(0.0f);
-		tms[0]->drawWireframe(*fb, *ppc);
+	// draws the meshes
+	for (int i = 0; i < 2; i++) 
+	{
+		//tms[0]->drawWireframe(*fb, *ppc);
 		//tms[0]->drawAABB(*fb, *ppc, 0xFF00FF00, 0xFF000000);
-		tms[0]->drawFilledFlatBarycentric(*fb, *ppc);
+		//tms[0]->drawFilledFlatBarycentric(*fb, *ppc);
 		//tms[0]->drawFilledFlat(*fb, *ppc, 0xFF0000FF);
-		tms[0]->drawVertexDots(*fb, *ppc, 3.0f);
-		fb->redraw();
-		Fl::check();
-		tms[0]->rotateAboutAxis(center, aDir, theta);
+		tms[i]->drawVertexDots(*fb, *ppc, 3.0f);
+		tms[i]->drawAABB(*fb, *ppc, 0xFF00FF00, 0xFF000000);
 	}
+	fb->redraw();
+
 	return;
+}
+
+void Scene::currentSceneRedraw(void)
+{
+	switch (currentScene) {
+	case Scenes::DBG:
+		dbgDraw();
+		break;
+	case Scenes::A1:
+		testRot();
+		break;
+	case Scenes::A2:
+		a2Draw();
+		break;
+	default:
+		dbgDraw();
+		break; // this statement is optional for default
+	}
 }

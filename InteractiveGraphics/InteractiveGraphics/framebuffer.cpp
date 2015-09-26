@@ -74,13 +74,13 @@ void FrameBuffer::KeyboardHandle() {
 				(key == FL_Left || key == FL_Right)) {
 				rollAmount = (key == FL_Left) ? rollAmount : -1.0f * rollAmount;
 				scene->getCamera()->roll(rollAmount);
-				scene->dbgDraw();
+				scene->currentSceneRedraw();
 			}
 			// if only left or only right
 			else if ((key == FL_Left || key == FL_Right)) {
 				panAmount = (key == FL_Left) ? panAmount : -1.0f * panAmount;
 				scene->getCamera()->pan(panAmount);
-				scene->dbgDraw();
+				scene->currentSceneRedraw();
 				//cerr << "pressed left arrow" << endl;
 			}
 			break;
@@ -88,13 +88,13 @@ void FrameBuffer::KeyboardHandle() {
 		case FL_Down:
 			tiltAmount = (key == FL_Up) ? tiltAmount : -1.0f * tiltAmount;
 			scene->getCamera()->tilt(tiltAmount);
-			scene->dbgDraw();
+			scene->currentSceneRedraw();
 			break;
 		case 'd':
 		case 'a':
 			moveRightAmount = (key == 'd') ? moveRightAmount : -1.0f * moveRightAmount;
 			scene->getCamera()->moveRight(moveRightAmount);
-			scene->dbgDraw();
+			scene->currentSceneRedraw();
 			//cerr << "Eyepoint: " << scene->getCamera()->getEyePoint() << endl;
 			//cerr << "pressed a" << endl;
 			break;
@@ -102,19 +102,19 @@ void FrameBuffer::KeyboardHandle() {
 		case 's':
 			moveForwardAmount = (key == 'w') ? moveForwardAmount : -1.0f * moveForwardAmount;
 			scene->getCamera()->moveForward(moveForwardAmount);
-			scene->dbgDraw();
+			scene->currentSceneRedraw();
 			break;
 		case 'q':
 		case 'e':
 			moveUpAmount = (key == 'q') ? moveUpAmount : -1.0f * moveUpAmount;
 			scene->getCamera()->moveUp(moveUpAmount);
-			scene->dbgDraw();
+			scene->currentSceneRedraw();
 			break;
 		case 'z':
 		case 'x':
 			zoomFactor = (key == 'z') ? 1 + (1 - zoomFactor) : zoomFactor;
 			scene->getCamera()->zoom(zoomFactor);
-			scene->dbgDraw();
+			scene->currentSceneRedraw();
 			break;
 
 		default:

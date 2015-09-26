@@ -6,6 +6,8 @@ using namespace std;
 #include "framebuffer.h"
 #include "tmesh.h"
 
+enum class Scenes { DBG, A1, A2 };
+
 class Scene {
 private:
 	FrameBuffer *fb; // SW framebuffer
@@ -13,17 +15,23 @@ private:
 	PPC *ppc; // camera used to render the scene from views chosen by user
 	TMesh **tms; // an array of pointers to TMesh objects
 	int tmsN; // how many TMeshes there are
+	Scenes currentScene; // used for keyboard callback to invokate the correct redraw
 public:
-  Scene();
-  ~Scene();
-  void dbgInit();
-  void dbgDraw();
-  void testRot();
-  void testRaster();
-  void testCameraLerp();
-  void A2Init();
-  void A2();
-  PPC* getCamera(void) { return ppc; }
+	Scene();
+	~Scene();
+	
+	void dbgInit(void);
+	void dbgDraw(void);
+	void testRot(void);
+	void testRaster(void);
+	void testCameraLerp(void);
+	void a2Init(void);
+	void a2Draw(void);
+	void regFuncForKbRedraw(Scenes newScene) {
+		currentScene = newScene;
+	}
+	void currentSceneRedraw(void);
+	PPC* getCamera(void) { return ppc; }
 };
 
 extern Scene *scene;

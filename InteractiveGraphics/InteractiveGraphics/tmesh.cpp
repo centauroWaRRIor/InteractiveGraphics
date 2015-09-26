@@ -200,7 +200,7 @@ void TMesh::loadBin(const char * fname)
 
 void TMesh::drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color) const
 {
-	if ((vertsN == 0) || (trisN < 1) || (cols == nullptr)) {
+	if ((vertsN == 0) || (trisN < 1)) {
 		cerr << "ERROR: Attempted to draw an empty mesh. "
 			<< "drawWireframe() command was aborted." << endl;
 		return;
@@ -248,7 +248,7 @@ void TMesh::drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color) 
 
 void TMesh::drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc) const {
 
-	if ((vertsN == 0) || (trisN < 1) || (cols == nullptr)) {
+	if ((vertsN == 0) || (trisN < 1)) {
 		cerr << "ERROR: Attempted to draw an empty mesh. "
 			<< "drawWireframe() command was aborted." << endl;
 		return;
@@ -310,7 +310,7 @@ void TMesh::draw3DSegment(
 
 void TMesh::drawWireframe(FrameBuffer &fb, const PPC &ppc) const {
 
-	if ((vertsN == 0) || (trisN < 1) || (cols == nullptr)) {
+	if ((vertsN == 0) || (trisN < 1)) {
 		cerr << "ERROR: Attempted to draw an empty mesh. "
 			<< "drawWireframe() command was aborted." << endl;
 		return;
@@ -341,7 +341,7 @@ void TMesh::drawWireframe(FrameBuffer &fb, const PPC &ppc) const {
 
 void TMesh::drawVertexDots(FrameBuffer &fb,const PPC &ppc, float dotSize) const {
 
-	if ((vertsN == 0) || (trisN < 1) || (cols == nullptr)) {
+	if ((vertsN == 0) || (trisN < 1)) {
 		cerr << "ERROR: Attempted to draw an empty mesh. "
 			<< "drawVertexDots() command was aborted." << endl;
 		return;
