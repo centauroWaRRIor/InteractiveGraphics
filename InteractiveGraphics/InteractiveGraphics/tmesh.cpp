@@ -6,6 +6,8 @@ using std::ios;
 using std::ifstream;
 #include "TMesh.h"
 
+const float epsilonMinArea = 0.01f;
+
 TMesh::TMesh():	
 	vertsN(0),
 	trisN(0),
@@ -212,18 +214,34 @@ void TMesh::drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color) 
 		currcols[1] = cols[tris[3 * tri + 1]];
 		currcols[2] = cols[tris[3 * tri + 2]];
 
-		fb.draw3DFlatTriangle(
-			currvs[0], 
-			currvs[1], 
-			currvs[2], 
-			ppc,
-			color);
+		// project triangle vertices using camera
+		V3 projV1, projV2, projV3;
+		bool isVisible = ppc.project(currvs[0], projV1);
+		isVisible &= ppc.project(currvs[1], projV2);
+		isVisible &= ppc.project(currvs[2], projV3);
+
+		if (isVisible) {
+
+			// Rasterizer should reject triangles whose screen footprint is very small.
+			float projTriangleArea = compute2DTriangleArea(projV1, projV2, projV3);
+			if (projTriangleArea > epsilonMinArea) {
+
+				float u[3], v[3];
+				u[0] = projV1.getX();
+				u[1] = projV2.getX();
+				u[2] = projV3.getX();
+				v[0] = projV1.getY();
+				v[1] = projV2.getY();
+				v[2] = projV3.getY();
+				fb.draw2DFlatTriangle(u, v, color);
+			}
+			else
+				cerr << "WARNING: Triangle screen footprint is stoo small, discarding..." << endl;
+		}
 	}
 }
 
 void TMesh::drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc) const {
-
-	const float epsilonMinArea = 0.01f;
 
 	if ((vertsN == 0) || (trisN < 1) || (cols == nullptr)) {
 		cerr << "ERROR: Attempted to draw an empty mesh. "
@@ -245,14 +263,8 @@ void TMesh::drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc) const {
 		currcols[1] = cols[tris[3 * tri + 1]];
 		currcols[2] = cols[tris[3 * tri + 2]];
 
-		//fb.draw3DFlatBarycentricTriangle(	// TODO delete this
-		//	currvs[0], currcols[0],
-		//	currvs[1], currcols[1],
-		//	currvs[2], currcols[2],
-		//	ppc);
-
+		// project triangle vertices using camera
 		V3 projV1, projV2, projV3;
-		// project triangle vertices
 		bool isVisible = ppc.project(currvs[0], projV1);
 		isVisible &= ppc.project(currvs[1], projV2);
 		isVisible &= ppc.project(currvs[2], projV3);
@@ -264,6 +276,7 @@ void TMesh::drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc) const {
 			// for a triangle with collinear or coincident vertices.
 			// Therefore, rasterizer should reject triangles whose screen footprint is very small.
 			float projTriangleArea = compute2DTriangleArea(projV1, projV2, projV3);
+
 			if (projTriangleArea > epsilonMinArea) {
 
 				fb.draw2DFlatBarycentricTriangle(
@@ -275,6 +288,19 @@ void TMesh::drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc) const {
 				cerr << "WARNING: Triangle screen footprint is stoo small, discarding..." << endl;
 		}
 	}
+}
+
+void TMesh::draw3DSegment(
+	const V3 &v0, const V3 &c0, 
+	const V3 &v1, const V3 &c1, 
+	FrameBuffer &fb, const PPC &ppc) const 
+{
+	V3 projv0, projv1;
+	if (!ppc.project(v0, projv0))
+		return;
+	if (!ppc.project(v1, projv1))
+		return;
+	fb.draw2DSegment(projv0, c0, projv1, c1);
 }
 
 void TMesh::drawWireframe(FrameBuffer &fb, const PPC &ppc) const {
@@ -300,8 +326,10 @@ void TMesh::drawWireframe(FrameBuffer &fb, const PPC &ppc) const {
 		// draw edges between vertices of this triangle
 		// e1 = 0,1  e2 = 1,2  e3 = 2,0 (hence the %3)
 		for (int ei = 0; ei < 3; ei++) {
-			fb.draw3DSegment(currvs[ei], currcols[ei],
-				currvs[(ei + 1) % 3], currcols[(ei + 1) % 3], &ppc);
+			draw3DSegment(
+				currvs[ei], currcols[ei],
+				currvs[(ei + 1) % 3], currcols[(ei + 1) % 3], 
+				fb, ppc);
 		}
 	}
 }
@@ -354,51 +382,51 @@ void TMesh::drawAABB(FrameBuffer & fb, const PPC & ppc, unsigned int colorNear, 
 
 	p0 = V3(corner1[0], corner2[1], corner2[2]);
 	p1 = V3(corner1[0], corner1[1], corner2[2]);
-	fb.draw3DSegment(p0, cnear, p1, cnear, &ppc);
+	draw3DSegment(p0, cnear, p1, cnear, fb, ppc);
 
 	p0 = V3(corner1[0], corner1[1], corner2[2]);
 	p1 = V3(corner2[0], corner1[1], corner2[2]);
-	fb.draw3DSegment(p0, cnear, p1, cnear, &ppc);
+	draw3DSegment(p0, cnear, p1, cnear, fb, ppc);
 
 	p0 = V3(corner2[0], corner1[1], corner2[2]);
 	p1 = V3(corner2[0], corner2[1], corner2[2]);
-	fb.draw3DSegment(p0, cnear, p1, cnear, &ppc);
+	draw3DSegment(p0, cnear, p1, cnear, fb, ppc);
 
 	p0 = V3(corner2[0], corner2[1], corner2[2]);
 	p1 = V3(corner1[0], corner2[1], corner2[2]);
-	fb.draw3DSegment(p0, cnear, p1, cnear, &ppc);
+	draw3DSegment(p0, cnear, p1, cnear, fb, ppc);
 
 	p0 = V3(corner1[0], corner2[1], corner1[2]);
 	p1 = V3(corner1[0], corner1[1], corner1[2]);
-	fb.draw3DSegment(p0, cfar, p1, cfar, &ppc);
+	draw3DSegment(p0, cfar, p1, cfar, fb, ppc);
 
 	p0 = V3(corner1[0], corner1[1], corner1[2]);
 	p1 = V3(corner2[0], corner1[1], corner1[2]);
-	fb.draw3DSegment(p0, cfar, p1, cfar, &ppc);
+	draw3DSegment(p0, cfar, p1, cfar, fb, ppc);
 
 	p0 = V3(corner2[0], corner1[1], corner1[2]);
 	p1 = V3(corner2[0], corner2[1], corner1[2]);
-	fb.draw3DSegment(p0, cfar, p1, cfar, &ppc);
+	draw3DSegment(p0, cfar, p1, cfar, fb, ppc);
 
 	p0 = V3(corner2[0], corner2[1], corner1[2]);
 	p1 = V3(corner1[0], corner2[1], corner1[2]);
-	fb.draw3DSegment(p0, cfar, p1, cfar, &ppc);
+	draw3DSegment(p0, cfar, p1, cfar, fb, ppc);
 
 	p0 = V3(corner1[0], corner2[1], corner2[2]);
 	p1 = V3(corner1[0], corner2[1], corner1[2]);
-	fb.draw3DSegment(p0, cnear, p1, cfar, &ppc);
+	draw3DSegment(p0, cnear, p1, cfar, fb, ppc);
 
 	p0 = V3(corner1[0], corner1[1], corner2[2]);
 	p1 = V3(corner1[0], corner1[1], corner1[2]);
-	fb.draw3DSegment(p0, cnear, p1, cfar, &ppc);
+	draw3DSegment(p0, cnear, p1, cfar, fb, ppc);
 
 	p0 = V3(corner2[0], corner1[1], corner2[2]);
 	p1 = V3(corner2[0], corner1[1], corner1[2]);
-	fb.draw3DSegment(p0, cnear, p1, cfar, &ppc);
+	draw3DSegment(p0, cnear, p1, cfar, fb, ppc);
 
 	p0 = V3(corner2[0], corner2[1], corner2[2]);
 	p1 = V3(corner2[0], corner2[1], corner1[2]);
-	fb.draw3DSegment(p0, cnear, p1, cfar, &ppc);
+	draw3DSegment(p0, cnear, p1, cfar, fb, ppc);
 
 #if 0
 	4		7

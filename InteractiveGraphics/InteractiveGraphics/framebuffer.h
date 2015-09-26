@@ -5,7 +5,7 @@
 #include <GL/glut.h>
 #include <string>
 using std::string;
-#include "ppc.h"
+#include "v3.h"
 
 // framebuffer + window class
 
@@ -61,22 +61,6 @@ public:
 		const V3 &v2, const V3 &c2,
 		const V3 &v3, const V3 &c3);
 
-	// draws 3D triangle filled with a single color
-	void draw3DFlatTriangle(
-		const V3 &v1, 
-		const V3 &v2, 
-		const V3 &v3, 
-		const PPC &ppc,
-		unsigned int color);
-	// draws 3D triangle filled with linearly interpolated colors in screen space
-	void draw3DFlatBarycentricTriangle(
-		const V3 &v1, const V3 &c1,
-		const V3 &v2, const V3 &c2,
-		const V3 &v3, const V3 &c3, 
-		const PPC &ppc);
-
-	// draw 3D segment specified by 2 points, each with own color
-	void draw3DSegment(const V3 &v0, const V3 &c0, const V3 &v1, const V3 &c1, const PPC *ppc);
 	// draw 2D segment specified by 2 points, each with own color
 	void draw2DSegment(const V3 &v0, const V3 &c0, const V3 &v1, const V3 &c1);
 

@@ -15,6 +15,10 @@ private:
 
 	void cleanUp(void); // helper function for destructor
 	AABB computeAABB(void) const; // computes a bounding box of the centers
+	void draw3DSegment(
+		const V3 &v0, const V3 &c0,
+		const V3 &v1, const V3 &c1,
+		FrameBuffer &fb, const PPC &ppc) const;
 public:	
 	// empty constructor
 	TMesh();

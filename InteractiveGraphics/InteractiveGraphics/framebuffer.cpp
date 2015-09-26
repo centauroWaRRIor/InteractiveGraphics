@@ -195,7 +195,8 @@ void FrameBuffer::setIfCloser(const V3 & p, const V3 & c)
 
 // draw circle
 void FrameBuffer::draw2DCircle(float cuf, float cvf, float radius, 
-  unsigned int color) {
+  unsigned int color)
+{
 
     // axis aligned bounding box (AABB) of circle (it's a square parallel to axes)
     int top = (int) (cvf - radius + 0.5f);
@@ -229,7 +230,8 @@ void FrameBuffer::draw2DCircle(float cuf, float cvf, float radius,
 }
 
 // draw 2D circle only where it wins the z-fight
-void FrameBuffer::draw2DCircleIfCloser(const V3 &p, float radius, const V3 &color) {
+void FrameBuffer::draw2DCircleIfCloser(const V3 &p, float radius, const V3 &color)
+{
 
 	// axis aligned bounding box (AABB) of circle (it's a square parallel to axes)
 	int top = (int)(p.getY() - radius + 0.5f);
@@ -269,7 +271,8 @@ void FrameBuffer::draw2DRectangle(
 	float llv, 
 	float width, 
 	float height,		
-	unsigned int color) {
+	unsigned int color)
+{
 
 	// axis aligned bounding box (AABB) of circle (it's a square parallel to axes)
 	int top = (int)(llv - height + 0.5f);
@@ -566,60 +569,6 @@ void FrameBuffer::draw2DFlatBarycentricTriangle(
 			}
 		}
 	}
-}
-
-void FrameBuffer::draw3DFlatTriangle(
-	const V3 &v1,
-	const V3 &v2,
-	const V3 &v3,
-	const PPC &ppc,
-	unsigned int color)
-{
-	V3 projV1, projV2, projV3;
-	// project triangle vertices
-	bool isVisible = ppc.project(v1, projV1);
-	isVisible &= ppc.project(v2, projV2);
-	isVisible &= ppc.project(v3, projV3);
-	if (isVisible) {
-		float u[3], v[3];
-		u[0] = projV1.getX();
-		u[1] = projV2.getX();
-		u[2] = projV3.getX();
-		v[0] = projV1.getY();
-		v[1] = projV2.getY();
-		v[2] = projV3.getY();
-		draw2DFlatTriangle(u, v, color);
-	}
-}
-
-void FrameBuffer::draw3DFlatBarycentricTriangle(
-	const V3 & v1, const V3 & c1, 
-	const V3 & v2, const V3 & c2, 
-	const V3 & v3, const V3 & c3,
-	const PPC &ppc)
-{
-	V3 projV1, projV2, projV3;
-	// project triangle vertices
-	bool isVisible = ppc.project(v1, projV1);
-	isVisible &= ppc.project(v2, projV2);
-	isVisible &= ppc.project(v3, projV3);
-	if (isVisible) {
-		draw2DFlatBarycentricTriangle(
-			projV1, c1,
-			projV2, c2,
-			projV3, c3);
-	}
-}
-
-void FrameBuffer::draw3DSegment(const V3 &v0, const V3 &c0, const V3 &v1, const V3 &c1, const PPC *ppc) {
-
-	V3 projv0, projv1;
-	if (!ppc->project(v0, projv0))
-		return;
-	if (!ppc->project(v1, projv1))
-		return;
-	draw2DSegment(projv0, c0, projv1, c1);
-
 }
 
 void FrameBuffer::draw2DSegment(const V3 &v0, const V3 &c0, const V3 &v1, const V3 &c1) {
