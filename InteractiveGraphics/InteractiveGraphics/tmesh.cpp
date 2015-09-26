@@ -13,7 +13,8 @@ TMesh::TMesh():
 	trisN(0),
 	verts(nullptr),
 	cols(nullptr),
-	tris(nullptr)
+	tris(nullptr),
+	aabb(nullptr)
 {
 
 }
@@ -21,6 +22,33 @@ TMesh::TMesh():
 TMesh::TMesh(const char * fname)
 {
 	loadBin(fname);
+}
+
+TMesh::~TMesh()
+{
+	cleanUp();
+}
+
+void TMesh::cleanUp(void)
+{
+	if (verts) {
+		delete[] verts;
+		verts = nullptr;
+	}
+	if (cols) {
+		delete[] cols;
+		cols = nullptr;
+	}
+	if (tris) {
+		delete[] tris;
+		tris = nullptr;
+	}
+	if (aabb) {
+		delete aabb;
+		aabb = nullptr;
+	}
+	trisN = 0;
+	vertsN = 0;
 }
 
 V3 TMesh::getVertex(int i) const {
@@ -98,29 +126,9 @@ void TMesh::createTetrahedronTestMesh(void)
 	tris[3 * tri + 0] = 1;
 	tris[3 * tri + 1] = 3;
 	tris[3 * tri + 2] = 2;
-}
 
-void TMesh::cleanUp(void)
-{
-	if (verts) {
-		delete[] verts;
-		verts = nullptr;
-	}
-	if (cols) {
-		delete[] cols;
-		cols = nullptr;
-	}
-	if (tris) {
-		delete[] tris;
-		tris = nullptr;
-	}
-	trisN = 0;
-	vertsN = 0;
-}
-
-TMesh::~TMesh()
-{
-	cleanUp();
+	// compute aabb
+	aabb = new AABB(computeAABB());
 }
 
 void TMesh::loadBin(const char * fname)
@@ -193,6 +201,9 @@ void TMesh::loadBin(const char * fname)
 
 	cerr << "INFO: loaded " << vertsN << " verts, " << trisN << " tris from " << endl << "      " << fname << endl;
 	cerr << "      xyz " << ((cols) ? "rgb " : "") << ((normals) ? "nxnynz " : "") << ((tcs) ? "tcstct " : "") << endl;
+
+	// recompute AABB
+	aabb = new AABB(computeAABB());
 
 	delete[]tcs;
 	delete[]normals;
@@ -387,11 +398,15 @@ void TMesh::drawAABB(FrameBuffer & fb, const PPC & ppc, unsigned int colorNear, 
 	V3 cfar;
 	cfar.setFromColor(colorFar);
 
+	if (vertsN == 0) {
+		cerr << "ERROR: Attempted to draw the AABB of an empty mesh. "
+			<< "Aborting..." << endl;
+	}
+
 	V3 p0, p1;
 
-	AABB aabb = computeAABB();
-	V3 corner1 = aabb.getFristCorner();
-	V3 corner2 = aabb.getSecondCorner();
+	V3 corner1 = aabb->getFristCorner();
+	V3 corner2 = aabb->getSecondCorner();
 
 	p0 = V3(corner1[0], corner2[1], corner2[2]);
 	p1 = V3(corner1[0], corner1[1], corner2[2]);
@@ -473,6 +488,10 @@ void TMesh::scale(float scaleFactor)
 	for (int vi = 0; vi < vertsN; vi++) {
 		verts[vi] = verts[vi] * scaleFactor;
 	}
+	// recompute AABB
+	delete aabb;
+	aabb = nullptr;
+	aabb = new AABB(computeAABB());
 }
 
 void TMesh::translate(const V3 & translationVector)
@@ -480,25 +499,18 @@ void TMesh::translate(const V3 & translationVector)
 	for (int vi = 0; vi < vertsN; vi++) {
 		verts[vi] = verts[vi] + translationVector;
 	}
+	// recompute AABB
+	delete aabb;
+	aabb = nullptr;
+	aabb = new AABB(computeAABB());
 }
 
 void TMesh::setToFitAABB(const AABB & aabb)
 {
-	// 1) figure out translation vector
-
-	// find AABB center
 	V3 corner1 = aabb.getFristCorner();
 	V3 corner2 = aabb.getSecondCorner();
-	V3 aabbCenter = corner1 + ((corner2 - corner1) * (0.5f));
 
-	// find this Tmesh center
-	V3 thisCenter = getCenter();
-
-	// find the translation vector from centroid to 
-	// center of AABB
-	V3 translationVector = aabbCenter - thisCenter;
-
-	// 2) figure out the scaling factor:
+	// 1) figure out the scaling factor:
 
 	// compute length of aabb's diagonal
 	V3 aabbDiag(corner2 - corner1);
@@ -514,8 +526,22 @@ void TMesh::setToFitAABB(const AABB & aabb)
 	// extract scale factor
 	float scaleFactor = aabbDiagLength / thisAabbDiagLength;
 
-	// 3) apply scale and translate
+	// 2) apply scale
 	scale(scaleFactor);
+
+	// 3) with new scale in figure out translation vector
+
+	// find AABB center
+	V3 aabbCenter = corner1 + ((corner2 - corner1) * (0.5f));
+
+	// find this Tmesh center
+	V3 thisCenter = getCenter();
+
+	// find the translation vector from centroid to 
+	// center of AABB
+	V3 translationVector = aabbCenter - thisCenter;
+
+	// 4) apply translation
 	translate(translationVector);
 }
 

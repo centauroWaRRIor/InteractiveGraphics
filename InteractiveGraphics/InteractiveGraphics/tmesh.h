@@ -12,6 +12,7 @@ private:
 	int vertsN; // number of vertices
 	unsigned int *tris; // triangle indices array of size trisN*3
 	int trisN; // number of triangle (not number of indices in array)
+	AABB *aabb; // keeps track of current axis aligned box
 
 	void cleanUp(void); // helper function for destructor
 	AABB computeAABB(void) const; // computes a bounding box of the centers

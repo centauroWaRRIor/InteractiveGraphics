@@ -290,12 +290,20 @@ void Scene::a2Init()
 {
 	tms[0] = new TMesh("geometry/teapot1K.bin");
 	tms[1] = new TMesh("geometry/happy4.bin");
+	tms[2] = new TMesh("geometry/bunny.bin");
+	tms[3] = new TMesh();
+	tms[4] = new TMesh();
 	// test tetrahedron
 	//tms[0]->createTetrahedronTestMesh();
 
 	AABB teapotAABB = tms[0]->getAABB();
-	//teapotAABB.translate(V3(20.0f, 0.0f, 0.0f));
+	
 	tms[1]->setToFitAABB(teapotAABB);
+	tms[2]->setToFitAABB(teapotAABB);
+
+	tms[1]->translate(V3(100.0f, 0.0f, 0.0f));
+	tms[2]->translate(V3(-100.0f, 0.0f, 0.0f));
+
 
 	ppc->moveForward(-200.0f);
 }
@@ -331,7 +339,7 @@ void Scene::a2Draw()
 	fb->clearZB(0.0f);
 
 	// draws the meshes
-	for (int i = 0; i < 2; i++) 
+	for (int i = 0; i < 3; i++) 
 	{
 		//tms[0]->drawWireframe(*fb, *ppc);
 		//tms[0]->drawAABB(*fb, *ppc, 0xFF00FF00, 0xFF000000);
