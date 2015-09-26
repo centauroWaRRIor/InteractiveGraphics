@@ -282,6 +282,41 @@ void Scene::testCameraLerp(void)
 	return;
 }
 
+void Scene::A2Init()
+{
+	tms[0] = new TMesh();
+	// test tetrahedron
+	tms[0]->createTetrahedronTestMesh();
+	ppc->moveForward(-200.0f);
+}
+
 void Scene::A2()
 {
+	static bool doOnce = false;
+	if (!doOnce) {
+		dbgInit();
+		doOnce = true;
+	}
+	fb->set(0xFFFFFFFF);
+	fb->clearZB(0.0f);
+	
+	int stepsN = 361;
+	float theta = 1.0f;
+	V3 center = tms[0]->getCenter();
+	V3 aDir(1.0f, 1.0f, 0.0f);
+	aDir.normalize();
+
+	for (int si = 0; si < stepsN; si++) {
+		fb->set(0xFFFFFFFF);
+		fb->clearZB(0.0f);
+		tms[0]->drawWireframe(*fb, *ppc);
+		//tms[0]->drawAABB(*fb, *ppc, 0xFF00FF00, 0xFF000000);
+		tms[0]->drawFilledFlatBarycentric(*fb, *ppc);
+		//tms[0]->drawFilledFlat(*fb, *ppc, 0xFF0000FF);
+		tms[0]->drawVertexDots(*fb, *ppc, 3.0f);
+		fb->redraw();
+		Fl::check();
+		tms[0]->rotateAboutAxis(center, aDir, theta);
+	}
+	return;
 }

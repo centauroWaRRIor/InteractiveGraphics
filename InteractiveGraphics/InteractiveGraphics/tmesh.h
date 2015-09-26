@@ -51,6 +51,9 @@ public:
 	// draws the triangle mesh vertices as dots
 	void drawVertexDots(FrameBuffer &fb, const PPC &ppc, float dotSize) const;
 
+	// rotate about axis
+	void rotateAboutAxis(const V3 &aO, const V3 &adir, float theta);
+
 	// get this triangle mesh's AABB
 	AABB getAABB(void) const { return computeAABB(); }
 	// draw this triangle mesh's AABB

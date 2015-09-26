@@ -356,6 +356,14 @@ void TMesh::drawVertexDots(FrameBuffer &fb,const PPC &ppc, float dotSize) const 
 	}
 }
 
+void TMesh::rotateAboutAxis(const V3 &aO, const V3 &adir, float theta)
+{
+	for (int vi = 0; vi < vertsN; vi++) {
+		
+		verts[vi].rotateThisPointAboutAxis(aO, adir, theta);
+	}
+}
+
 AABB TMesh::computeAABB(void) const
 {
 	if (vertsN == 0) {

@@ -193,7 +193,6 @@ void V3::rotateThisPointAboutAxis(const V3 &axisOrigin, const V3 &axisDirection,
 
 	// transform point back to original system
 	V3 &P = *this;
-	M33 tempMat = R.getTranspose(); // TODO: Delete this debug line
 	P = (R.getTranspose() * tempPoint) + axisOrigin;
 }
 

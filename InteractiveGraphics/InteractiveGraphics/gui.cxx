@@ -85,7 +85,8 @@ void GUI::show() {
 }
 
 void GUI::DBG_cb() {
-  scene->dbgDraw();
+  //scene->dbgDraw();
+	scene->A2();
 }
 
 void GUI::TestRot_cb() {
