@@ -27,8 +27,8 @@ Scene::Scene():
   int u0 = 20;
   int v0 = 50;
   int sci = 2;
-  int w = sci * 240; // 1280
-  int h = sci * 180; // 720
+  int w = 1280;//sci * 240;
+  int h = 720;//sci * 180;
   fb = new FrameBuffer(u0, v0, w, h);
   fb->label("SW Framebuffer");
 
@@ -37,7 +37,7 @@ Scene::Scene():
   ppc = new PPC(hfov, w, h);
 
   // allocate pointer of TMesh objects
-  tmsN = 5;
+  tmsN = 6;
   tms = new TMesh*[tmsN];
   for (int i = 0; i < 5; i++) {
 	  tms[i] = nullptr;
@@ -289,23 +289,33 @@ void Scene::testCameraLerp(void)
 void Scene::a2Init()
 {
 	tms[0] = new TMesh("geometry/teapot1K.bin");
-	tms[1] = new TMesh("geometry/happy4.bin");
-	tms[2] = new TMesh("geometry/bunny.bin");
-	tms[3] = new TMesh();
-	tms[4] = new TMesh();
+	tms[1] = new TMesh("geometry/teapot1K.bin");
+	tms[2] = new TMesh("geometry/teapot1K.bin");
+	tms[3] = new TMesh("geometry/teapot1K.bin");
+	tms[4] = new TMesh("geometry/happy4.bin");
+	tms[5] = new TMesh("geometry/terrain.bin");
 	// test tetrahedron
 	//tms[0]->createTetrahedronTestMesh();
 
+	// scale happy mesh to be same scale as teapots
 	AABB teapotAABB = tms[0]->getAABB();
+	tms[4]->setToFitAABB(teapotAABB);
+
+	// scale terrain mesh to multiple of teapot reference
+	tms[5]->setToFitAABB(teapotAABB);
+	tms[5]->rotateAboutAxis(tms[0]->getCenter(), V3(1.0f, 0.0f, 0.0f), -90.0f);
+	tms[5]->rotateAboutAxis(tms[0]->getCenter(), V3(0.0f, 1.0f, 0.0f), 180.0f);
+	tms[5]->scale(4.0);
+	tms[5]->translate(V3(50.0f, -200.0f, 120.0f));
+
+	// place teapots at a cross formation around happy
+	tms[0]->translate(V3(200.0f, 0.0f, 0.0f));
+	tms[1]->translate(V3(-200.0f, 0.0f, 0.0f));
+	tms[2]->translate(V3(-200.0f, 90.0f, 0.0f));
+	tms[3]->translate(V3(200.0f, 90.0f, 0.0f));
 	
-	tms[1]->setToFitAABB(teapotAABB);
-	tms[2]->setToFitAABB(teapotAABB);
-
-	tms[1]->translate(V3(100.0f, 0.0f, 0.0f));
-	tms[2]->translate(V3(-100.0f, 0.0f, 0.0f));
-
-
-	ppc->moveForward(-200.0f);
+	// place the camera
+	ppc->moveForward(-600.0f); //-200
 }
 
 void Scene::a2Draw()
@@ -316,40 +326,44 @@ void Scene::a2Draw()
 		doOnce = true;
 	}
 	
-	//// rotates the mesh
-	//int stepsN = 361;
-	//float theta = 1.0f;
-	//V3 center = tms[0]->getCenter();
-	//V3 aDir(1.0f, 1.0f, 0.0f);
-	//aDir.normalize();
-	//for (int si = 0; si < stepsN; si++) {
-	//	fb->set(0xFFFFFFFF);
-	//	fb->clearZB(0.0f);
-	//	//tms[0]->drawWireframe(*fb, *ppc);
-	//	//tms[0]->drawAABB(*fb, *ppc, 0xFF00FF00, 0xFF000000);
-	//	//tms[0]->drawFilledFlatBarycentric(*fb, *ppc);
-	//	//tms[0]->drawFilledFlat(*fb, *ppc, 0xFF0000FF);
-	//	tms[0]->drawVertexDots(*fb, *ppc, 3.0f);
-	//	fb->redraw();
-	//	Fl::check();
-	//	tms[0]->rotateAboutAxis(center, aDir, theta);
-	//}
+	// rotates the mesh
+	int stepsN = 361;
+	float theta = 1.0f;
+	V3 center = tms[4]->getCenter();
+	V3 aDir(0.0f, 1.0f, 0.0f);
+	aDir.normalize();
+	for (int si = 0; si < stepsN; si++) {
 
-	fb->set(0xFFFFFFFF);
-	fb->clearZB(0.0f);
+		// clear screen
+		fb->set(0xFFFFFFFF);
+		fb->clearZB(0.0f);
 
-	// draws the meshes
-	for (int i = 0; i < 3; i++) 
-	{
-		//tms[0]->drawWireframe(*fb, *ppc);
-		//tms[0]->drawAABB(*fb, *ppc, 0xFF00FF00, 0xFF000000);
-		//tms[0]->drawFilledFlatBarycentric(*fb, *ppc);
-		//tms[0]->drawFilledFlat(*fb, *ppc, 0xFF0000FF);
-		tms[i]->drawVertexDots(*fb, *ppc, 3.0f);
-		tms[i]->drawAABB(*fb, *ppc, 0xFF00FF00, 0xFF000000);
+		// draws terrain, this doesn't rotate
+		//tms[5]->drawAABB(*fb, *ppc, 0xFF00FF00, 0xFF000000);
+		tms[5]->drawWireframe(*fb, *ppc);
+
+		// draws the meshes that rotate
+		for (int i = 0; i < 5; i++)
+		{
+			//tms[i]->drawWireframe(*fb, *ppc);
+			//tms[i]->drawFilledFlatBarycentric(*fb, *ppc);
+			//tms[i]->drawFilledFlat(*fb, *ppc, 0xFF0000FF);
+			tms[i]->drawVertexDots(*fb, *ppc, 3.0f);
+			tms[i]->drawAABB(*fb, *ppc, 0xFF00FF00, 0xFF000000);
+		}
+
+		fb->redraw();
+		Fl::check();
+		// rotate teapots
+		tms[0]->rotateAboutAxis(center, aDir, theta);
+		tms[1]->rotateAboutAxis(center, aDir, theta);
+		tms[2]->rotateAboutAxis(center, aDir, -theta);
+		tms[3]->rotateAboutAxis(center, aDir, -theta);
+		// rotate happy
+		tms[4]->rotateAboutAxis(center, aDir, theta);
+
+
 	}
-	fb->redraw();
-
 	return;
 }
 
