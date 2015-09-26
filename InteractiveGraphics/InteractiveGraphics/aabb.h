@@ -15,4 +15,6 @@ public:
 
 	void scale(float scaleFactor);
 	void translate(const V3 &translationVector);
+	// rotate about axis
+	void rotateAboutAxis(const V3 &aO, const V3 &adir, float theta);
 };
