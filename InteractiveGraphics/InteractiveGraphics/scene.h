@@ -19,6 +19,10 @@ private:
 	Scenes currentScene; // used for keyboard callback to invokate the correct redraw
 	DrawModes currentDrawMode; // controls how to draw current scene
 	
+	// these two cameras are used as interpolation helpers
+	PPC *ppcLerp0;
+	PPC *ppcLerp1;
+
 	// utlitliy function to retrieve time and date as a string
 	string retrieveTimeDate(void) const;
 public:

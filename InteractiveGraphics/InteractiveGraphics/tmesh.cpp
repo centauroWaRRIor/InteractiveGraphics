@@ -545,5 +545,10 @@ void TMesh::setToFitAABB(const AABB & aabb)
 
 	// 4) apply translation
 	translate(translationVector);
+
+	// recompute and store new AABB
+	delete this->aabb;
+	this->aabb = nullptr;
+	this->aabb = new AABB(computeAABB());
 }
 

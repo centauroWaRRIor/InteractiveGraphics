@@ -50,6 +50,8 @@ Scene::Scene():
   // create camera
   float hfov = 55.0f;
   ppc = new PPC(hfov, w, h);
+  ppcLerp0 = nullptr;
+  ppcLerp1 = nullptr;
 
   // allocate pointer of TMesh objects
   tmsN = 6;
@@ -76,6 +78,10 @@ Scene::~Scene()
 	for (int i = 0; i<tmsN; i++)
 		delete[] tms[i];
 	delete[] tms;
+	if (ppcLerp0)
+		delete ppcLerp0;
+	if (ppcLerp1)
+		delete ppcLerp1;
 }
 
 // function linked to the DBG GUI button for testing new features
@@ -311,8 +317,9 @@ void Scene::a2Init()
 	tms[3] = new TMesh("geometry/teapot1K.bin");
 	tms[4] = new TMesh("geometry/happy4.bin");
 	tms[5] = new TMesh("geometry/terrain.bin");
-	// test tetrahedron
-	//tms[0]->createTetrahedronTestMesh();
+
+	ppcLerp0 = new PPC("camera_saves\\2015-9-26-21-42-57-camera.txt");
+	ppcLerp1 = new PPC("camera_saves\\2015-9-26-21-39-36-camera.txt");
 
 	// scale happy mesh to be same scale as teapots
 	AABB teapotAABB = tms[0]->getAABB();
@@ -331,8 +338,8 @@ void Scene::a2Init()
 	tms[2]->translate(V3(-200.0f, 90.0f, 0.0f));
 	tms[3]->translate(V3(200.0f, 90.0f, 0.0f));
 	
-	// place the camera
-	ppc->moveForward(-600.0f); //-200
+	// place initial position for camera
+	ppc->moveForward(-600.0f);
 }
 
 void Scene::a2Draw()
@@ -342,6 +349,9 @@ void Scene::a2Draw()
 		a2Init();
 		doOnce = true;
 	}
+
+	static int cameraLerpSteps = 10;
+	static int cameraLerpStep = 0;
 	
 	// rotates the mesh
 	int stepsN = 361;
@@ -351,13 +361,19 @@ void Scene::a2Draw()
 	aDir.normalize();
 	for (int si = 0; si < stepsN; si++) {
 
+		// camera lerping
+		//if (si >= 180 && cameraLerpStep < cameraLerpSteps) {
+			//ppc->setByInterpolation(*ppcLerp0, *ppcLerp1, cameraLerpStep, cameraLerpSteps);
+		//}
+
 		// clear screen
 		fb->set(0xFFFFFFFF);
 		fb->clearZB(0.0f);
 
 		// draws terrain, this doesn't rotate
 		//tms[5]->drawAABB(*fb, *ppc, 0xFF00FF00, 0xFF000000);
-		tms[5]->drawWireframe(*fb, *ppc);
+		//tms[5]->drawWireframe(*fb, *ppc);
+		tms[5]->drawVertexDots(*fb, *ppc, 2.0f);
 
 		// draws the meshes that rotate
 		for (int i = 0; i < 5; i++)
@@ -379,7 +395,8 @@ void Scene::a2Draw()
 		// rotate happy
 		tms[4]->rotateAboutAxis(center, aDir, theta);
 
-
+		if (si >= 180 && cameraLerpStep < cameraLerpSteps)
+			cameraLerpStep++;
 	}
 	return;
 }

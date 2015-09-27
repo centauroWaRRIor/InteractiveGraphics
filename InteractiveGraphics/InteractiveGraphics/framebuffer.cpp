@@ -59,9 +59,9 @@ void FrameBuffer::KeyboardHandle() {
 	float tiltAmount = 1.0f;
 	float rollAmount = 1.0f;
 	float panAmount = 1.0f;
-	float moveRightAmount = 0.5f;
-	float moveUpAmount = 0.5f;
-	float moveForwardAmount = 0.5f;
+	float moveRightAmount = 5.0;//0.5f;
+	float moveUpAmount = 5.0;//0.5f;
+	float moveForwardAmount = 5.0;//0.5f;
 	float zoomFactor = 0.99f;
 	int key = Fl::event_key();
 	if (scene) {

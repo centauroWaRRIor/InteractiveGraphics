@@ -29,9 +29,3 @@ void AABB::translate(const V3 & translationVector)
 	corners[0] = corners[0] + translationVector;
 	corners[1] = corners[1] + translationVector;
 }
-
-void AABB::rotateAboutAxis(const V3 & aO, const V3 & adir, float theta)
-{
-	corners[0].rotateThisPointAboutAxis(aO, adir, theta);
-	corners[1].rotateThisPointAboutAxis(aO, adir, theta);
-}
