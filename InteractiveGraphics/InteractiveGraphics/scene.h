@@ -6,7 +6,7 @@ using std::string;
 #include "framebuffer.h"
 #include "tmesh.h"
 
-enum class Scenes { DBG, A1, A2 };
+enum class Scenes { DBG, A1, A2, CAMLERP };
 enum class DrawModes { WIREFRAME, FLAT, SCREENSCAPELERP, DOTS };
 
 class Scene {
@@ -20,6 +20,10 @@ private:
 	DrawModes currentDrawMode; // controls how to draw current scene
 	bool isA2Init, isDGBInit; // helps initializnig the different functions
 	
+	static const float hfov; // field of view
+	static const int u0, v0; // initial window coordinates
+	static const int w, h; // window height and width
+
 	// these two cameras are used as interpolation helpers
 	PPC *ppcLerp0;
 	PPC *ppcLerp1;

@@ -12,6 +12,12 @@ using namespace std;
 
 Scene *scene;
 
+const float Scene::hfov = 55.0f;
+const int Scene::u0 = 20;
+const int Scene::v0 = 50;
+const int Scene::w = 1280;
+const int Scene::h = 720;
+
 string Scene::retrieveTimeDate(void) const
 {
 	stringstream returnString;
@@ -40,6 +46,13 @@ void Scene::cleanForScene(Scenes currentScene)
 			delete ppcLerp0;
 		if (ppcLerp1)
 			delete ppcLerp1;
+		ppcLerp0 = nullptr;
+		ppcLerp1 = nullptr;
+		// reset camera
+		delete ppc;
+		ppc = nullptr;
+		ppc = new PPC(hfov, w, h);
+		// reset init flags
 		isDGBInit = false;
 	}
 	else if (currentScene == Scenes::DBG) {
@@ -51,7 +64,33 @@ void Scene::cleanForScene(Scenes currentScene)
 			delete ppcLerp0;
 		if (ppcLerp1)
 			delete ppcLerp1;
+		ppcLerp0 = nullptr;
+		ppcLerp1 = nullptr;
+		// reset camera
+		delete ppc;
+		ppc = nullptr;
+		ppc = new PPC(hfov, w, h);
+		// reset init flags
 		isA2Init = false;
+	}
+	else if (currentScene == Scenes::CAMLERP) {
+		if (tms[0]) {
+			delete tms[0];
+			tms[0] = nullptr;
+		}
+		if (ppcLerp0)
+			delete ppcLerp0;
+		if (ppcLerp1)
+			delete ppcLerp1;
+		ppcLerp0 = nullptr;
+		ppcLerp1 = nullptr;
+		// reset camera
+		delete ppc;
+		ppc = nullptr;
+		ppc = new PPC(hfov, w, h);
+		// reset init flags
+		isA2Init = false;
+		isDGBInit = false;
 	}
 }
 
@@ -67,16 +106,10 @@ Scene::Scene():
   gui->show();
 
   // create SW framebuffer
-  int u0 = 20;
-  int v0 = 50;
-  int sci = 2;
-  int w = 1280;//sci * 240;
-  int h = 720;//sci * 180;
   fb = new FrameBuffer(u0, v0, w, h);
   fb->label("SW Framebuffer");
 
   // create camera
-  float hfov = 55.0f;
   ppc = new PPC(hfov, w, h);
   ppcLerp0 = nullptr;
   ppcLerp1 = nullptr;
@@ -84,7 +117,7 @@ Scene::Scene():
   // allocate pointer of TMesh objects
   tmsN = 6;
   tms = new TMesh*[tmsN];
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < tmsN; i++) {
 	  tms[i] = nullptr;
   }
 
@@ -147,8 +180,6 @@ void Scene::dbgInit() {
 	ppc->moveForward(-200.0f);
 	
 	tms[0]->loadBin("geometry/teapot1K.bin");
-	// test tetrahedron instead
-	//tms[0]->createTetrahedronTestMesh();
 	
 	tms[0]->translate(V3(10.0f, -10.0f, 0.0f));
 	tms[0]->scale(1.0);
@@ -325,23 +356,34 @@ void Scene::testRaster() {
 
 void Scene::testCameraLerp(void)
 {
-	static bool doOnce = false;
-	static PPC ppc0("cameraSaveTest1.txt");
-	static PPC ppc1("cameraSaveTest2.txt");
+	// test simple cam lerp with simple tetrahedron
+	cleanForScene(Scenes::CAMLERP);
+	tms[0] = new TMesh();
+	ppcLerp0 = new PPC("camera_saves\\cameraSaveTest1.txt");
+	ppcLerp1 = new PPC("camera_saves\\cameraSaveTest2.txt");
 	static int i = 0;
 	static int n = 100;
-	if (!doOnce) {
-		dbgInit();
-		doOnce = true;
-	}
+	tms[0]->createTetrahedronTestMesh();
+
 	 for (i = 0; i < n; i++) {
 
+		// clear screen
 		fb->set(0xFFFFFFFF);
-		ppc->setByInterpolation(ppc0, ppc1, i, n);
-		//fb->drawWireFrame(tms[0], ppc); // replace with tmesh->drawWireFrame
+		fb->clearZB(0.0f);
+
+		ppc->setByInterpolation(*ppcLerp0, *ppcLerp1, i, n);
+		if (currentDrawMode == DrawModes::FLAT)
+			tms[0]->drawFilledFlat(*fb, *ppc, 0xFFFF0000);
+		else if (currentDrawMode == DrawModes::SCREENSCAPELERP)
+			tms[0]->drawFilledFlatBarycentric(*fb, *ppc);
+		else if (currentDrawMode == DrawModes::WIREFRAME)
+			tms[0]->drawWireframe(*fb, *ppc);
+		else if (currentDrawMode == DrawModes::DOTS)
+			tms[0]->drawVertexDots(*fb, *ppc, 2.0f);
+		tms[0]->drawAABB(*fb, *ppc, 0xFF00FF00, 0xFF000000);
 		fb->redraw();
 		Fl::check();
-		Fl::wait(0.09);	
+//		Fl::wait(0.09);	
 	}
 	return;
 }
@@ -485,6 +527,9 @@ void Scene::currentSceneRedraw(void)
 	case Scenes::A2:
 		a2Draw();
 		break;
+	case Scenes::CAMLERP:
+		testCameraLerp();
+		break;
 	default:
 		dbgDraw();
 		break; // this statement is optional for default
@@ -511,7 +556,8 @@ void Scene::setDrawMode(int mode)
 		currentDrawMode = DrawModes::WIREFRAME;
 		break; // optional statement for default
 	}
-	if (currentScene == Scenes::DBG) {
+	if (currentScene == Scenes::DBG ||
+		currentScene == Scenes::CAMLERP) {
 		currentSceneRedraw();
 	}
 }

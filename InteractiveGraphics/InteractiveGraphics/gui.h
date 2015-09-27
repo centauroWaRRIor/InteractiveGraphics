@@ -29,6 +29,11 @@ private:
   void cb_A1TestRaster_i(Fl_Menu_*, void*);
   static void cb_A1TestRaster(Fl_Menu_*, void*);
 public:
+  static Fl_Menu_Item *A2TestCamLerp;
+private:
+  void cb_A2TestCamLerp_i(Fl_Menu_*, void*);
+  static void cb_A2TestCamLerp(Fl_Menu_*, void*);
+public:
   Fl_Group *CameraFBSaveGroup;
   Fl_Button *SaveCameraButton;
 private:
@@ -74,5 +79,6 @@ public:
   void SaveCameraButton_cb();
   void SaveFB_cb();
   void A2Button_cb();
+  void TestCamLerp_cb();
 };
 #endif

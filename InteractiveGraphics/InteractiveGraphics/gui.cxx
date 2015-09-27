@@ -23,17 +23,28 @@ void GUI::cb_A1TestRaster(Fl_Menu_* o, void* v) {
   ((GUI*)(o->parent()->user_data()))->cb_A1TestRaster_i(o,v);
 }
 
+void GUI::cb_A2TestCamLerp_i(Fl_Menu_*, void*) {
+  TestCamLerp_cb();
+}
+void GUI::cb_A2TestCamLerp(Fl_Menu_* o, void* v) {
+  ((GUI*)(o->parent()->user_data()))->cb_A2TestCamLerp_i(o,v);
+}
+
 Fl_Menu_Item GUI::menu_Main[] = {
  {"Previous Assignments", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
  {"A1", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
  {"Test Rotation", 0,  (Fl_Callback*)GUI::cb_A1TestRot, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Test Rasterization", 0,  (Fl_Callback*)GUI::cb_A1TestRaster, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
+ {"A2", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Test Camera Lerping", 0,  (Fl_Callback*)GUI::cb_A2TestCamLerp, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {0,0,0,0,0,0,0,0,0},
  {0,0,0,0,0,0,0,0,0},
  {0,0,0,0,0,0,0,0,0}
 };
 Fl_Menu_Item* GUI::A1TestRot = GUI::menu_Main + 2;
 Fl_Menu_Item* GUI::A1TestRaster = GUI::menu_Main + 3;
+Fl_Menu_Item* GUI::A2TestCamLerp = GUI::menu_Main + 6;
 
 void GUI::cb_SaveCameraButton_i(Fl_Button*, void*) {
   SaveCameraButton_cb();
@@ -1108,8 +1119,8 @@ void GUI::show() {
 }
 
 void GUI::DBG_cb() {
-  scene->dbgDraw();
-scene->regFuncForKbRedraw(Scenes::DBG);
+  scene->regFuncForKbRedraw(Scenes::DBG);
+scene->dbgDraw();
 }
 
 void GUI::TestRot_cb() {
@@ -1133,6 +1144,11 @@ void GUI::SaveFB_cb() {
 }
 
 void GUI::A2Button_cb() {
-  scene->a2Draw();
-scene->regFuncForKbRedraw(Scenes::A2);
+  scene->regFuncForKbRedraw(Scenes::A2);
+scene->a2Draw();
+}
+
+void GUI::TestCamLerp_cb() {
+  scene->regFuncForKbRedraw(Scenes::CAMLERP);
+scene->testCameraLerp();
 }

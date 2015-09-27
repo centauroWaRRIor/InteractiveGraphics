@@ -17,11 +17,11 @@ class GUI {open
         xywh {15 40 225 40} selection_color 72
       }
       Fl_Menu_Bar {} {
-        label {Main Menu}
+        label {Main Menu} open
         xywh {0 0 315 30}
       } {
         Submenu {} {
-          label {Previous Assignments}
+          label {Previous Assignments} open
           xywh {0 0 62 20}
         } {
           Submenu {} {
@@ -36,6 +36,16 @@ class GUI {open
             MenuItem A1TestRaster {
               label {Test Rasterization}
               callback {TestRaster_cb()}
+              xywh {0 0 30 20}
+            }
+          }
+          Submenu {} {
+            label A2 open
+            xywh {0 0 62 20}
+          } {
+            MenuItem A2TestCamLerp {
+              label {Test Camera Lerping}
+              callback {TestCamLerp_cb()}
               xywh {0 0 30 20}
             }
           }
@@ -79,7 +89,7 @@ class GUI {open
       }
       Fl_Button A2Button {
         label A2
-        callback {A2Button_cb()} selected
+        callback {A2Button_cb()}
         xywh {15 92 225 40} selection_color 72
       }
     }
@@ -92,8 +102,8 @@ class GUI {open
   }
   Function {DBG_cb()} {open
   } {
-    code {scene->dbgDraw();
-scene->regFuncForKbRedraw(Scenes::DBG);} {}
+    code {scene->regFuncForKbRedraw(Scenes::DBG);
+scene->dbgDraw();} {}
   }
   Function {TestRot_cb()} {open
   } {
@@ -117,7 +127,13 @@ scene->regFuncForKbRedraw(Scenes::DBG);} {}
   }
   Function {A2Button_cb()} {open
   } {
-    code {scene->a2Draw();
-scene->regFuncForKbRedraw(Scenes::A2);} {}
+    code {scene->regFuncForKbRedraw(Scenes::A2);
+scene->a2Draw();} {}
+  }
+  Function {TestCamLerp_cb()} {open
+  } {
+    code {scene->regFuncForKbRedraw(Scenes::CAMLERP);
+scene->testCameraLerp();} {selected
+    }
   }
 } 
