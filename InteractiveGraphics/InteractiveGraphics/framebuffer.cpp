@@ -636,10 +636,10 @@ void FrameBuffer::saveAsPng(string fname) const {
 void FrameBuffer::loadFromPng(string fname) {
 	
 	vector<unsigned char> image; //the raw pixels
-	unsigned width, height;
+	unsigned int width, height;
 
 	//decode
-	unsigned error = lodepng::decode(image, width, height, fname.c_str());
+	unsigned int error = lodepng::decode(image, width, height, fname.c_str());
 
 	//if there's an error, display it
 	if (error) std::cout << "decoder error " << error << ": " << lodepng_error_text(error) << std::endl;
@@ -664,8 +664,6 @@ void FrameBuffer::loadFromPng(string fname) {
 				((unsigned char*)(&color))[1] = green;
 				((unsigned char*)(&color))[2] = blue;
 				((unsigned char*)(&color))[3] = alpha;
-
-				//pix[(i*width) + j] = color;
 
 				set(j, i, color);
 			}
