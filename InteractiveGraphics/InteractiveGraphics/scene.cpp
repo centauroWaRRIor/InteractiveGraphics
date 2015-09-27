@@ -27,6 +27,34 @@ string Scene::retrieveTimeDate(void) const
 	return returnString.str();
 }
 
+void Scene::cleanForScene(Scenes currentScene)
+{
+	if (currentScene == Scenes::A2) {
+		for (int i = 0; i < tmsN; i++) {
+			if (tms[i]) {
+				delete tms[i];
+				tms[i] = nullptr;
+			}
+		}
+		if (ppcLerp0)
+			delete ppcLerp0;
+		if (ppcLerp1)
+			delete ppcLerp1;
+		isDGBInit = false;
+	}
+	else if (currentScene == Scenes::DBG) {
+		if (tms[0]) {
+			delete tms[0];
+			tms[0] = nullptr;
+		}
+		if (ppcLerp0)
+			delete ppcLerp0;
+		if (ppcLerp1)
+			delete ppcLerp1;
+		isA2Init = false;
+	}
+}
+
 Scene::Scene():
 	fb(nullptr), 
     gui(nullptr),
@@ -67,6 +95,9 @@ Scene::Scene():
 
   // set default draw mode wireframe
   currentDrawMode = DrawModes::WIREFRAME;
+
+  isA2Init = false;
+  isDGBInit = false;
 }
 
 Scene::~Scene()
@@ -94,31 +125,35 @@ void Scene::dbgDraw() {
 	}
 	fb->set(0xFFFFFFFF);
 	fb->clearZB(0.0f);
+	if (currentDrawMode == DrawModes::FLAT)
+		tms[0]->drawFilledFlat(*fb, *ppc, 0xFFFF0000);
+	else if (currentDrawMode == DrawModes::SCREENSCAPELERP)
+		tms[0]->drawFilledFlatBarycentric(*fb, *ppc);
+	else if (currentDrawMode == DrawModes::WIREFRAME)
+		tms[0]->drawWireframe(*fb, *ppc);
+	else if (currentDrawMode == DrawModes::DOTS)
+		tms[0]->drawVertexDots(*fb, *ppc, 2.0f);
 	tms[0]->drawAABB(*fb, *ppc, 0xFF00FF00, 0xFF000000);
-	//tms[0]->drawFilledFlatBarycentric(*fb, *ppc);
-	//tms[0]->drawFilledFlat(*fb, *ppc, 0xFF0000FF);
-	//tms[0]->drawWireframe(*fb, *ppc);
-	tms[0]->drawVertexDots(*fb, *ppc, 3.0f);
 	fb->redraw();
 	return;
 }
 
 void Scene::dbgInit() {
 
+	cleanForScene(Scenes::DBG);
 	tms[0] = new TMesh();
-	// test tetrahedron
-	//tms[0]->createTetrahedronTestMesh();
 
 	// test teapot
 	ppc->moveForward(-200.0f);
-	//ppc->moveForward(-1.0f);
-	//ppc->moveUp(0.0f);// = V3(0.0f, 20.0f, 200.0f);
-	tms[0]->loadBin("geometry/teapot1K.bin");
 	
-	//tms[0]->translate(V3(10.0f, -10.0f, 0.0f));
-	//tms[0]->scale(1.0);
+	tms[0]->loadBin("geometry/teapot1K.bin");
+	// test tetrahedron instead
+	//tms[0]->createTetrahedronTestMesh();
+	
+	tms[0]->translate(V3(10.0f, -10.0f, 0.0f));
+	tms[0]->scale(1.0);
 
-	//// test fitToAABB
+	//// test fitToAABB (works fine)
 	//AABB testAABB(tms[0]->getAABB());
 	//testAABB.translate(V3(-40.0f, 0.0f, 0.0f));
 	//testAABB.scale(2.0f);
@@ -131,7 +166,7 @@ void Scene::dbgInit() {
 	//	V3(0.0f, 0.0f, -1.0f), 
 	//	100.0f);
 
-	// test saving file (works fine)
+	// test saving/loading file (works fine)
 	//ppc->saveCameraToFile("cameraSaveTest2.txt");
 	//ppc->loadCameraFromFile("cameraSaveTest1.txt");
 }
@@ -158,8 +193,9 @@ void Scene::testRot() {
 	M33 rotMatrix;
 	rotMatrix.setRotationAboutX(65.0f);
 
+#ifdef _MAKE_VIDEO_
 	string pngFilename;
-	
+#endif	
 	for (int stepsi = 0; stepsi <= 360; stepsi++) {
 		// reset point;
 		point = originalPoint;
@@ -202,10 +238,11 @@ void Scene::testRot() {
 			V3 &breadcrumb = *it;
 			fb->draw2DCircle(breadcrumb[0], breadcrumb[1], pointRadius / 2.0f, breadCrumbColor2);
 		}
-		// uncomment here to save video
-		//pngFilename = string("pngs\\movieFrame");
-		//pngFilename += std::to_string(stepsi) + ".png";
-		//fb->SaveAsPng(pngFilename);
+#ifdef _MAKE_VIDEO_
+		pngFilename = string("pngs\\movieFrame");
+		pngFilename += std::to_string(stepsi) + ".png";
+		fb->SaveAsPng(pngFilename);
+#endif
 		fb->redraw();
 		Fl::check();
 	}
@@ -311,6 +348,8 @@ void Scene::testCameraLerp(void)
 
 void Scene::a2Init()
 {
+	cleanForScene(Scenes::A2);
+
 	tms[0] = new TMesh("geometry/teapot1K.bin");
 	tms[1] = new TMesh("geometry/teapot1K.bin");
 	tms[2] = new TMesh("geometry/teapot1K.bin");
@@ -319,7 +358,6 @@ void Scene::a2Init()
 	tms[5] = new TMesh("geometry/terrain.bin");
 
 	ppcLerp0 = new PPC("camera_saves\\2015-9-26-21-42-57-camera.txt");
-	//ppcLerp1 = new PPC("camera_saves\\2015-9-26-21-39-36-camera.txt");
 	ppcLerp1 = new PPC("camera_saves\\2015-9-26-22-42-55-camera.txt");
 
 	// scale happy mesh to be same scale as teapots
@@ -345,10 +383,9 @@ void Scene::a2Init()
 
 void Scene::a2Draw()
 {
-	static bool doOnce = false;
-	if (!doOnce) {
+	if (!isA2Init) {
 		a2Init();
-		doOnce = true;
+		isA2Init = true;
 	}
 
 	// for camera interpolations
@@ -361,8 +398,9 @@ void Scene::a2Draw()
 	V3 center = tms[4]->getCenter();
 	V3 aDir(0.0f, 1.0f, 0.0f);
 	aDir.normalize();
-
+#ifdef _MAKE_VIDEO_
 	string pngFilename;
+#endif
 	for (int si = 0; si < stepsN; si++) {
 
 		// camera lerping
@@ -411,7 +449,6 @@ void Scene::a2Draw()
 		if (si >= 150 && cameraLerpStep < cameraLerpSteps)
 			cameraLerpStep++;
 #ifdef _MAKE_VIDEO_
-		// uncomment here to save video
 		pngFilename = string("movieFrame");
 		pngFilename += std::to_string(si) + ".png";
 		fb->saveAsPng(pngFilename);
@@ -469,8 +506,12 @@ void Scene::setDrawMode(int mode)
 		break;
 	case 4:
 		currentDrawMode = DrawModes::DOTS;
+		break;
 	default:
 		currentDrawMode = DrawModes::WIREFRAME;
 		break; // optional statement for default
+	}
+	if (currentScene == Scenes::DBG) {
+		currentSceneRedraw();
 	}
 }

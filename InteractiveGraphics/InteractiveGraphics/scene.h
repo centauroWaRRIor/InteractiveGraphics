@@ -18,6 +18,7 @@ private:
 	int tmsN; // how many TMeshes there are
 	Scenes currentScene; // used for keyboard callback to invokate the correct redraw
 	DrawModes currentDrawMode; // controls how to draw current scene
+	bool isA2Init, isDGBInit; // helps initializnig the different functions
 	
 	// these two cameras are used as interpolation helpers
 	PPC *ppcLerp0;
@@ -25,6 +26,10 @@ private:
 
 	// utlitliy function to retrieve time and date as a string
 	string retrieveTimeDate(void) const;
+	// utility function to clean in between different scene demos
+	// and avoid memory leaks every time I click on the gui
+	// buttons
+	void cleanForScene(Scenes currentScene);
 public:
 	Scene();
 	~Scene();
