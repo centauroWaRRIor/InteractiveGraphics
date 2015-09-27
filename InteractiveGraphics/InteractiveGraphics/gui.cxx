@@ -35,6 +35,13 @@ Fl_Menu_Item GUI::menu_Main[] = {
 Fl_Menu_Item* GUI::A1TestRot = GUI::menu_Main + 2;
 Fl_Menu_Item* GUI::A1TestRaster = GUI::menu_Main + 3;
 
+void GUI::cb_SaveCameraButton_i(Fl_Button*, void*) {
+  SaveCameraButton_cb();
+}
+void GUI::cb_SaveCameraButton(Fl_Button* o, void* v) {
+  ((GUI*)(o->parent()->parent()->user_data()))->cb_SaveCameraButton_i(o,v);
+}
+
 #include <FL/Fl_Image.H>
 static unsigned char idata_Camera[] =
 {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -550,6 +557,13 @@ static unsigned char idata_Camera[] =
 0,0,0,0,0};
 static Fl_RGB_Image image_Camera(idata_Camera, 64, 64, 4, 0);
 
+void GUI::cb_SaveFBButotn_i(Fl_Button*, void*) {
+  SaveFB_cb();
+}
+void GUI::cb_SaveFBButotn(Fl_Button* o, void* v) {
+  ((GUI*)(o->parent()->parent()->user_data()))->cb_SaveFBButotn_i(o,v);
+}
+
 static unsigned char idata_Eye[] =
 {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -1029,9 +1043,11 @@ GUI::GUI() {
       CameraFBSaveGroup->box(FL_ENGRAVED_BOX);
       { SaveCameraButton = new Fl_Button(25, 210, 95, 60);
         SaveCameraButton->image(image_Camera);
+        SaveCameraButton->callback((Fl_Callback*)cb_SaveCameraButton);
       } // Fl_Button* SaveCameraButton
       { SaveFBButotn = new Fl_Button(135, 210, 95, 60);
         SaveFBButotn->image(image_Eye);
+        SaveFBButotn->callback((Fl_Callback*)cb_SaveFBButotn);
       } // Fl_Button* SaveFBButotn
       CameraFBSaveGroup->end();
     } // Fl_Group* CameraFBSaveGroup
@@ -1083,4 +1099,12 @@ void GUI::TestRaster_cb() {
 
 void GUI::DrawMode_cb(int mode) {
   scene->setDrawMode(mode);
+}
+
+void GUI::SaveCameraButton_cb() {
+  scene->saveCamera();
+}
+
+void GUI::SaveFB_cb() {
+  scene->saveThisFramebuffer();
 }

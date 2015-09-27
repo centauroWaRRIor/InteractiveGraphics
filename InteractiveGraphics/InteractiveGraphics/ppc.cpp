@@ -286,8 +286,9 @@ void PPC::loadCameraFromFile(string fName)
 
 void PPC::saveCameraToFile(string fName) const
 {
+	string fullDirName("camera_saves\\" + fName);
 	// ofstream constructor opens a file
-	ofstream outFile(fName, ios::out);
+	ofstream outFile(fullDirName, ios::out);
 
 	// exit program if unable to create file
 	if (!outFile) { // overloaded ! operator

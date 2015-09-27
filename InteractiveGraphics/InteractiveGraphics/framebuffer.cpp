@@ -598,6 +598,7 @@ void FrameBuffer::draw2DSegment(const V3 &v0, const V3 &c0, const V3 &v1, const 
 
 void FrameBuffer::saveAsPng(string fname) const {
 
+	string fullDirName("pngs\\" + fname);
 	vector<unsigned char> image;
 	image.reserve(w * h * 4);
 
@@ -625,7 +626,7 @@ void FrameBuffer::saveAsPng(string fname) const {
 	}
 
 	// encode the image as a png
-	unsigned error = lodepng::encode(fname.c_str(), image, w, h);
+	unsigned error = lodepng::encode(fullDirName.c_str(), image, w, h);
 
 	// if there's an error, display it
 	if (error) std::cout << "encoder error " << error << ": " << lodepng_error_text(error) << std::endl;

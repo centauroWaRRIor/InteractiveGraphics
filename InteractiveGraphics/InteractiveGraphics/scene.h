@@ -1,7 +1,7 @@
 #pragma once
 
-#include <iostream>
-using namespace std;
+#include <string>
+using std::string;
 #include "gui.h"
 #include "framebuffer.h"
 #include "tmesh.h"
@@ -18,6 +18,9 @@ private:
 	int tmsN; // how many TMeshes there are
 	Scenes currentScene; // used for keyboard callback to invokate the correct redraw
 	DrawModes currentDrawMode; // controls how to draw current scene
+	
+	// utlitliy function to retrieve time and date as a string
+	string retrieveTimeDate(void) const;
 public:
 	Scene();
 	~Scene();
@@ -29,6 +32,8 @@ public:
 	void testCameraLerp(void);
 	void a2Init(void);
 	void a2Draw(void);
+	void saveCamera(void) const;
+	void saveThisFramebuffer(void) const;
 	void regFuncForKbRedraw(Scenes newScene) {
 		currentScene = newScene;
 	}

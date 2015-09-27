@@ -31,7 +31,15 @@ private:
 public:
   Fl_Group *CameraFBSaveGroup;
   Fl_Button *SaveCameraButton;
+private:
+  void cb_SaveCameraButton_i(Fl_Button*, void*);
+  static void cb_SaveCameraButton(Fl_Button*, void*);
+public:
   Fl_Button *SaveFBButotn;
+private:
+  void cb_SaveFBButotn_i(Fl_Button*, void*);
+  static void cb_SaveFBButotn(Fl_Button*, void*);
+public:
   Fl_Group *RenderingOptionsGroup;
   Fl_Round_Button *WireframeRadialButton;
 private:
@@ -53,5 +61,7 @@ public:
   void TestRot_cb();
   void TestRaster_cb();
   void DrawMode_cb(int mode);
+  void SaveCameraButton_cb();
+  void SaveFB_cb();
 };
 #endif

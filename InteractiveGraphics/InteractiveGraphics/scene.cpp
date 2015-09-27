@@ -2,15 +2,30 @@
 #include "v3.h"
 #include "m33.h"
 #include <float.h>
-
+#include <ctime>
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <string>
+#include <sstream>
 
 using namespace std;
 
 Scene *scene;
+
+string Scene::retrieveTimeDate(void) const
+{
+	stringstream returnString;
+	time_t t = time(0);   // get time now
+	struct tm now;
+	localtime_s(&now, &t);
+	returnString << (now.tm_year + 1900) << '-'
+				<< (now.tm_mon + 1) << '-'
+				<< now.tm_mday << '-'
+				<< now.tm_hour << '-'
+				<< now.tm_min << '-'
+				<< now.tm_sec;
+	return returnString.str();
+}
 
 Scene::Scene():
 	fb(nullptr), 
@@ -369,6 +384,22 @@ void Scene::a2Draw()
 	return;
 }
 
+void Scene::saveCamera(void) const
+{
+	string filename = retrieveTimeDate();
+	filename.append("-camera.txt");
+	cout << "Wrote " << filename << endl;
+	ppc->saveCameraToFile(filename);
+}
+
+void Scene::saveThisFramebuffer(void) const
+{
+	string filename = retrieveTimeDate();
+	filename.append("-framebuffer.png");
+	cout << "Wrote " << filename << endl;
+	fb->saveAsPng(filename);
+}
+
 void Scene::currentSceneRedraw(void)
 {
 	switch (currentScene) {
@@ -395,10 +426,10 @@ void Scene::setDrawMode(int mode)
 		currentDrawMode = DrawModes::WIREFRAME;
 		break;
 	case 2:
-		currentDrawMode = DrawModes::WIREFRAME;
+		currentDrawMode = DrawModes::FLAT;
 		break;
 	case 3:
-		currentDrawMode = DrawModes::WIREFRAME;
+		currentDrawMode = DrawModes::SCREENSCAPELERP;
 		break;
 	default:
 		currentDrawMode = DrawModes::WIREFRAME;

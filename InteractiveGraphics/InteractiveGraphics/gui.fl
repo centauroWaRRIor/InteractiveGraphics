@@ -45,9 +45,11 @@ class GUI {open
         xywh {10 195 240 90} box ENGRAVED_BOX
       } {
         Fl_Button SaveCameraButton {
+          callback {SaveCameraButton_cb()}
           image {pngs/Camera-icon.png} xywh {25 210 95 60}
         }
         Fl_Button SaveFBButotn {
+          callback {SaveFB_cb()} selected
           image {pngs/Eye-Scan-icon.png} xywh {135 210 95 60}
         }
       }
@@ -56,7 +58,7 @@ class GUI {open
       } {
         Fl_Round_Button WireframeRadialButton {
           label Wireframe
-          callback {DrawMode_cb(1)} selected
+          callback {DrawMode_cb(1)}
           xywh {30 100 140 15} type Radio down_box ROUND_DOWN_BOX value 1
         }
         Fl_Round_Button FlatRadialButton {
@@ -94,5 +96,13 @@ scene->regFuncForKbRedraw(Scenes::DBG);} {}
   Function {DrawMode_cb(int mode)} {open
   } {
     code {scene->setDrawMode(mode);} {}
+  }
+  Function {SaveCameraButton_cb()} {open
+  } {
+    code {scene->saveCamera();} {}
+  }
+  Function {SaveFB_cb()} {open
+  } {
+    code {scene->saveThisFramebuffer();} {}
   }
 } 
