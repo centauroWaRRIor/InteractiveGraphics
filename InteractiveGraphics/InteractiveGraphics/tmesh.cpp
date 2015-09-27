@@ -373,8 +373,10 @@ void TMesh::rotateAboutAxis(const V3 &aO, const V3 &adir, float theta)
 		
 		verts[vi].rotateThisPointAboutAxis(aO, adir, theta);
 	}
-	// rotate the AABB as well
-	aabb->rotateAboutAxis(aO, adir, theta);
+	// recompute AABB
+	delete aabb;
+	aabb = nullptr;
+	aabb = new AABB(computeAABB());
 }
 
 AABB TMesh::computeAABB(void) const

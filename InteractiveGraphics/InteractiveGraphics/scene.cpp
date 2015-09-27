@@ -319,7 +319,8 @@ void Scene::a2Init()
 	tms[5] = new TMesh("geometry/terrain.bin");
 
 	ppcLerp0 = new PPC("camera_saves\\2015-9-26-21-42-57-camera.txt");
-	ppcLerp1 = new PPC("camera_saves\\2015-9-26-21-39-36-camera.txt");
+	//ppcLerp1 = new PPC("camera_saves\\2015-9-26-21-39-36-camera.txt");
+	ppcLerp1 = new PPC("camera_saves\\2015-9-26-22-42-55-camera.txt");
 
 	// scale happy mesh to be same scale as teapots
 	AABB teapotAABB = tms[0]->getAABB();
@@ -350,38 +351,41 @@ void Scene::a2Draw()
 		doOnce = true;
 	}
 
-	static int cameraLerpSteps = 10;
+	// for camera interpolations
+	static int cameraLerpSteps = 120;
 	static int cameraLerpStep = 0;
 	
 	// rotates the mesh
-	int stepsN = 361;
+	int stepsN = 300; // 30 fps * 10 = 300
 	float theta = 1.0f;
 	V3 center = tms[4]->getCenter();
 	V3 aDir(0.0f, 1.0f, 0.0f);
 	aDir.normalize();
+
+	string pngFilename;
 	for (int si = 0; si < stepsN; si++) {
 
 		// camera lerping
-		//if (si >= 180 && cameraLerpStep < cameraLerpSteps) {
-			//ppc->setByInterpolation(*ppcLerp0, *ppcLerp1, cameraLerpStep, cameraLerpSteps);
-		//}
+		if (si >= 150 && cameraLerpStep < cameraLerpSteps) {
+			ppc->setByInterpolation(*ppcLerp0, *ppcLerp1, cameraLerpStep, cameraLerpSteps);
+		}
 
 		// clear screen
 		fb->set(0xFFFFFFFF);
 		fb->clearZB(0.0f);
 
-		// draws terrain, this doesn't rotate
-		//tms[5]->drawAABB(*fb, *ppc, 0xFF00FF00, 0xFF000000);
+		// draws background terrain, this doesn't rotate
 		//tms[5]->drawWireframe(*fb, *ppc);
-		tms[5]->drawVertexDots(*fb, *ppc, 2.0f);
+		//tms[5]->drawVertexDots(*fb, *ppc, 2.0f);
+		tms[5]->drawFilledFlatBarycentric(*fb, *ppc);
 
 		// draws the meshes that rotate
 		for (int i = 0; i < 5; i++)
 		{
 			//tms[i]->drawWireframe(*fb, *ppc);
-			//tms[i]->drawFilledFlatBarycentric(*fb, *ppc);
+			tms[i]->drawFilledFlatBarycentric(*fb, *ppc);
 			//tms[i]->drawFilledFlat(*fb, *ppc, 0xFF0000FF);
-			tms[i]->drawVertexDots(*fb, *ppc, 3.0f);
+			//tms[i]->drawVertexDots(*fb, *ppc, 3.0f);
 			tms[i]->drawAABB(*fb, *ppc, 0xFF00FF00, 0xFF000000);
 		}
 
@@ -394,9 +398,13 @@ void Scene::a2Draw()
 		tms[3]->rotateAboutAxis(center, aDir, -theta);
 		// rotate happy
 		tms[4]->rotateAboutAxis(center, aDir, theta);
-
-		if (si >= 180 && cameraLerpStep < cameraLerpSteps)
+		// increase camera interpolation step
+		if (si >= 150 && cameraLerpStep < cameraLerpSteps)
 			cameraLerpStep++;
+		// uncomment here to save video
+		pngFilename = string("movieFrame");
+		pngFilename += std::to_string(si) + ".png";
+		fb->saveAsPng(pngFilename);
 	}
 	return;
 }
