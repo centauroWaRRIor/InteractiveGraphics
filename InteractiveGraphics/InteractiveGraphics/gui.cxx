@@ -1027,10 +1027,24 @@ void GUI::cb_ScreenSpaceLerpRadialButton_i(Fl_Round_Button*, void*) {
 void GUI::cb_ScreenSpaceLerpRadialButton(Fl_Round_Button* o, void* v) {
   ((GUI*)(o->parent()->parent()->user_data()))->cb_ScreenSpaceLerpRadialButton_i(o,v);
 }
+
+void GUI::cb_DotsRadialButton_i(Fl_Round_Button*, void*) {
+  DrawMode_cb(4);
+}
+void GUI::cb_DotsRadialButton(Fl_Round_Button* o, void* v) {
+  ((GUI*)(o->parent()->parent()->user_data()))->cb_DotsRadialButton_i(o,v);
+}
+
+void GUI::cb_A2Button_i(Fl_Button*, void*) {
+  A2Button_cb();
+}
+void GUI::cb_A2Button(Fl_Button* o, void* v) {
+  ((GUI*)(o->parent()->user_data()))->cb_A2Button_i(o,v);
+}
 #include "scene.h"
 
 GUI::GUI() {
-  { uiw = new Fl_Double_Window(258, 290, "GUI");
+  { uiw = new Fl_Double_Window(258, 371, "GUI");
     uiw->user_data((void*)(this));
     { dbgButton = new Fl_Button(15, 40, 225, 40, "DBG");
       dbgButton->selection_color(FL_DARK_RED);
@@ -1039,38 +1053,47 @@ GUI::GUI() {
     { Fl_Menu_Bar* o = new Fl_Menu_Bar(0, 0, 315, 30, "Main Menu");
       o->menu(menu_Main);
     } // Fl_Menu_Bar* o
-    { CameraFBSaveGroup = new Fl_Group(10, 195, 240, 90);
+    { CameraFBSaveGroup = new Fl_Group(10, 270, 240, 90);
       CameraFBSaveGroup->box(FL_ENGRAVED_BOX);
-      { SaveCameraButton = new Fl_Button(25, 210, 95, 60);
+      { SaveCameraButton = new Fl_Button(25, 285, 95, 60);
         SaveCameraButton->image(image_Camera);
         SaveCameraButton->callback((Fl_Callback*)cb_SaveCameraButton);
       } // Fl_Button* SaveCameraButton
-      { SaveFBButotn = new Fl_Button(135, 210, 95, 60);
+      { SaveFBButotn = new Fl_Button(135, 285, 95, 60);
         SaveFBButotn->image(image_Eye);
         SaveFBButotn->callback((Fl_Callback*)cb_SaveFBButotn);
       } // Fl_Button* SaveFBButotn
       CameraFBSaveGroup->end();
     } // Fl_Group* CameraFBSaveGroup
-    { RenderingOptionsGroup = new Fl_Group(10, 90, 240, 90);
+    { RenderingOptionsGroup = new Fl_Group(10, 149, 240, 110);
       RenderingOptionsGroup->box(FL_EMBOSSED_FRAME);
-      { WireframeRadialButton = new Fl_Round_Button(30, 100, 140, 15, "Wireframe");
+      { WireframeRadialButton = new Fl_Round_Button(30, 159, 140, 15, "Wireframe");
         WireframeRadialButton->type(102);
         WireframeRadialButton->down_box(FL_ROUND_DOWN_BOX);
         WireframeRadialButton->value(1);
         WireframeRadialButton->callback((Fl_Callback*)cb_WireframeRadialButton);
       } // Fl_Round_Button* WireframeRadialButton
-      { FlatRadialButton = new Fl_Round_Button(30, 122, 140, 15, "Flat");
+      { FlatRadialButton = new Fl_Round_Button(30, 181, 140, 15, "Flat");
         FlatRadialButton->type(102);
         FlatRadialButton->down_box(FL_ROUND_DOWN_BOX);
         FlatRadialButton->callback((Fl_Callback*)cb_FlatRadialButton);
       } // Fl_Round_Button* FlatRadialButton
-      { ScreenSpaceLerpRadialButton = new Fl_Round_Button(30, 145, 140, 15, "ScreenSpace Interpolation");
+      { ScreenSpaceLerpRadialButton = new Fl_Round_Button(30, 204, 140, 15, "ScreenSpace Interpolation");
         ScreenSpaceLerpRadialButton->type(102);
         ScreenSpaceLerpRadialButton->down_box(FL_ROUND_DOWN_BOX);
         ScreenSpaceLerpRadialButton->callback((Fl_Callback*)cb_ScreenSpaceLerpRadialButton);
       } // Fl_Round_Button* ScreenSpaceLerpRadialButton
+      { DotsRadialButton = new Fl_Round_Button(30, 228, 64, 15, "Dots");
+        DotsRadialButton->type(102);
+        DotsRadialButton->down_box(FL_ROUND_DOWN_BOX);
+        DotsRadialButton->callback((Fl_Callback*)cb_DotsRadialButton);
+      } // Fl_Round_Button* DotsRadialButton
       RenderingOptionsGroup->end();
     } // Fl_Group* RenderingOptionsGroup
+    { A2Button = new Fl_Button(15, 92, 225, 40, "A2");
+      A2Button->selection_color(FL_DARK_RED);
+      A2Button->callback((Fl_Callback*)cb_A2Button);
+    } // Fl_Button* A2Button
     uiw->end();
   } // Fl_Double_Window* uiw
 }
@@ -1085,9 +1108,8 @@ void GUI::show() {
 }
 
 void GUI::DBG_cb() {
-	//scene->dbgDraw();
-	scene->regFuncForKbRedraw(Scenes::A2);
-	scene->a2Draw();
+  scene->dbgDraw();
+scene->regFuncForKbRedraw(Scenes::DBG);
 }
 
 void GUI::TestRot_cb() {
@@ -1108,4 +1130,9 @@ void GUI::SaveCameraButton_cb() {
 
 void GUI::SaveFB_cb() {
   scene->saveThisFramebuffer();
+}
+
+void GUI::A2Button_cb() {
+  scene->a2Draw();
+scene->regFuncForKbRedraw(Scenes::A2);
 }

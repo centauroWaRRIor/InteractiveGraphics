@@ -7,7 +7,7 @@ using std::string;
 #include "tmesh.h"
 
 enum class Scenes { DBG, A1, A2 };
-enum class DrawModes { WIREFRAME, FLAT, SCREENSCAPELERP };
+enum class DrawModes { WIREFRAME, FLAT, SCREENSCAPELERP, DOTS };
 
 class Scene {
 private:

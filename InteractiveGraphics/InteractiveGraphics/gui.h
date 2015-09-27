@@ -56,6 +56,16 @@ private:
   void cb_ScreenSpaceLerpRadialButton_i(Fl_Round_Button*, void*);
   static void cb_ScreenSpaceLerpRadialButton(Fl_Round_Button*, void*);
 public:
+  Fl_Round_Button *DotsRadialButton;
+private:
+  void cb_DotsRadialButton_i(Fl_Round_Button*, void*);
+  static void cb_DotsRadialButton(Fl_Round_Button*, void*);
+public:
+  Fl_Button *A2Button;
+private:
+  void cb_A2Button_i(Fl_Button*, void*);
+  static void cb_A2Button(Fl_Button*, void*);
+public:
   void show();
   void DBG_cb();
   void TestRot_cb();
@@ -63,5 +73,6 @@ public:
   void DrawMode_cb(int mode);
   void SaveCameraButton_cb();
   void SaveFB_cb();
+  void A2Button_cb();
 };
 #endif

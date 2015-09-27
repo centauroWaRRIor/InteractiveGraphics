@@ -375,17 +375,26 @@ void Scene::a2Draw()
 		fb->clearZB(0.0f);
 
 		// draws background terrain, this doesn't rotate
-		//tms[5]->drawWireframe(*fb, *ppc);
-		//tms[5]->drawVertexDots(*fb, *ppc, 2.0f);
-		tms[5]->drawFilledFlatBarycentric(*fb, *ppc);
+		if(currentDrawMode == DrawModes::FLAT)
+			tms[5]->drawFilledFlat(*fb, *ppc, 0xFFFF0000);
+		else if(currentDrawMode == DrawModes::SCREENSCAPELERP)			
+			tms[5]->drawFilledFlatBarycentric(*fb, *ppc);
+		else if (currentDrawMode == DrawModes::WIREFRAME)
+			tms[5]->drawWireframe(*fb, *ppc);
+		else if (currentDrawMode == DrawModes::DOTS)
+			tms[5]->drawVertexDots(*fb, *ppc, 2.0f);
 
 		// draws the meshes that rotate
 		for (int i = 0; i < 5; i++)
 		{
-			//tms[i]->drawWireframe(*fb, *ppc);
-			tms[i]->drawFilledFlatBarycentric(*fb, *ppc);
-			//tms[i]->drawFilledFlat(*fb, *ppc, 0xFF0000FF);
-			//tms[i]->drawVertexDots(*fb, *ppc, 3.0f);
+			if (currentDrawMode == DrawModes::FLAT)
+				tms[i]->drawFilledFlat(*fb, *ppc, 0xFFFF0000);
+			else if (currentDrawMode == DrawModes::SCREENSCAPELERP)
+				tms[i]->drawFilledFlatBarycentric(*fb, *ppc);
+			else if (currentDrawMode == DrawModes::WIREFRAME)
+				tms[i]->drawWireframe(*fb, *ppc);
+			else if (currentDrawMode == DrawModes::DOTS)
+				tms[i]->drawVertexDots(*fb, *ppc, 2.0f);
 			tms[i]->drawAABB(*fb, *ppc, 0xFF00FF00, 0xFF000000);
 		}
 
@@ -401,10 +410,12 @@ void Scene::a2Draw()
 		// increase camera interpolation step
 		if (si >= 150 && cameraLerpStep < cameraLerpSteps)
 			cameraLerpStep++;
+#ifdef _MAKE_VIDEO_
 		// uncomment here to save video
 		pngFilename = string("movieFrame");
 		pngFilename += std::to_string(si) + ".png";
 		fb->saveAsPng(pngFilename);
+#endif
 	}
 	return;
 }
@@ -456,6 +467,8 @@ void Scene::setDrawMode(int mode)
 	case 3:
 		currentDrawMode = DrawModes::SCREENSCAPELERP;
 		break;
+	case 4:
+		currentDrawMode = DrawModes::DOTS;
 	default:
 		currentDrawMode = DrawModes::WIREFRAME;
 		break; // optional statement for default
