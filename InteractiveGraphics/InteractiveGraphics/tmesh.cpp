@@ -349,9 +349,9 @@ void TMesh::drawFilledFlatPerspCorrect(FrameBuffer & fb, const PPC & ppc) const
 
 			if (projTriangleArea > epsilonMinArea) {
 
-				VMinC.setColumn(projV1 - ppc.getEyePoint(), 0);
-				VMinC.setColumn(projV2 - ppc.getEyePoint(), 0);
-				VMinC.setColumn(projV3 - ppc.getEyePoint(), 0);
+				VMinC.setColumn(currvs[0] - ppc.getEyePoint(), 0);
+				VMinC.setColumn(currvs[1] - ppc.getEyePoint(), 1);
+				VMinC.setColumn(currvs[2] - ppc.getEyePoint(), 2);
 				VMinC.setInverted();
 				Q = VMinC * abc;
 

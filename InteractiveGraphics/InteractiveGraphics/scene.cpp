@@ -161,7 +161,7 @@ void Scene::dbgDraw() {
 	if (currentDrawMode == DrawModes::FLAT)
 		tms[0]->drawFilledFlat(*fb, *ppc, 0xFFFF0000);
 	else if (currentDrawMode == DrawModes::SCREENSCAPELERP)
-		tms[0]->drawFilledFlatBarycentric(*fb, *ppc);
+		tms[0]->drawFilledFlatPerspCorrect(*fb, *ppc);
 	else if (currentDrawMode == DrawModes::WIREFRAME)
 		tms[0]->drawWireframe(*fb, *ppc);
 	else if (currentDrawMode == DrawModes::DOTS)

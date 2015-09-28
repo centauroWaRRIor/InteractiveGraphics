@@ -26,9 +26,9 @@ public:
 	// get a
 	V3 getLowerCaseA(void) const { return a; }
 	// get b
-	V3 getLowerCaseB(void) const { return C; }
+	V3 getLowerCaseB(void) const { return b; }
 	// get c
-	V3 getLowerCaseC(void) const { return C; }
+	V3 getLowerCaseC(void) const { return c; }
 	// get eyepoint
 	V3 getEyePoint(void) const { return C; }
 	// get view direction
