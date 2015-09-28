@@ -1019,31 +1019,45 @@ static unsigned char idata_Eye[] =
 static Fl_RGB_Image image_Eye(idata_Eye, 64, 64, 4, 0);
 
 void GUI::cb_WireframeRadialButton_i(Fl_Round_Button*, void*) {
-  DrawMode_cb(1);
+  DrawMode_cb(2);
 }
 void GUI::cb_WireframeRadialButton(Fl_Round_Button* o, void* v) {
   ((GUI*)(o->parent()->parent()->user_data()))->cb_WireframeRadialButton_i(o,v);
 }
 
 void GUI::cb_FlatRadialButton_i(Fl_Round_Button*, void*) {
-  DrawMode_cb(2);
+  DrawMode_cb(3);
 }
 void GUI::cb_FlatRadialButton(Fl_Round_Button* o, void* v) {
   ((GUI*)(o->parent()->parent()->user_data()))->cb_FlatRadialButton_i(o,v);
 }
 
 void GUI::cb_ScreenSpaceLerpRadialButton_i(Fl_Round_Button*, void*) {
-  DrawMode_cb(3);
+  DrawMode_cb(4);
 }
 void GUI::cb_ScreenSpaceLerpRadialButton(Fl_Round_Button* o, void* v) {
   ((GUI*)(o->parent()->parent()->user_data()))->cb_ScreenSpaceLerpRadialButton_i(o,v);
 }
 
 void GUI::cb_DotsRadialButton_i(Fl_Round_Button*, void*) {
-  DrawMode_cb(4);
+  DrawMode_cb(1);
 }
 void GUI::cb_DotsRadialButton(Fl_Round_Button* o, void* v) {
   ((GUI*)(o->parent()->parent()->user_data()))->cb_DotsRadialButton_i(o,v);
+}
+
+void GUI::cb_ModelSpaceLerpRadialButton_i(Fl_Round_Button*, void*) {
+  DrawMode_cb(5);
+}
+void GUI::cb_ModelSpaceLerpRadialButton(Fl_Round_Button* o, void* v) {
+  ((GUI*)(o->parent()->parent()->user_data()))->cb_ModelSpaceLerpRadialButton_i(o,v);
+}
+
+void GUI::cb_TextureRadialButton_i(Fl_Round_Button*, void*) {
+  DrawMode_cb(6);
+}
+void GUI::cb_TextureRadialButton(Fl_Round_Button* o, void* v) {
+  ((GUI*)(o->parent()->parent()->user_data()))->cb_TextureRadialButton_i(o,v);
 }
 
 void GUI::cb_A2Button_i(Fl_Button*, void*) {
@@ -1055,7 +1069,7 @@ void GUI::cb_A2Button(Fl_Button* o, void* v) {
 #include "scene.h"
 
 GUI::GUI() {
-  { uiw = new Fl_Double_Window(258, 371, "GUI");
+  { uiw = new Fl_Double_Window(258, 437, "GUI");
     uiw->user_data((void*)(this));
     { dbgButton = new Fl_Button(15, 40, 225, 40, "DBG");
       dbgButton->selection_color(FL_DARK_RED);
@@ -1064,41 +1078,51 @@ GUI::GUI() {
     { Fl_Menu_Bar* o = new Fl_Menu_Bar(0, 0, 315, 30, "Main Menu");
       o->menu(menu_Main);
     } // Fl_Menu_Bar* o
-    { CameraFBSaveGroup = new Fl_Group(10, 270, 240, 90);
+    { CameraFBSaveGroup = new Fl_Group(10, 337, 240, 90);
       CameraFBSaveGroup->box(FL_ENGRAVED_BOX);
-      { SaveCameraButton = new Fl_Button(25, 285, 95, 60);
+      { SaveCameraButton = new Fl_Button(25, 352, 95, 60);
         SaveCameraButton->image(image_Camera);
         SaveCameraButton->callback((Fl_Callback*)cb_SaveCameraButton);
       } // Fl_Button* SaveCameraButton
-      { SaveFBButotn = new Fl_Button(135, 285, 95, 60);
+      { SaveFBButotn = new Fl_Button(135, 352, 95, 60);
         SaveFBButotn->image(image_Eye);
         SaveFBButotn->callback((Fl_Callback*)cb_SaveFBButotn);
       } // Fl_Button* SaveFBButotn
       CameraFBSaveGroup->end();
     } // Fl_Group* CameraFBSaveGroup
-    { RenderingOptionsGroup = new Fl_Group(10, 149, 240, 110);
+    { RenderingOptionsGroup = new Fl_Group(10, 149, 240, 166);
       RenderingOptionsGroup->box(FL_EMBOSSED_FRAME);
-      { WireframeRadialButton = new Fl_Round_Button(30, 159, 140, 15, "Wireframe");
+      { WireframeRadialButton = new Fl_Round_Button(30, 182, 140, 15, "Wireframe");
         WireframeRadialButton->type(102);
         WireframeRadialButton->down_box(FL_ROUND_DOWN_BOX);
         WireframeRadialButton->value(1);
         WireframeRadialButton->callback((Fl_Callback*)cb_WireframeRadialButton);
       } // Fl_Round_Button* WireframeRadialButton
-      { FlatRadialButton = new Fl_Round_Button(30, 181, 140, 15, "Flat");
+      { FlatRadialButton = new Fl_Round_Button(30, 210, 140, 15, "Flat");
         FlatRadialButton->type(102);
         FlatRadialButton->down_box(FL_ROUND_DOWN_BOX);
         FlatRadialButton->callback((Fl_Callback*)cb_FlatRadialButton);
       } // Fl_Round_Button* FlatRadialButton
-      { ScreenSpaceLerpRadialButton = new Fl_Round_Button(30, 204, 140, 15, "ScreenSpace Interpolation");
+      { ScreenSpaceLerpRadialButton = new Fl_Round_Button(30, 236, 140, 15, "Screen Space Interpolation");
         ScreenSpaceLerpRadialButton->type(102);
         ScreenSpaceLerpRadialButton->down_box(FL_ROUND_DOWN_BOX);
         ScreenSpaceLerpRadialButton->callback((Fl_Callback*)cb_ScreenSpaceLerpRadialButton);
       } // Fl_Round_Button* ScreenSpaceLerpRadialButton
-      { DotsRadialButton = new Fl_Round_Button(30, 228, 64, 15, "Dots");
+      { DotsRadialButton = new Fl_Round_Button(30, 157, 64, 15, "Dots");
         DotsRadialButton->type(102);
         DotsRadialButton->down_box(FL_ROUND_DOWN_BOX);
         DotsRadialButton->callback((Fl_Callback*)cb_DotsRadialButton);
       } // Fl_Round_Button* DotsRadialButton
+      { ModelSpaceLerpRadialButton = new Fl_Round_Button(30, 262, 140, 15, "Model Space Interpolation");
+        ModelSpaceLerpRadialButton->type(102);
+        ModelSpaceLerpRadialButton->down_box(FL_ROUND_DOWN_BOX);
+        ModelSpaceLerpRadialButton->callback((Fl_Callback*)cb_ModelSpaceLerpRadialButton);
+      } // Fl_Round_Button* ModelSpaceLerpRadialButton
+      { TextureRadialButton = new Fl_Round_Button(30, 289, 140, 15, "Texture");
+        TextureRadialButton->type(102);
+        TextureRadialButton->down_box(FL_ROUND_DOWN_BOX);
+        TextureRadialButton->callback((Fl_Callback*)cb_TextureRadialButton);
+      } // Fl_Round_Button* TextureRadialButton
       RenderingOptionsGroup->end();
     } // Fl_Group* RenderingOptionsGroup
     { A2Button = new Fl_Button(15, 92, 225, 40, "A2");

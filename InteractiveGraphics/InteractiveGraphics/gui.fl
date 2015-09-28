@@ -9,7 +9,7 @@ class GUI {open
   } {
     Fl_Window uiw {
       label GUI open
-      xywh {381 183 258 371} type Double visible
+      xywh {381 183 258 437} type Double visible
     } {
       Fl_Button dbgButton {
         label DBG
@@ -52,39 +52,49 @@ class GUI {open
         }
       }
       Fl_Group CameraFBSaveGroup {
-        xywh {10 270 240 90} box ENGRAVED_BOX
+        xywh {10 337 240 90} box ENGRAVED_BOX
       } {
         Fl_Button SaveCameraButton {
           callback {SaveCameraButton_cb()}
-          image {pngs/Camera-icon.png} xywh {25 285 95 60}
+          image {pngs/Camera-icon.png} xywh {25 352 95 60}
         }
         Fl_Button SaveFBButotn {
           callback {SaveFB_cb()}
-          image {pngs/Eye-Scan-icon.png} xywh {135 285 95 60}
+          image {pngs/Eye-Scan-icon.png} xywh {135 352 95 60}
         }
       }
-      Fl_Group RenderingOptionsGroup {
-        xywh {10 149 240 110} box EMBOSSED_FRAME
+      Fl_Group RenderingOptionsGroup {open
+        xywh {10 149 240 166} box EMBOSSED_FRAME
       } {
         Fl_Round_Button WireframeRadialButton {
           label Wireframe
-          callback {DrawMode_cb(1)}
-          xywh {30 159 140 15} type Radio down_box ROUND_DOWN_BOX value 1
+          callback {DrawMode_cb(2)}
+          xywh {30 182 140 15} type Radio down_box ROUND_DOWN_BOX value 1
         }
         Fl_Round_Button FlatRadialButton {
           label Flat
-          callback {DrawMode_cb(2)}
-          xywh {30 181 140 15} type Radio down_box ROUND_DOWN_BOX
+          callback {DrawMode_cb(3)}
+          xywh {30 210 140 15} type Radio down_box ROUND_DOWN_BOX
         }
         Fl_Round_Button ScreenSpaceLerpRadialButton {
-          label {ScreenSpace Interpolation}
-          callback {DrawMode_cb(3)}
-          xywh {30 204 140 15} type Radio down_box ROUND_DOWN_BOX
+          label {Screen Space Interpolation}
+          callback {DrawMode_cb(4)}
+          xywh {30 236 140 15} type Radio down_box ROUND_DOWN_BOX
         }
         Fl_Round_Button DotsRadialButton {
           label Dots
-          callback {DrawMode_cb(4)}
-          xywh {30 228 64 15} type Radio down_box ROUND_DOWN_BOX
+          callback {DrawMode_cb(1)}
+          xywh {30 157 64 15} type Radio down_box ROUND_DOWN_BOX
+        }
+        Fl_Round_Button ModelSpaceLerpRadialButton {
+          label {Model Space Interpolation}
+          callback {DrawMode_cb(5)}
+          xywh {30 262 140 15} type Radio down_box ROUND_DOWN_BOX
+        }
+        Fl_Round_Button TextureRadialButton {
+          label Texture
+          callback {DrawMode_cb(6)} selected
+          xywh {30 289 140 15} type Radio down_box ROUND_DOWN_BOX
         }
       }
       Fl_Button A2Button {
@@ -133,7 +143,6 @@ scene->a2Draw();} {}
   Function {TestCamLerp_cb()} {open
   } {
     code {scene->regFuncForKbRedraw(Scenes::CAMLERP);
-scene->testCameraLerp();} {selected
-    }
+scene->testCameraLerp();} {}
   }
 } 

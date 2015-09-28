@@ -66,6 +66,16 @@ private:
   void cb_DotsRadialButton_i(Fl_Round_Button*, void*);
   static void cb_DotsRadialButton(Fl_Round_Button*, void*);
 public:
+  Fl_Round_Button *ModelSpaceLerpRadialButton;
+private:
+  void cb_ModelSpaceLerpRadialButton_i(Fl_Round_Button*, void*);
+  static void cb_ModelSpaceLerpRadialButton(Fl_Round_Button*, void*);
+public:
+  Fl_Round_Button *TextureRadialButton;
+private:
+  void cb_TextureRadialButton_i(Fl_Round_Button*, void*);
+  static void cb_TextureRadialButton(Fl_Round_Button*, void*);
+public:
   Fl_Button *A2Button;
 private:
   void cb_A2Button_i(Fl_Button*, void*);

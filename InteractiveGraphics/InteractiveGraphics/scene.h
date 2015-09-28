@@ -7,7 +7,7 @@ using std::string;
 #include "tmesh.h"
 
 enum class Scenes { DBG, A1, A2, CAMLERP };
-enum class DrawModes { WIREFRAME, FLAT, SCREENSCAPELERP, DOTS };
+enum class DrawModes { DOTS, WIREFRAME, FLAT, SCREENSCAPELERP, MODELSPACELERP, TEXTURE };
 
 class Scene {
 private:
@@ -30,6 +30,12 @@ private:
 
 	// utlitliy function to retrieve time and date as a string
 	string retrieveTimeDate(void) const;
+	// utility function to centralize all triangle mesh drawing options
+	void drawTMesh(
+		const TMesh &tMesh, 
+		FrameBuffer &fB, 
+		const PPC &ppc,
+		bool isAABBDrawn) const;
 	// utility function to clean in between different scene demos
 	// and avoid memory leaks every time I click on the gui
 	// buttons

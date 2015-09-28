@@ -33,6 +33,28 @@ string Scene::retrieveTimeDate(void) const
 	return returnString.str();
 }
 
+void Scene::drawTMesh(
+	const TMesh & tMesh, 
+	FrameBuffer & frameBuffer, 
+	const PPC & planarPinholeCamera,
+	bool isAABBDrawn) const
+{
+	if (currentDrawMode == DrawModes::DOTS)
+		tMesh.drawVertexDots(frameBuffer, planarPinholeCamera, 2.0f);
+	else if (currentDrawMode == DrawModes::WIREFRAME)
+		tMesh.drawWireframe(frameBuffer, planarPinholeCamera);
+	else if (currentDrawMode == DrawModes::FLAT)
+		tMesh.drawFilledFlat(frameBuffer, planarPinholeCamera, 0xFFFF0000);
+	else if (currentDrawMode == DrawModes::SCREENSCAPELERP)
+		tMesh.drawFilledFlatBarycentric(frameBuffer, planarPinholeCamera);
+	else if (currentDrawMode == DrawModes::MODELSPACELERP)
+		tMesh.drawFilledFlatPerspCorrect(frameBuffer, planarPinholeCamera);
+	else if (currentDrawMode == DrawModes::TEXTURE)
+		tMesh.drawFilledFlat(frameBuffer, planarPinholeCamera, 0xFFFF0000);
+	if(isAABBDrawn)
+		tMesh.drawAABB(frameBuffer, planarPinholeCamera, 0xFF00FF00, 0xFF000000);
+}
+
 void Scene::cleanForScene(Scenes currentScene)
 {
 	if (currentScene == Scenes::A2) {
@@ -158,15 +180,7 @@ void Scene::dbgDraw() {
 	}
 	fb->set(0xFFFFFFFF);
 	fb->clearZB(0.0f);
-	if (currentDrawMode == DrawModes::FLAT)
-		tms[0]->drawFilledFlat(*fb, *ppc, 0xFFFF0000);
-	else if (currentDrawMode == DrawModes::SCREENSCAPELERP)
-		tms[0]->drawFilledFlatPerspCorrect(*fb, *ppc);
-	else if (currentDrawMode == DrawModes::WIREFRAME)
-		tms[0]->drawWireframe(*fb, *ppc);
-	else if (currentDrawMode == DrawModes::DOTS)
-		tms[0]->drawVertexDots(*fb, *ppc, 2.0f);
-	tms[0]->drawAABB(*fb, *ppc, 0xFF00FF00, 0xFF000000);
+	drawTMesh(*tms[0], *fb, *ppc, true);
 	fb->redraw();
 	return;
 }
@@ -372,15 +386,7 @@ void Scene::testCameraLerp(void)
 		fb->clearZB(0.0f);
 
 		ppc->setByInterpolation(*ppcLerp0, *ppcLerp1, i, n);
-		if (currentDrawMode == DrawModes::FLAT)
-			tms[0]->drawFilledFlat(*fb, *ppc, 0xFFFF0000);
-		else if (currentDrawMode == DrawModes::SCREENSCAPELERP)
-			tms[0]->drawFilledFlatBarycentric(*fb, *ppc);
-		else if (currentDrawMode == DrawModes::WIREFRAME)
-			tms[0]->drawWireframe(*fb, *ppc);
-		else if (currentDrawMode == DrawModes::DOTS)
-			tms[0]->drawVertexDots(*fb, *ppc, 2.0f);
-		tms[0]->drawAABB(*fb, *ppc, 0xFF00FF00, 0xFF000000);
+		drawTMesh(*tms[0], *fb, *ppc, true);
 		fb->redraw();
 		Fl::check();
 //		Fl::wait(0.09);	
@@ -455,28 +461,11 @@ void Scene::a2Draw()
 		fb->clearZB(0.0f);
 
 		// draws background terrain, this doesn't rotate
-		if(currentDrawMode == DrawModes::FLAT)
-			tms[5]->drawFilledFlat(*fb, *ppc, 0xFFFF0000);
-		else if(currentDrawMode == DrawModes::SCREENSCAPELERP)			
-			tms[5]->drawFilledFlatBarycentric(*fb, *ppc);
-		else if (currentDrawMode == DrawModes::WIREFRAME)
-			tms[5]->drawWireframe(*fb, *ppc);
-		else if (currentDrawMode == DrawModes::DOTS)
-			tms[5]->drawVertexDots(*fb, *ppc, 2.0f);
+		drawTMesh(*tms[5], *fb, *ppc, false);
 
 		// draws the meshes that rotate
 		for (int i = 0; i < 5; i++)
-		{
-			if (currentDrawMode == DrawModes::FLAT)
-				tms[i]->drawFilledFlat(*fb, *ppc, 0xFFFF0000);
-			else if (currentDrawMode == DrawModes::SCREENSCAPELERP)
-				tms[i]->drawFilledFlatBarycentric(*fb, *ppc);
-			else if (currentDrawMode == DrawModes::WIREFRAME)
-				tms[i]->drawWireframe(*fb, *ppc);
-			else if (currentDrawMode == DrawModes::DOTS)
-				tms[i]->drawVertexDots(*fb, *ppc, 2.0f);
-			tms[i]->drawAABB(*fb, *ppc, 0xFF00FF00, 0xFF000000);
-		}
+			drawTMesh(*tms[i], *fb, *ppc, true);
 
 		fb->redraw();
 		Fl::check();
@@ -541,16 +530,22 @@ void Scene::setDrawMode(int mode)
 	switch (mode) {
 
 	case 1: 
-		currentDrawMode = DrawModes::WIREFRAME;
+		currentDrawMode = DrawModes::DOTS;
 		break;
 	case 2:
-		currentDrawMode = DrawModes::FLAT;
+		currentDrawMode = DrawModes::WIREFRAME;
 		break;
 	case 3:
-		currentDrawMode = DrawModes::SCREENSCAPELERP;
+		currentDrawMode = DrawModes::FLAT;
 		break;
 	case 4:
-		currentDrawMode = DrawModes::DOTS;
+		currentDrawMode = DrawModes::SCREENSCAPELERP;
+		break;
+	case 5:
+		currentDrawMode = DrawModes::MODELSPACELERP;
+		break;
+	case 6:
+		currentDrawMode = DrawModes::TEXTURE;
 		break;
 	default:
 		currentDrawMode = DrawModes::WIREFRAME;
