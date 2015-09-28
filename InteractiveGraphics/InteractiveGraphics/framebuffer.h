@@ -44,7 +44,9 @@ public:
 	void setCheckerboard(int checkerSize, unsigned int color0,
 		unsigned int color1);
 	// sets pixel to color c if wins z test
-	void setIfCloser(const V3 &p, const V3 &c);
+	void setIfOneOverWCloser(const V3 &p, const V3 &c);
+	// sets pixel to color c if wins z test
+	void setIfWCloser(const V3 &p, const V3 &c);
 
 	// draw 2D circle with no depth test
 	void draw2DCircle(float cuf, float cvf, float radius, unsigned int color);

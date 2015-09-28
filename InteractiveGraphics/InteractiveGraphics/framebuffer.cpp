@@ -175,7 +175,7 @@ void FrameBuffer::setCheckerboard(int checkerSize, unsigned int color0,
 
 // sets pixel at p[0], p[1] to color c if and only if 
 // p[2] is closer than zb value at that pixel
-void FrameBuffer::setIfCloser(const V3 & p, const V3 & c)
+void FrameBuffer::setIfOneOverWCloser(const V3 & p, const V3 & c)
 {
 	if ((p.getX() < 0.0f) || (p.getX() >= w) || 
 		(p.getY() < 0.0f) || (p.getY() >= h))
@@ -186,6 +186,26 @@ void FrameBuffer::setIfCloser(const V3 & p, const V3 & c)
 
 	// remember that the z component of the projected point is 1/z or 1/w
 	if (zb[(h - 1 - v)*w + u] >= p.getZ())
+		return; // nothing to draw, already saw a surface closer at that pixel
+
+	zb[(h - 1 - v)*w + u] = p.getZ(); // set z at pixel to new closest surface value
+	set(u, v, c.getColor());
+}
+
+void FrameBuffer::setIfWCloser(const V3 & p, const V3 & c)
+{
+	if ((p.getX() < 0.0f) || (p.getX() >= w) ||
+		(p.getY() < 0.0f) || (p.getY() >= h))
+		return;
+
+	int u = (int)p.getX();
+	int v = (int)p.getY();
+
+	// remember that here we are assuming the z component of the point passed is
+	// w instead of 1/w. This is produced by the perspective correct linear interpolation
+	// due to 1/w not being linear in model space but in screen space and w not being 
+	// linear in screen space but in model space
+	if (zb[(h - 1 - v)*w + u] <= p.getZ())
 		return; // nothing to draw, already saw a surface closer at that pixel
 
 	zb[(h - 1 - v)*w + u] = p.getZ(); // set z at pixel to new closest surface value
@@ -259,7 +279,7 @@ void FrameBuffer::draw2DCircleIfCloser(const V3 &p, float radius, const V3 &colo
 				(p.getX() - uf)*(p.getX() - uf);
 			if (d2 > radius2)
 				continue;
-			setIfCloser(V3(uf,vf, p.getZ()), color);
+			setIfOneOverWCloser(V3(uf,vf, p.getZ()), color);
 		}
 	}
 }
@@ -565,7 +585,8 @@ void FrameBuffer::draw2DFlatBarycentricTriangle(
 				interpolatedZBufferDepth = abcDepth[0] * currPixX + abcDepth[1] * currPixY + abcDepth[2];
 
 				//set(currPixX, currPixY, interpolatedColor.getColor()); // ignores depth test
-				setIfCloser(V3((float)currPixX, (float)currPixY, interpolatedZBufferDepth), interpolatedColor);
+				setIfOneOverWCloser(V3((float)currPixX, (float)currPixY, interpolatedZBufferDepth), 
+					interpolatedColor);
 			}
 		}
 	}
@@ -780,7 +801,8 @@ void FrameBuffer::draw2DFlatPerspCorrectTriangle(
 					((D * currPixX) + (E * currPixY) + F);
 
 				//set(currPixX, currPixY, interpolatedColor.getColor()); // ignores depth test
-				setIfCloser(V3((float)currPixX, (float)currPixY, interpolatedZBufferDepth), interpolatedColor);
+				setIfWCloser(V3((float)currPixX, (float)currPixY, interpolatedZBufferDepth), 
+					interpolatedColor);
 			}
 		}
 	}
@@ -806,7 +828,7 @@ void FrameBuffer::draw2DSegment(const V3 &v0, const V3 &c0, const V3 &v1, const 
 		V3 p = v0 + (v1 - v0)*frac;
 		V3 c = c0 + (c1 - c0)*frac;
 		
-		setIfCloser(p, c);
+		setIfOneOverWCloser(p, c);
 		//setSafe((int)p[0], (int)p[1], c.getColor()); // ignores z-buffer
 	}
 }

@@ -7,6 +7,7 @@
 #include <fstream>
 #include <vector>
 #include <sstream>
+#include <cfloat>
 
 using namespace std;
 
@@ -51,7 +52,12 @@ void Scene::drawTMesh(
 		tMesh.drawFilledFlatPerspCorrect(frameBuffer, planarPinholeCamera);
 	else if (currentDrawMode == DrawModes::TEXTURE)
 		tMesh.drawFilledFlat(frameBuffer, planarPinholeCamera, 0xFFFF0000);
-	if(isAABBDrawn)
+	// drawing of AABB is overruled (not to be done) when drawing
+	// in model space interpolation mode. Reason being that drawAABB
+	// uses drawWireframe which in turn assumes depth test logic of 1/w near.
+	// Model Space interpolation mode changes depth test near logic
+	// to w near.
+	if(isAABBDrawn && currentDrawMode != DrawModes::MODELSPACELERP)
 		tMesh.drawAABB(frameBuffer, planarPinholeCamera, 0xFF00FF00, 0xFF000000);
 }
 
@@ -178,8 +184,13 @@ void Scene::dbgDraw() {
 		dbgInit();
 		doOnce = true;
 	}
+	// clear screen
 	fb->set(0xFFFFFFFF);
-	fb->clearZB(0.0f);
+	// clear zBuffer
+	if (currentDrawMode == DrawModes::MODELSPACELERP)
+		fb->clearZB(FLT_MAX);
+	else
+		fb->clearZB(0.0f);
 	drawTMesh(*tms[0], *fb, *ppc, true);
 	fb->redraw();
 	return;
@@ -383,7 +394,11 @@ void Scene::testCameraLerp(void)
 
 		// clear screen
 		fb->set(0xFFFFFFFF);
-		fb->clearZB(0.0f);
+		// clear zBuffer
+		if (currentDrawMode == DrawModes::MODELSPACELERP)
+			fb->clearZB(FLT_MAX);
+		else
+			fb->clearZB(0.0f);
 
 		ppc->setByInterpolation(*ppcLerp0, *ppcLerp1, i, n);
 		drawTMesh(*tms[0], *fb, *ppc, true);
@@ -458,7 +473,11 @@ void Scene::a2Draw()
 
 		// clear screen
 		fb->set(0xFFFFFFFF);
-		fb->clearZB(0.0f);
+		// clear zBuffer
+		if (currentDrawMode == DrawModes::MODELSPACELERP)
+			fb->clearZB(FLT_MAX);
+		else
+			fb->clearZB(0.0f);
 
 		// draws background terrain, this doesn't rotate
 		drawTMesh(*tms[5], *fb, *ppc, false);
