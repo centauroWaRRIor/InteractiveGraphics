@@ -622,7 +622,11 @@ void FrameBuffer::draw2DFlatPerspCorrectTriangle(
 	V3 redParameters(c1.getX(), c2.getX(), c3.getX());
 	V3 greenParameters(c1.getY(), c2.getY(), c3.getY());
 	V3 blueParameters(c1.getZ(), c2.getZ(), c3.getZ());
-	V3 oneOverWParameters(v1.getZ(), v2.getZ(), v3.getZ());
+
+	// w is linear in model space and not linear in screen space.For 1 / w, it's the other way around.
+	// Hence we want to use w here. Projected z is coming out as 1/w by construction so we want to
+	// invert that z to get back to original w.
+	V3 wParameters(1/(v1.getZ()), 1/(v2.getZ()), 1/(v3.getZ()));
 
 	// refer to slide 7 of RastParInterp.pdf for the math 
 	// derivation of the persp correct coefficients
@@ -639,9 +643,9 @@ void FrameBuffer::draw2DFlatPerspCorrectTriangle(
 		Q[1][0] * blueParameters[1] +
 		Q[2][0] * blueParameters[2];
 	float ADepth =
-		Q[0][0] * oneOverWParameters[0] +
-		Q[1][0] * oneOverWParameters[1] +
-		Q[2][0] * oneOverWParameters[2];
+		Q[0][0] * wParameters[0] +
+		Q[1][0] * wParameters[1] +
+		Q[2][0] * wParameters[2];
 
 	float BRed =
 		Q[0][1] * redParameters[0] +
@@ -656,9 +660,9 @@ void FrameBuffer::draw2DFlatPerspCorrectTriangle(
 		Q[1][1] * blueParameters[1] +
 		Q[2][1] * blueParameters[2];
 	float BDepth =
-		Q[0][1] * oneOverWParameters[0] +
-		Q[1][1] * oneOverWParameters[1] +
-		Q[2][1] * oneOverWParameters[2];
+		Q[0][1] * wParameters[0] +
+		Q[1][1] * wParameters[1] +
+		Q[2][1] * wParameters[2];
 
 	float CRed = 
 		Q[0][2] * redParameters[0] +
@@ -673,9 +677,9 @@ void FrameBuffer::draw2DFlatPerspCorrectTriangle(
 		Q[1][2] * blueParameters[1] +
 		Q[2][2] * blueParameters[2];
 	float CDepth =
-		Q[0][2] * oneOverWParameters[0] +
-		Q[1][2] * oneOverWParameters[1] +
-		Q[2][2] * oneOverWParameters[2];
+		Q[0][2] * wParameters[0] +
+		Q[1][2] * wParameters[1] +
+		Q[2][2] * wParameters[2];
 
 	float D = Q[0][0] + Q[1][0] + Q[2][0];
 	float E = Q[0][1] + Q[1][1] + Q[2][1];
