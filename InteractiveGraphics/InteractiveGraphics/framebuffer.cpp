@@ -2,7 +2,6 @@
 #include "scene.h"
 #include "lodepng.h"
 #include "scene.h"
-#include "m33.h"
 #include <iostream>
 #include <math.h>
 #include <cfloat>
@@ -624,13 +623,6 @@ void FrameBuffer::draw2DFlatPerspCorrectTriangle(
 	V3 greenParameters(c1.getY(), c2.getY(), c3.getY());
 	V3 blueParameters(c1.getZ(), c2.getZ(), c3.getZ());
 	V3 oneOverWParameters(v1.getZ(), v2.getZ(), v3.getZ());
-
-	// build barycentric interpolation matrix
-	M33 baryMatrixInverse(
-		V3(xCoords[0], yCoords[0], 1),
-		V3(xCoords[1], yCoords[1], 1),
-		V3(xCoords[2], yCoords[2], 1));
-	baryMatrixInverse.setInverted();
 
 	// refer to slide 7 of RastParInterp.pdf for the math 
 	// derivation of the persp correct coefficients

@@ -6,7 +6,7 @@ using std::ios;
 using std::ifstream;
 #include "TMesh.h"
 
-const float epsilonMinArea = 0.01f;
+const float epsilonMinArea = 0.1f;
 
 TMesh::TMesh():	
 	vertsN(0),
@@ -213,7 +213,7 @@ void TMesh::drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color) 
 {
 	if ((vertsN == 0) || (trisN < 1)) {
 		cerr << "ERROR: Attempted to draw an empty mesh. "
-			<< "drawWireframe() command was aborted." << endl;
+			<< "drawFilledFlat() command was aborted." << endl;
 		return;
 	}
 
@@ -261,7 +261,7 @@ void TMesh::drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc) const {
 
 	if ((vertsN == 0) || (trisN < 1)) {
 		cerr << "ERROR: Attempted to draw an empty mesh. "
-			<< "drawWireframe() command was aborted." << endl;
+			<< "drawFilledFlatBarycentric() command was aborted." << endl;
 		return;
 	}
 
@@ -301,6 +301,67 @@ void TMesh::drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc) const {
 					projV3, currcols[2]);
 			}
 			else 
+				cerr << "WARNING: Triangle screen footprint is stoo small, discarding..." << endl;
+		}
+	}
+}
+
+void TMesh::drawFilledFlatPerspCorrect(FrameBuffer & fb, const PPC & ppc) const
+{
+	if ((vertsN == 0) || (trisN < 1)) {
+		cerr << "ERROR: Attempted to draw an empty mesh. "
+			<< "drawFilledFlatPerspCorrect() command was aborted." << endl;
+		return;
+	}
+
+	// Matrix used for perspective correct linear 
+	// interpolation of raster parameters.
+	// (refer to slide 7 of RastParInterp.pdf for the math 
+	// derivation of Q matrix)
+	M33 Q, VMinC, abc;
+	abc.setColumn(ppc.getLowerCaseA(), 0);
+	abc.setColumn(ppc.getLowerCaseB(), 1);
+	abc.setColumn(ppc.getLowerCaseC(), 2);
+
+	// Draw filled triangles with color linearly interpolated 
+	// in screen space.
+	for (int tri = 0; tri < trisN; tri++) {
+		V3 currvs[3];
+		// grab current triangle vertices
+		currvs[0] = verts[tris[3 * tri + 0]];
+		currvs[1] = verts[tris[3 * tri + 1]];
+		currvs[2] = verts[tris[3 * tri + 2]];
+		V3 currcols[3];
+		// grab current triangle vertex colors
+		currcols[0] = cols[tris[3 * tri + 0]];
+		currcols[1] = cols[tris[3 * tri + 1]];
+		currcols[2] = cols[tris[3 * tri + 2]];
+
+		// project triangle vertices using camera
+		V3 projV1, projV2, projV3;
+		bool isVisible = ppc.project(currvs[0], projV1);
+		isVisible &= ppc.project(currvs[1], projV2);
+		isVisible &= ppc.project(currvs[2], projV3);
+		if (isVisible) {
+
+			// Rasterizer should reject triangles whose screen footprint is very small.
+			float projTriangleArea = compute2DTriangleArea(projV1, projV2, projV3);
+
+			if (projTriangleArea > epsilonMinArea) {
+
+				VMinC.setColumn(projV1 - ppc.getEyePoint(), 0);
+				VMinC.setColumn(projV2 - ppc.getEyePoint(), 0);
+				VMinC.setColumn(projV3 - ppc.getEyePoint(), 0);
+				VMinC.setInverted();
+				Q = VMinC * abc;
+
+				fb.draw2DFlatPerspCorrectTriangle(
+					projV1, currcols[0],
+					projV2, currcols[1],
+					projV3, currcols[2],
+					Q);
+			}
+			else
 				cerr << "WARNING: Triangle screen footprint is stoo small, discarding..." << endl;
 		}
 	}

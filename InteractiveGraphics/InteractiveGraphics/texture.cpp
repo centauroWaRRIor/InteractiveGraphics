@@ -4,13 +4,11 @@ using std::size_t;
 #include <iostream>
 using std::endl;
 using std::cerr;
-#include <vector>
-using std::vector;
 
 void Texture::loadPngTexture(const string &filename)
 {
 	//decode
-	unsigned error = lodepng::decode(image, texWidth, texHeight, filename.c_str());
+	unsigned error = lodepng::decode(texels, texWidth, texHeight, filename.c_str());
 
 	//if there's an error, display it
 	if (error) std::cout << "decoder error " << error << ": " << lodepng_error_text(error) << std::endl;
@@ -20,7 +18,6 @@ void Texture::loadPngTexture(const string &filename)
 
 Texture::Texture(const string &filename)
 {
-	size_t found;
 	if (filename.find(".png") != std::string::npos) {
 		loadPngTexture(filename);
 	}
@@ -35,15 +32,15 @@ Texture::Texture(const string &filename)
 unsigned int Texture::sampleTex(float floatS, float floatT) const
 {
 	// assumes input s and t go from [0-1]
-	unsigned int s = floatS * texWidth;
-	unsigned int t = floatT * texHeight;
+	unsigned int s = (unsigned int) floatS * texWidth;
+	unsigned int t = (unsigned int) floatT * texHeight;
 	unsigned char red, green, blue, alpha;
 	unsigned int sampleColor;
 		
-	red = image[s * texWidth + t + 0];
-	green = image[s * texWidth + t + 1];
-	blue = image[s * texWidth + t + 2];
-	alpha = image[s * texWidth + t + 3];
+	red = texels[s * texWidth + t + 0];
+	green = texels[s * texWidth + t + 1];
+	blue = texels[s * texWidth + t + 2];
+	alpha = texels[s * texWidth + t + 3];
 
 	((unsigned char*)(&sampleColor))[0] = red;
 	((unsigned char*)(&sampleColor))[1] = green;

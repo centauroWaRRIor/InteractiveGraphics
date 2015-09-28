@@ -1,12 +1,14 @@
 #pragma once
-#include <string>;
+#include <string>
 using std::string;
+#include <vector>
+using std::vector;
 
 // Implements a texture class for texturing operations
 class Texture {
 
 private:
-	vector<unsigned char> image; //the raw pixels
+	vector<unsigned char> texels;
 	unsigned int texWidth, texHeight;
 
 	void loadPngTexture(const string &filename);

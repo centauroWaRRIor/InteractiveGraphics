@@ -6,6 +6,7 @@
 #include <string>
 using std::string;
 #include "v3.h"
+#include "m33.h"
 
 // framebuffer + window class
 

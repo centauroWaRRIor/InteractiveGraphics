@@ -23,6 +23,12 @@ public:
 	// constructor from saved camera file
 	PPC(string cameraFilename);
 
+	// get a
+	V3 getLowerCaseA(void) const { return a; }
+	// get b
+	V3 getLowerCaseB(void) const { return C; }
+	// get c
+	V3 getLowerCaseC(void) const { return C; }
 	// get eyepoint
 	V3 getEyePoint(void) const { return C; }
 	// get view direction
