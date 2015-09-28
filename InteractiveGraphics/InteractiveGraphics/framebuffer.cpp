@@ -427,6 +427,39 @@ void FrameBuffer::draw2DFlatBarycentricTriangle(
 	yCoords[1] = v2.getY();
 	yCoords[2] = v3.getY();
 
+	// compute screen axes-aligned bounding box for triangle
+	float bbox[2][2]; // for each x and y, store the min and max values
+	bbox[0][0] = FLT_MAX;
+	bbox[0][1] = FLT_MIN; // take into account that y is inverted in screen coordinates
+	bbox[1][0] = FLT_MIN;
+	bbox[1][1] = FLT_MAX; // take into account that y is inverted in screen coordinates
+	for (int i = 0; i < 3; i++) {
+		// find min x
+		if (xCoords[i] < bbox[0][0])
+			bbox[0][0] = xCoords[i];
+		// find min y
+		if (yCoords[i] > bbox[0][1])
+			bbox[0][1] = yCoords[i];
+		// find max x
+		if (xCoords[i] > bbox[1][0])
+			bbox[1][0] = xCoords[i];
+		// find max y
+		if (yCoords[i] < bbox[1][1])
+			bbox[1][1] = yCoords[i];
+	}
+
+	// clip bounding box to screen boundaries
+	if (bbox[1][1] > (h - 1) || bbox[0][1] < 0 || bbox[1][0] < 0 || (bbox[0][0] > w - 1))
+		return; // discard this triangle
+	if (bbox[0][0] < 0)
+		bbox[0][0] = 0;
+	if (bbox[1][0] > w - 1)
+		bbox[1][0] = (float)w - 1;
+	if (bbox[1][1] < 0)
+		bbox[1][1] = 0;
+	if (bbox[0][1] > h - 1)
+		bbox[0][1] = (float)h - 1;
+
 	// build rasterization parameters to be lerped in screen space
 	V3 redParameters(c1.getX(), c2.getX(), c3.getX());
 	V3 greenParameters(c1.getY(), c2.getY(), c3.getY());
@@ -492,39 +525,7 @@ void FrameBuffer::draw2DFlatBarycentricTriangle(
 		c[2] = -c[2];
 	}
 
-	// compute screen axes-aligned bounding box for triangle
-	float bbox[2][2]; // for each x and y, store the min and max values
-	bbox[0][0] = FLT_MAX;
-	bbox[0][1] = FLT_MIN; // take into account that y is inverted in screen coordinates
-	bbox[1][0] = FLT_MIN;
-	bbox[1][1] = FLT_MAX; // take into account that y is inverted in screen coordinates
-	for (int i = 0; i < 3; i++) {
-		// find min x
-		if (xCoords[i] < bbox[0][0])
-			bbox[0][0] = xCoords[i];
-		// find min y
-		if (yCoords[i] > bbox[0][1])
-			bbox[0][1] = yCoords[i];
-		// find max x
-		if (xCoords[i] > bbox[1][0])
-			bbox[1][0] = xCoords[i];
-		// find max y
-		if (yCoords[i] < bbox[1][1])
-			bbox[1][1] = yCoords[i];
-	}
-
-	// clip bounding box to screen boundaries
-	if (bbox[1][1] > (h - 1) || bbox[0][1] < 0 || bbox[1][0] < 0 || (bbox[0][0] > w - 1))
-		return;
-	if (bbox[0][0] < 0)
-		bbox[0][0] = 0;
-	if (bbox[1][0] > w - 1)
-		bbox[1][0] = (float)w - 1;
-	if (bbox[1][1] < 0)
-		bbox[1][1] = 0;
-	if (bbox[0][1] > h - 1)
-		bbox[0][1] = (float)h - 1;
-
+	// use clipped AABB
 	int left = (int)(bbox[0][0] + 0.5);
 	int right = (int)(bbox[1][0] - 0.5);
 	int top = (int)(bbox[1][1] + 0.5);
@@ -563,6 +564,224 @@ void FrameBuffer::draw2DFlatBarycentricTriangle(
 				interpolatedColor[2] = abcBlue[0] * currPixX + abcBlue[1] * currPixY + abcBlue[2];
 
 				interpolatedZBufferDepth = abcDepth[0] * currPixX + abcDepth[1] * currPixY + abcDepth[2];
+
+				//set(currPixX, currPixY, interpolatedColor.getColor()); // ignores depth test
+				setIfCloser(V3((float)currPixX, (float)currPixY, interpolatedZBufferDepth), interpolatedColor);
+			}
+		}
+	}
+}
+
+void FrameBuffer::draw2DFlatPerspCorrectTriangle(
+	const V3 & v1, const V3 & c1,
+	const V3 & v2, const V3 & c2,
+	const V3 & v3, const V3 & c3,
+	M33 Q)
+{
+	float xCoords[3], yCoords[3]; // this format is more triangle edge equation friendly 
+	xCoords[0] = v1.getX();
+	xCoords[1] = v2.getX();
+	xCoords[2] = v3.getX();
+	yCoords[0] = v1.getY();
+	yCoords[1] = v2.getY();
+	yCoords[2] = v3.getY();
+
+	// compute screen axes-aligned bounding box for triangle
+	float bbox[2][2]; // for each x and y, store the min and max values
+	bbox[0][0] = FLT_MAX;
+	bbox[0][1] = FLT_MIN; // take into account that y is inverted in screen coordinates
+	bbox[1][0] = FLT_MIN;
+	bbox[1][1] = FLT_MAX; // take into account that y is inverted in screen coordinates
+	for (int i = 0; i < 3; i++) {
+		// find min x
+		if (xCoords[i] < bbox[0][0])
+			bbox[0][0] = xCoords[i];
+		// find min y
+		if (yCoords[i] > bbox[0][1])
+			bbox[0][1] = yCoords[i];
+		// find max x
+		if (xCoords[i] > bbox[1][0])
+			bbox[1][0] = xCoords[i];
+		// find max y
+		if (yCoords[i] < bbox[1][1])
+			bbox[1][1] = yCoords[i];
+	}
+
+	// clip bounding box to screen boundaries
+	if (bbox[1][1] > (h - 1) || bbox[0][1] < 0 || bbox[1][0] < 0 || (bbox[0][0] > w - 1))
+		return; // discard this triangle
+	if (bbox[0][0] < 0)
+		bbox[0][0] = 0;
+	if (bbox[1][0] > w - 1)
+		bbox[1][0] = (float)w - 1;
+	if (bbox[1][1] < 0)
+		bbox[1][1] = 0;
+	if (bbox[0][1] > h - 1)
+		bbox[0][1] = (float)h - 1;
+
+	// build rasterization parameters to be lerped in screen space
+	V3 redParameters(c1.getX(), c2.getX(), c3.getX());
+	V3 greenParameters(c1.getY(), c2.getY(), c3.getY());
+	V3 blueParameters(c1.getZ(), c2.getZ(), c3.getZ());
+	V3 oneOverWParameters(v1.getZ(), v2.getZ(), v3.getZ());
+
+	// build barycentric interpolation matrix
+	M33 baryMatrixInverse(
+		V3(xCoords[0], yCoords[0], 1),
+		V3(xCoords[1], yCoords[1], 1),
+		V3(xCoords[2], yCoords[2], 1));
+	baryMatrixInverse.setInverted();
+
+	// refer to slide 7 of RastParInterp.pdf for the math 
+	// derivation of the persp correct coefficients
+	float ARed = 
+		Q[0][0] * redParameters[0] + 
+		Q[1][0] * redParameters[1] + 
+		Q[2][0] * redParameters[2];
+	float AGreen = 
+		Q[0][0] * greenParameters[0] +
+		Q[1][0] * greenParameters[1] +
+		Q[2][0] * greenParameters[2];
+	float ABlue =
+		Q[0][0] * blueParameters[0] +
+		Q[1][0] * blueParameters[1] +
+		Q[2][0] * blueParameters[2];
+	float ADepth =
+		Q[0][0] * oneOverWParameters[0] +
+		Q[1][0] * oneOverWParameters[1] +
+		Q[2][0] * oneOverWParameters[2];
+
+	float BRed =
+		Q[0][1] * redParameters[0] +
+		Q[1][1] * redParameters[1] +
+		Q[2][1] * redParameters[2];
+	float BGreen =
+		Q[0][1] * greenParameters[0] +
+		Q[1][1] * greenParameters[1] +
+		Q[2][1] * greenParameters[2];
+	float BBlue =
+		Q[0][1] * blueParameters[0] +
+		Q[1][1] * blueParameters[1] +
+		Q[2][1] * blueParameters[2];
+	float BDepth =
+		Q[0][1] * oneOverWParameters[0] +
+		Q[1][1] * oneOverWParameters[1] +
+		Q[2][1] * oneOverWParameters[2];
+
+	float CRed = 
+		Q[0][2] * redParameters[0] +
+		Q[1][2] * redParameters[1] +
+		Q[2][2] * redParameters[2];
+	float CGreen =
+		Q[0][2] * greenParameters[0] +
+		Q[1][2] * greenParameters[1] +
+		Q[2][2] * greenParameters[2];
+	float CBlue =
+		Q[0][2] * blueParameters[0] +
+		Q[1][2] * blueParameters[1] +
+		Q[2][2] * blueParameters[2];
+	float CDepth =
+		Q[0][2] * oneOverWParameters[0] +
+		Q[1][2] * oneOverWParameters[1] +
+		Q[2][2] * oneOverWParameters[2];
+
+	float D = Q[0][0] + Q[1][0] + Q[2][0];
+	float E = Q[0][1] + Q[1][1] + Q[2][1];
+	float F = Q[0][2] + Q[1][2] + Q[2][2];
+
+	// final raster parameter interpolated result stored here
+	V3 interpolatedColor;
+	float interpolatedZBufferDepth = 0.0f;
+
+	float a[3], b[3], c[3]; // a,b,c for the three triangle edge expressions
+
+	// establish the three edge equations 
+	// edge that goes through vertices 0 and 1
+	a[0] = yCoords[1] - yCoords[0];
+	b[0] = -xCoords[1] + xCoords[0];
+	c[0] = -xCoords[0] * yCoords[1] + yCoords[0] * xCoords[1];
+	// edge that goes through vertices 1 and 2
+	a[1] = yCoords[2] - yCoords[1];
+	b[1] = -xCoords[2] + xCoords[1];
+	c[1] = -xCoords[1] * yCoords[2] + yCoords[1] * xCoords[2];
+	// edge that goes through vertices 2 and 0
+	a[2] = yCoords[0] - yCoords[2];
+	b[2] = -xCoords[0] + xCoords[2];
+	c[2] = -xCoords[2] * yCoords[0] + yCoords[2] * xCoords[0];
+
+	// temporary used to establish correct sidedness
+	float sidedness;
+	sidedness = a[0] * xCoords[2] + b[0] * yCoords[2] + c[0];
+	// I need to investigate if this special case has to do with the
+	// order in which the vertices are specified (i.e., cw vs ccw)
+	if (sidedness < 0) { // special case, normally inside half space is positive
+						 // flip
+		a[0] = -a[0];
+		b[0] = -b[0];
+		c[0] = -c[0];
+	}
+	sidedness = a[1] * xCoords[0] + b[1] * yCoords[0] + c[1];
+	if (sidedness < 0) { // special case, normally inside half space is positive
+						 // flip
+		a[1] = -a[1];
+		b[1] = -b[1];
+		c[1] = -c[1];
+	}
+	sidedness = a[2] * xCoords[1] + b[2] * yCoords[1] + c[2];
+	if (sidedness < 0) { // special case, normally inside half space is positive
+						 // flip
+		a[2] = -a[2];
+		b[2] = -b[2];
+		c[2] = -c[2];
+	}
+
+	// use clipped AABB
+	int left = (int)(bbox[0][0] + 0.5);
+	int right = (int)(bbox[1][0] - 0.5);
+	int top = (int)(bbox[1][1] + 0.5);
+	int bottom = (int)(bbox[0][1] - 0.5);
+
+	int currPixX, currPixY; // current pixel considered
+	float currEELS[3], currEE[3]; // edge expression values for the line starts and within line
+	for (currPixY = top,
+		currEELS[0] = a[0] * (left + 0.5f) + b[0] * (top + 0.5f) + c[0],
+		currEELS[1] = a[1] * (left + 0.5f) + b[1] * (top + 0.5f) + c[1],
+		currEELS[2] = a[2] * (left + 0.5f) + b[2] * (top + 0.5f) + c[2];
+		currPixY <= bottom;
+		currPixY++,
+		currEELS[0] += b[0],
+		currEELS[1] += b[1],
+		currEELS[2] += b[2]) {
+		for (currPixX = left,
+			currEE[0] = currEELS[0],
+			currEE[1] = currEELS[1],
+			currEE[2] = currEELS[2];
+			currPixX <= right;
+			currPixX++,
+			currEE[0] += a[0],
+			currEE[1] += a[1],
+			currEE[2] += a[2]) {
+
+			if (currEE[0] < 0 || currEE[1] < 0 || currEE[2] < 0) {
+				continue; // outside triangle
+			}
+			else { // found pixel inside of triangle; set it to interpolated color
+
+				// find interpolated color by plugging abc coefficients and u,vs into
+				// barycentric color interpolation equation
+				interpolatedColor[0] = 
+					((ARed * currPixX) + (BRed * currPixY) + CRed) /
+					((D * currPixX) + (E * currPixY) + F);
+				interpolatedColor[1] = 
+					((AGreen * currPixX) + (BGreen * currPixY) + CGreen) /
+					((D * currPixX) + (E * currPixY) + F);
+				interpolatedColor[2] = 
+					((ABlue * currPixX) + (BBlue * currPixY) + CBlue) /
+					((D * currPixX) + (E * currPixY) + F);
+
+				interpolatedZBufferDepth = 
+					((ADepth * currPixX) + (BDepth * currPixY) + CDepth) /
+					((D * currPixX) + (E * currPixY) + F);
 
 				//set(currPixX, currPixY, interpolatedColor.getColor()); // ignores depth test
 				setIfCloser(V3((float)currPixX, (float)currPixY, interpolatedZBufferDepth), interpolatedColor);

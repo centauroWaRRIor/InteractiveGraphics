@@ -60,6 +60,12 @@ public:
 		const V3 &v1, const V3 &c1,
 		const V3 &v2, const V3 &c2,
 		const V3 &v3, const V3 &c3);
+	// draw 2D triangle using perspectively correct interpolation of colors and depth test
+	void draw2DFlatPerspCorrectTriangle(
+		const V3 &v1, const V3 &c1,
+		const V3 &v2, const V3 &c2,
+		const V3 &v3, const V3 &c3,
+		M33 perspCorrectMatQ);
 
 	// draw 2D segment specified by 2 points, each with own color
 	void draw2DSegment(const V3 &v0, const V3 &c0, const V3 &v1, const V3 &c1);
