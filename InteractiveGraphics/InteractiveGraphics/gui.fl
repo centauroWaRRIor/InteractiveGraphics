@@ -48,6 +48,16 @@ class GUI {open
               callback {TestCamLerp_cb()}
               xywh {0 0 30 20}
             }
+            MenuItem TestCamControls {
+              label {Test Camera Controls}
+              callback {TestCamControls_cb()}
+              xywh {0 0 30 20}
+            }
+            MenuItem A2Demo {
+              label {A2 Demo}
+              callback {A2Button_cb()}
+              xywh {0 0 30 20}
+            }
           }
         }
       }
@@ -93,13 +103,13 @@ class GUI {open
         }
         Fl_Round_Button TextureRadialButton {
           label Texture
-          callback {DrawMode_cb(6)} selected
+          callback {DrawMode_cb(6)}
           xywh {30 289 140 15} type Radio down_box ROUND_DOWN_BOX
         }
       }
-      Fl_Button A2Button {
-        label A2
-        callback {A2Button_cb()}
+      Fl_Button A3Button {
+        label A3
+        callback {DBG_cb()} selected
         xywh {15 92 225 40} selection_color 72
       }
     }
@@ -144,5 +154,10 @@ scene->a2Draw();} {}
   } {
     code {scene->regFuncForKbRedraw(Scenes::CAMLERP);
 scene->testCameraLerp();} {}
+  }
+  Function {TestCamControls_cb()} {open
+  } {
+    code {scene->regFuncForKbRedraw(Scenes::CAMCONTROL);
+scene->testCameraControl();} {}
   }
 } 

@@ -82,6 +82,7 @@ void Scene::cleanForScene(Scenes currentScene)
 		ppc = new PPC(hfov, w, h);
 		// reset init flags
 		isDGBInit = false;
+		isTestCamControlsInit = false;
 	}
 	else if (currentScene == Scenes::DBG) {
 		if (tms[0]) {
@@ -100,8 +101,29 @@ void Scene::cleanForScene(Scenes currentScene)
 		ppc = new PPC(hfov, w, h);
 		// reset init flags
 		isA2Init = false;
+		isTestCamControlsInit = false;
 	}
 	else if (currentScene == Scenes::CAMLERP) {
+		if (tms[0]) {
+			delete tms[0];
+			tms[0] = nullptr;
+		}
+		if (ppcLerp0)
+			delete ppcLerp0;
+		if (ppcLerp1)
+			delete ppcLerp1;
+		ppcLerp0 = nullptr;
+		ppcLerp1 = nullptr;
+		// reset camera
+		delete ppc;
+		ppc = nullptr;
+		ppc = new PPC(hfov, w, h);
+		// reset init flags
+		isA2Init = false;
+		isDGBInit = false;
+		isTestCamControlsInit = false;
+	}
+	else if (currentScene == Scenes::CAMCONTROL) {
 		if (tms[0]) {
 			delete tms[0];
 			tms[0] = nullptr;
@@ -159,6 +181,7 @@ Scene::Scene():
 
   isA2Init = false;
   isDGBInit = false;
+  isTestCamControlsInit = false;
 }
 
 Scene::~Scene()
@@ -179,10 +202,9 @@ Scene::~Scene()
 // function linked to the DBG GUI button for testing new features
 void Scene::dbgDraw() {
 
-	static bool doOnce = false;
-	if (!doOnce) {
+	if (!isDGBInit) {
 		dbgInit();
-		doOnce = true;
+		isDGBInit = true;
 	}
 	// clear screen
 	fb->set(0xFFFFFFFF);
@@ -409,6 +431,52 @@ void Scene::testCameraLerp(void)
 	return;
 }
 
+void Scene::testCameraControl(void)
+{
+	if (!isTestCamControlsInit) {
+
+		cleanForScene(Scenes::CAMCONTROL);
+		tms[0] = new TMesh();
+
+		// test teapot
+		ppc->moveForward(-200.0f);
+
+		tms[0]->loadBin("geometry/teapot1K.bin");
+
+		tms[0]->translate(V3(10.0f, -10.0f, 0.0f));
+		tms[0]->scale(1.0);
+
+		//// test fitToAABB (works fine)
+		//AABB testAABB(tms[0]->getAABB());
+		//testAABB.translate(V3(-40.0f, 0.0f, 0.0f));
+		//testAABB.scale(2.0f);
+		//tms[0]->setToFitAABB(testAABB);
+
+		// test camera positioning functionality (works fine)
+		//ppc->positionRelativeToPoint(
+		//	verts[0], 
+		//	V3(0.0f, -1.0f, 0.0f), 
+		//	V3(0.0f, 0.0f, -1.0f), 
+		//	100.0f);
+
+		// test saving/loading file (works fine)
+		//ppc->saveCameraToFile("cameraSaveTest2.txt");
+		//ppc->loadCameraFromFile("cameraSaveTest1.txt");
+
+		isTestCamControlsInit = true;
+	}
+	// clear screen
+	fb->set(0xFFFFFFFF);
+	// clear zBuffer
+	if (currentDrawMode == DrawModes::MODELSPACELERP)
+		fb->clearZB(FLT_MAX);
+	else
+		fb->clearZB(0.0f);
+	drawTMesh(*tms[0], *fb, *ppc, true);
+	fb->redraw();
+	return;
+}
+
 void Scene::a2Init()
 {
 	cleanForScene(Scenes::A2);
@@ -523,6 +591,11 @@ void Scene::saveThisFramebuffer(void) const
 	fb->saveAsPng(filename);
 }
 
+void Scene::regFuncForKbRedraw(Scenes newScene)
+{
+	currentScene = newScene;
+}
+
 void Scene::currentSceneRedraw(void)
 {
 	switch (currentScene) {
@@ -537,6 +610,9 @@ void Scene::currentSceneRedraw(void)
 		break;
 	case Scenes::CAMLERP:
 		testCameraLerp();
+		break;
+	case Scenes::CAMCONTROL:
+		testCameraControl();
 		break;
 	default:
 		dbgDraw();
@@ -571,7 +647,8 @@ void Scene::setDrawMode(int mode)
 		break; // optional statement for default
 	}
 	if (currentScene == Scenes::DBG ||
-		currentScene == Scenes::CAMLERP) {
+		currentScene == Scenes::CAMLERP ||
+		currentScene == Scenes::CAMCONTROL) {
 		currentSceneRedraw();
 	}
 }

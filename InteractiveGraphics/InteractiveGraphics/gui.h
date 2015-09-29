@@ -34,6 +34,16 @@ private:
   void cb_A2TestCamLerp_i(Fl_Menu_*, void*);
   static void cb_A2TestCamLerp(Fl_Menu_*, void*);
 public:
+  static Fl_Menu_Item *TestCamControls;
+private:
+  void cb_TestCamControls_i(Fl_Menu_*, void*);
+  static void cb_TestCamControls(Fl_Menu_*, void*);
+public:
+  static Fl_Menu_Item *A2Demo;
+private:
+  void cb_A2Demo_i(Fl_Menu_*, void*);
+  static void cb_A2Demo(Fl_Menu_*, void*);
+public:
   Fl_Group *CameraFBSaveGroup;
   Fl_Button *SaveCameraButton;
 private:
@@ -76,10 +86,10 @@ private:
   void cb_TextureRadialButton_i(Fl_Round_Button*, void*);
   static void cb_TextureRadialButton(Fl_Round_Button*, void*);
 public:
-  Fl_Button *A2Button;
+  Fl_Button *A3Button;
 private:
-  void cb_A2Button_i(Fl_Button*, void*);
-  static void cb_A2Button(Fl_Button*, void*);
+  void cb_A3Button_i(Fl_Button*, void*);
+  static void cb_A3Button(Fl_Button*, void*);
 public:
   void show();
   void DBG_cb();
@@ -90,5 +100,6 @@ public:
   void SaveFB_cb();
   void A2Button_cb();
   void TestCamLerp_cb();
+  void TestCamControls_cb();
 };
 #endif

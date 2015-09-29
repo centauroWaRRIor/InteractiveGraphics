@@ -10,6 +10,7 @@
 class TMesh {
 private:
 	V3 *verts, *cols; // verices and colors arrays
+	float *tcs; // texture coorindates array (s,t)'s
 	int vertsN; // number of vertices
 	unsigned int *tris; // triangle indices array of size trisN*3
 	int trisN; // number of triangle (not number of indices in array)
@@ -81,6 +82,8 @@ public:
 	
 	// constructs a tetrahedron for testing purposes
 	void createTetrahedronTestMesh(void);
+	// creates a quad for texture testing purposes
+	void createQuadTestTMesh(void);
 
 	// small static utitlities
 	// self note: because they are static no need for object instance.

@@ -13,6 +13,7 @@ TMesh::TMesh():
 	trisN(0),
 	verts(nullptr),
 	cols(nullptr),
+	tcs(nullptr),
 	tris(nullptr),
 	aabb(nullptr)
 {
@@ -38,6 +39,10 @@ void TMesh::cleanUp(void)
 	if (cols) {
 		delete[] cols;
 		cols = nullptr;
+	}
+	if (tcs) {
+		delete[] tcs;
+		tcs = nullptr;
 	}
 	if (tris) {
 		delete[] tris;
@@ -131,6 +136,54 @@ void TMesh::createTetrahedronTestMesh(void)
 	aabb = new AABB(computeAABB());
 }
 
+void TMesh::createQuadTestTMesh(void)
+{
+	this->cleanUp();
+
+	vertsN = 4;
+	// allocate vertices array
+	verts = new V3[vertsN];
+	// allocate colors array
+	cols = new V3[vertsN];
+	// allocate tex coords array
+
+	// following vertices define a sample tetrahedron
+	verts[0] = V3(0.0f, 0.0f, 0.0f);
+	cols[0] = V3(0.0f, 0.0f, 0.0f);
+	tcs[0] = 0.0;
+	tcs[1] = 0.0;
+	verts[1] = V3(40.0f, 0.0f, 0.0f);
+	cols[1] = V3(1.0f, 0.0f, 0.0f);
+	tcs[2] = 0.0;
+	tcs[3] = 0.0;
+	verts[2] = V3(40.0f, 40.0f, 0.0f);
+	cols[2] = V3(0.0f, 1.0f, 0.0f);
+	tcs[4] = 0.0;
+	tcs[5] = 0.0;
+	verts[3] = V3(0.0f, 40.0f, 0.0f);
+	cols[3] = V3(0.0f, 0.0f, 1.0f);
+	tcs[6] = 0.0;
+	tcs[7] = 0.0;
+
+	trisN = 2;
+
+	// allocate triangle indices array
+	tris = new unsigned int[3 * trisN];
+
+	int tri = 0;
+	tris[3 * tri + 0] = 0;
+	tris[3 * tri + 1] = 1;
+	tris[3 * tri + 2] = 3;
+
+	tri++;
+	tris[3 * tri + 0] = 1;
+	tris[3 * tri + 1] = 2;
+	tris[3 * tri + 2] = 3;
+
+	// compute aabb
+	aabb = new AABB(computeAABB());
+}
+
 void TMesh::loadBin(const char * fname)
 {
 	// clean in case it had other stuff already loaded
@@ -172,10 +225,6 @@ void TMesh::loadBin(const char * fname)
 
 	// reads whether or not there is texture info in the file
 	ifs.read(&yn, 1); // texture coordinates 2 floats
-	float *tcs = nullptr; // don't have texture coordinates for now
-	//if (tcs)
-		//delete [] tcs;
-	//tcs = nullptr;
 	if (yn == 'y') {
 		tcs = new float[vertsN * 2];
 	}
@@ -205,7 +254,6 @@ void TMesh::loadBin(const char * fname)
 	// recompute AABB
 	aabb = new AABB(computeAABB());
 
-	delete[]tcs;
 	delete[]normals;
 }
 
