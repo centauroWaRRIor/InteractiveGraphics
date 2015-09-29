@@ -2,6 +2,7 @@
 #include "v3.h"
 #include "ppc.h"
 #include "aabb.h"
+#include "texture.h"
 #include "framebuffer.h"
 
 // Implements a triangle mesh class that stores shared vertices and triangle 
@@ -43,16 +44,19 @@ public:
 	int getTriangleIndex(int i) const;
 
 	// drawing functionality
+	// draws the triangle mesh vertices as dots
+	void drawVertexDots(FrameBuffer &fb, const PPC &ppc, float dotSize) const;
+	// draws triangle mesh in wireframe mode
+	void drawWireframe(FrameBuffer &fb, const PPC &ppc) const;
 	// draws triangle mesh in filled mode using a single color
 	void drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color) const;
 	// draws triangle mesh in filled mode using screen space interpolation of colors
 	void drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc) const;
-	// draws triangle mesh in filled mode using screen space interpolation of colors
+	// draws triangle mesh in filled mode using model space interpolation of colors
 	void drawFilledFlatPerspCorrect(FrameBuffer &fb, const PPC &ppc) const;
-	// draws triangle mesh in wireframe mode
-	void drawWireframe(FrameBuffer &fb, const PPC &ppc) const;
-	// draws the triangle mesh vertices as dots
-	void drawVertexDots(FrameBuffer &fb, const PPC &ppc, float dotSize) const;
+	// draws triangle mesh in texture mode using model space for s,t linear interpolation 
+	// and screen space for depth linear interpolation
+	void drawTextured(FrameBuffer &fb, const PPC &ppc, const Texture &texture) const;
 
 	// rotate about axis
 	void rotateAboutAxis(const V3 &aO, const V3 &adir, float theta);

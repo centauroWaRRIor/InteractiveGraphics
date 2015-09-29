@@ -12,6 +12,7 @@ private:
 	unsigned int texWidth, texHeight;
 
 	void loadPngTexture(const string &filename);
+	float clip(float n, float lower, float upper) const;
 public:
 	Texture(const string &filename);
 	//~Texture(); // automatic destructor should suffice

@@ -295,10 +295,18 @@ void TMesh::drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc) const {
 
 			if (projTriangleArea > epsilonMinArea) {
 
+				// build barycentric interpolation matrix
+				M33 baryMatrixInverse(
+				V3(projV1[0], projV1[1], 1),
+				V3(projV2[0], projV2[1], 1),
+				V3(projV3[0], projV3[1], 1));
+				baryMatrixInverse.setInverted();
+
 				fb.draw2DFlatBarycentricTriangle(
 					projV1, currcols[0],
 					projV2, currcols[1],
-					projV3, currcols[2]);
+					projV3, currcols[2],
+					baryMatrixInverse);
 			}
 			else 
 				cerr << "WARNING: Triangle screen footprint is stoo small, discarding..." << endl;
@@ -360,6 +368,77 @@ void TMesh::drawFilledFlatPerspCorrect(FrameBuffer & fb, const PPC & ppc) const
 					projV2, currcols[1],
 					projV3, currcols[2],
 					Q);
+			}
+			else
+				cerr << "WARNING: Triangle screen footprint is stoo small, discarding..." << endl;
+		}
+	}
+}
+
+void TMesh::drawTextured(FrameBuffer & fb, const PPC & ppc, const Texture & texture) const
+{
+	if ((vertsN == 0) || (trisN < 1)) {
+		cerr << "ERROR: Attempted to draw an empty mesh. "
+			<< "drawFilledFlatPerspCorrect() command was aborted." << endl;
+		return;
+	}
+
+	// Matrix used for perspective correct linear 
+	// interpolation of raster parameters.
+	// (refer to slide 7 of RastParInterp.pdf for the math 
+	// derivation of Q matrix)
+	M33 perspCorrectMatQ, VMinC, abc;
+	abc.setColumn(ppc.getLowerCaseA(), 0);
+	abc.setColumn(ppc.getLowerCaseB(), 1);
+	abc.setColumn(ppc.getLowerCaseC(), 2);
+
+	// Draw filled triangles with color linearly interpolated 
+	// in screen space.
+	for (int tri = 0; tri < trisN; tri++) {
+		V3 currvs[3];
+		// grab current triangle vertices
+		currvs[0] = verts[tris[3 * tri + 0]];
+		currvs[1] = verts[tris[3 * tri + 1]];
+		currvs[2] = verts[tris[3 * tri + 2]];
+		V3 currcols[3];
+		// grab current triangle vertex colors
+		currcols[0] = cols[tris[3 * tri + 0]];
+		currcols[1] = cols[tris[3 * tri + 1]];
+		currcols[2] = cols[tris[3 * tri + 2]];
+
+		// project triangle vertices using camera
+		V3 projV1, projV2, projV3;
+		bool isVisible = ppc.project(currvs[0], projV1);
+		isVisible &= ppc.project(currvs[1], projV2);
+		isVisible &= ppc.project(currvs[2], projV3);
+		if (isVisible) {
+
+			// Rasterizer should reject triangles whose screen footprint is very small.
+			float projTriangleArea = compute2DTriangleArea(projV1, projV2, projV3);
+
+			if (projTriangleArea > epsilonMinArea) {
+
+				// build screen space linear interpolation matrix for 1/w
+				M33 baryMatrixInverse(
+					V3(projV1[0], projV1[1], 1),
+					V3(projV2[0], projV2[1], 1),
+					V3(projV3[0], projV3[1], 1));
+				baryMatrixInverse.setInverted();
+
+				// build model space linear interpolation for s and t
+				VMinC.setColumn(currvs[0] - ppc.getEyePoint(), 0);
+				VMinC.setColumn(currvs[1] - ppc.getEyePoint(), 1);
+				VMinC.setColumn(currvs[2] - ppc.getEyePoint(), 2);
+				VMinC.setInverted();
+				perspCorrectMatQ = VMinC * abc;
+
+				fb.draw2DTexturedTriangle(
+					projV1, currcols[0],
+					projV2, currcols[1],
+					projV3, currcols[2],
+					baryMatrixInverse,
+					perspCorrectMatQ,
+					texture);
 			}
 			else
 				cerr << "WARNING: Triangle screen footprint is stoo small, discarding..." << endl;

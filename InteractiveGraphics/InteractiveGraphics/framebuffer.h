@@ -7,6 +7,7 @@
 using std::string;
 #include "v3.h"
 #include "m33.h"
+#include "texture.h"
 
 // framebuffer + window class
 
@@ -62,13 +63,25 @@ public:
 	void draw2DFlatBarycentricTriangle(
 		const V3 &v1, const V3 &c1,
 		const V3 &v2, const V3 &c2,
-		const V3 &v3, const V3 &c3);
+		const V3 &v3, const V3 &c3,
+		M33 baryMatrixInverse);
 	// draw 2D triangle using perspectively correct interpolation of colors and depth test
 	void draw2DFlatPerspCorrectTriangle(
 		const V3 &v1, const V3 &c1,
 		const V3 &v2, const V3 &c2,
 		const V3 &v3, const V3 &c3,
 		M33 perspCorrectMatQ);
+	// draw 2D triangle using model space linear interpolation of s,t and 
+	// screen space linar interpolation of depth test. Reason being that 1/w
+	// gives us greater precision for near depth test as opposed to w which 
+	// givues us better precision for far depth test which we don't care as much
+	void draw2DTexturedTriangle(
+		const V3 &v1, const V3 &c1,
+		const V3 &v2, const V3 &c2,
+		const V3 &v3, const V3 &c3,
+		M33 baryMatrixInverse,
+		M33 perspCorrectMatQ,
+		const Texture &texture);
 
 	// draw 2D segment specified by 2 points, each with own color
 	void draw2DSegment(const V3 &v0, const V3 &c0, const V3 &v1, const V3 &c1);
