@@ -806,6 +806,7 @@ void FrameBuffer::draw2DTexturedTriangle(
 	const V3 & v1, const V3 & c1, 
 	const V3 & v2, const V3 & c2, 
 	const V3 & v3, const V3 & c3, 
+	const V3 &sCoords, const V3 &tCoords,
 	M33 baryMatrixInverse, 
 	M33 perspCorrectMatQ,
 	const Texture &texture)
@@ -851,9 +852,9 @@ void FrameBuffer::draw2DTexturedTriangle(
 	if (bbox[0][1] > h - 1)
 		bbox[0][1] = (float)h - 1;
 
-	// build rasterization parameters to be lerped in screen space
-	V3 sParameter(c1.getX(), c2.getX(), c3.getX());
-	V3 tParameter(c1.getY(), c2.getY(), c3.getY());
+	// make copy to honor const
+	V3 sParameters(sCoords);
+	V3 tParameters(tCoords);
 
 	// 1/w is linear in screen space and gives greater precision for near 
 	// objects when depth testing.
@@ -863,31 +864,31 @@ void FrameBuffer::draw2DTexturedTriangle(
 	// derivation of the persp correct coefficients for 
 	// model space interpolation
 	float As =
-		perspCorrectMatQ[0][0] * sParameter[0] +
-		perspCorrectMatQ[1][0] * sParameter[1] +
-		perspCorrectMatQ[2][0] * sParameter[2];
+		perspCorrectMatQ[0][0] * sParameters[0] +
+		perspCorrectMatQ[1][0] * sParameters[1] +
+		perspCorrectMatQ[2][0] * sParameters[2];
 	float At =
-		perspCorrectMatQ[0][0] * tParameter[0] +
-		perspCorrectMatQ[1][0] * tParameter[1] +
-		perspCorrectMatQ[2][0] * tParameter[2];
+		perspCorrectMatQ[0][0] * tParameters[0] +
+		perspCorrectMatQ[1][0] * tParameters[1] +
+		perspCorrectMatQ[2][0] * tParameters[2];
 
 	float Bs =
-		perspCorrectMatQ[0][1] * sParameter[0] +
-		perspCorrectMatQ[1][1] * sParameter[1] +
-		perspCorrectMatQ[2][1] * sParameter[2];
+		perspCorrectMatQ[0][1] * sParameters[0] +
+		perspCorrectMatQ[1][1] * sParameters[1] +
+		perspCorrectMatQ[2][1] * sParameters[2];
 	float Bt =
-		perspCorrectMatQ[0][1] * tParameter[0] +
-		perspCorrectMatQ[1][1] * tParameter[1] +
-		perspCorrectMatQ[2][1] * tParameter[2];
+		perspCorrectMatQ[0][1] * tParameters[0] +
+		perspCorrectMatQ[1][1] * tParameters[1] +
+		perspCorrectMatQ[2][1] * tParameters[2];
 
 	float Cs =
-		perspCorrectMatQ[0][2] * sParameter[0] +
-		perspCorrectMatQ[1][2] * sParameter[1] +
-		perspCorrectMatQ[2][2] * sParameter[2];
+		perspCorrectMatQ[0][2] * sParameters[0] +
+		perspCorrectMatQ[1][2] * sParameters[1] +
+		perspCorrectMatQ[2][2] * sParameters[2];
 	float Ct =
-		perspCorrectMatQ[0][2] * tParameter[0] +
-		perspCorrectMatQ[1][2] * tParameter[1] +
-		perspCorrectMatQ[2][2] * tParameter[2];
+		perspCorrectMatQ[0][2] * tParameters[0] +
+		perspCorrectMatQ[1][2] * tParameters[1] +
+		perspCorrectMatQ[2][2] * tParameters[2];
 
 	float D = perspCorrectMatQ[0][0] + perspCorrectMatQ[1][0] + perspCorrectMatQ[2][0];
 	float E = perspCorrectMatQ[0][1] + perspCorrectMatQ[1][1] + perspCorrectMatQ[2][1];

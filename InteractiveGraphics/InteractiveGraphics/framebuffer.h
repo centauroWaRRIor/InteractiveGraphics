@@ -79,6 +79,7 @@ public:
 		const V3 &v1, const V3 &c1,
 		const V3 &v2, const V3 &c2,
 		const V3 &v3, const V3 &c3,
+		const V3 &sCoords, const V3 &tCoords,
 		M33 baryMatrixInverse,
 		M33 perspCorrectMatQ,
 		const Texture &texture);

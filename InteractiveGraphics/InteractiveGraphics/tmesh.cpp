@@ -146,6 +146,7 @@ void TMesh::createQuadTestTMesh(void)
 	// allocate colors array
 	cols = new V3[vertsN];
 	// allocate tex coords array
+	tcs = new float[vertsN * 2];
 
 	// following vertices define a sample tetrahedron
 	verts[0] = V3(0.0f, 0.0f, 0.0f);
@@ -154,16 +155,16 @@ void TMesh::createQuadTestTMesh(void)
 	tcs[1] = 0.0;
 	verts[1] = V3(40.0f, 0.0f, 0.0f);
 	cols[1] = V3(1.0f, 0.0f, 0.0f);
-	tcs[2] = 0.0;
+	tcs[2] = 1.0;
 	tcs[3] = 0.0;
 	verts[2] = V3(40.0f, 40.0f, 0.0f);
 	cols[2] = V3(0.0f, 1.0f, 0.0f);
-	tcs[4] = 0.0;
-	tcs[5] = 0.0;
+	tcs[4] = 1.0;
+	tcs[5] = 1.0;
 	verts[3] = V3(0.0f, 40.0f, 0.0f);
 	cols[3] = V3(0.0f, 0.0f, 1.0f);
 	tcs[6] = 0.0;
-	tcs[7] = 0.0;
+	tcs[7] = 1.0;
 
 	trisN = 2;
 
@@ -266,13 +267,17 @@ void TMesh::drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color) 
 	}
 
 	// Draw filled triangles with single color (provided)
+	V3 currvs[3];
+	V3 currcols[3];
+	V3 projV1, projV2, projV3;
+	bool isVisible;
 	for (int tri = 0; tri < trisN; tri++) {
-		V3 currvs[3];
+		
 		// grab current triangle vertices
 		currvs[0] = verts[tris[3 * tri + 0]];
 		currvs[1] = verts[tris[3 * tri + 1]];
 		currvs[2] = verts[tris[3 * tri + 2]];
-		V3 currcols[3];
+		
 		// grab current triangle vertex colors
 		currcols[0] = cols[tris[3 * tri + 0]];
 		currcols[1] = cols[tris[3 * tri + 1]];
@@ -280,7 +285,7 @@ void TMesh::drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color) 
 
 		// project triangle vertices using camera
 		V3 projV1, projV2, projV3;
-		bool isVisible = ppc.project(currvs[0], projV1);
+		isVisible = ppc.project(currvs[0], projV1);
 		isVisible &= ppc.project(currvs[1], projV2);
 		isVisible &= ppc.project(currvs[2], projV3);
 
@@ -313,15 +318,19 @@ void TMesh::drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc) const {
 		return;
 	}
 
-	// Draw filled triangles with color linearly interpolated 
-	// in screen space.
+	// Draw filled triangles with color and depth linearly 
+	// interpolated in screen space.
+	V3 currvs[3];
+	V3 currcols[3];
+	V3 projV1, projV2, projV3;
+	bool isVisible;
 	for (int tri = 0; tri < trisN; tri++) {
-		V3 currvs[3];
+		
 		// grab current triangle vertices
 		currvs[0] = verts[tris[3 * tri + 0]];
 		currvs[1] = verts[tris[3 * tri + 1]];
 		currvs[2] = verts[tris[3 * tri + 2]];
-		V3 currcols[3];
+		
 		// grab current triangle vertex colors
 		currcols[0] = cols[tris[3 * tri + 0]];
 		currcols[1] = cols[tris[3 * tri + 1]];
@@ -329,7 +338,7 @@ void TMesh::drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc) const {
 
 		// project triangle vertices using camera
 		V3 projV1, projV2, projV3;
-		bool isVisible = ppc.project(currvs[0], projV1);
+		isVisible = ppc.project(currvs[0], projV1);
 		isVisible &= ppc.project(currvs[1], projV2);
 		isVisible &= ppc.project(currvs[2], projV3);
 		if (isVisible) {
@@ -379,15 +388,19 @@ void TMesh::drawFilledFlatPerspCorrect(FrameBuffer & fb, const PPC & ppc) const
 	abc.setColumn(ppc.getLowerCaseB(), 1);
 	abc.setColumn(ppc.getLowerCaseC(), 2);
 
-	// Draw filled triangles with color linearly interpolated 
-	// in screen space.
+	// Draw filled triangles with color and depth linearly 
+	// interpolated in model space.
+	V3 currvs[3];
+	V3 currcols[3];
+	V3 projV1, projV2, projV3;
+	bool isVisible;
 	for (int tri = 0; tri < trisN; tri++) {
-		V3 currvs[3];
+		
 		// grab current triangle vertices
 		currvs[0] = verts[tris[3 * tri + 0]];
 		currvs[1] = verts[tris[3 * tri + 1]];
 		currvs[2] = verts[tris[3 * tri + 2]];
-		V3 currcols[3];
+		
 		// grab current triangle vertex colors
 		currcols[0] = cols[tris[3 * tri + 0]];
 		currcols[1] = cols[tris[3 * tri + 1]];
@@ -395,7 +408,7 @@ void TMesh::drawFilledFlatPerspCorrect(FrameBuffer & fb, const PPC & ppc) const
 
 		// project triangle vertices using camera
 		V3 projV1, projV2, projV3;
-		bool isVisible = ppc.project(currvs[0], projV1);
+		isVisible = ppc.project(currvs[0], projV1);
 		isVisible &= ppc.project(currvs[1], projV2);
 		isVisible &= ppc.project(currvs[2], projV3);
 		if (isVisible) {
@@ -440,23 +453,37 @@ void TMesh::drawTextured(FrameBuffer & fb, const PPC & ppc, const Texture & text
 	abc.setColumn(ppc.getLowerCaseB(), 1);
 	abc.setColumn(ppc.getLowerCaseC(), 2);
 
-	// Draw filled triangles with color linearly interpolated 
-	// in screen space.
+	// Draw textured triangles with s,t linearly
+	// interpolated in model space and depth linearly
+	// interpolated in screen space.
+	V3 currvs[3];
+	V3 currcols[3];
+	V3 sParameters, tParameters;
+	V3 projV1, projV2, projV3;
+	bool isVisible;
 	for (int tri = 0; tri < trisN; tri++) {
-		V3 currvs[3];
+		
 		// grab current triangle vertices
 		currvs[0] = verts[tris[3 * tri + 0]];
 		currvs[1] = verts[tris[3 * tri + 1]];
 		currvs[2] = verts[tris[3 * tri + 2]];
-		V3 currcols[3];
+		
 		// grab current triangle vertex colors
 		currcols[0] = cols[tris[3 * tri + 0]];
 		currcols[1] = cols[tris[3 * tri + 1]];
 		currcols[2] = cols[tris[3 * tri + 2]];
 
+		// grab current triangle texture coordinates
+		sParameters[0] = tcs[tris[3 * tri + 0] * 2 + 0];
+		sParameters[1] = tcs[tris[3 * tri + 1] * 2 + 0];
+		sParameters[2] = tcs[tris[3 * tri + 2] * 2 + 0];
+
+		tParameters[0] = tcs[tris[3 * tri + 0] * 2 + 1];
+		tParameters[1] = tcs[tris[3 * tri + 1] * 2 + 1];
+		tParameters[2] = tcs[tris[3 * tri + 2] * 2 + 1];
+
 		// project triangle vertices using camera
-		V3 projV1, projV2, projV3;
-		bool isVisible = ppc.project(currvs[0], projV1);
+		isVisible = ppc.project(currvs[0], projV1);
 		isVisible &= ppc.project(currvs[1], projV2);
 		isVisible &= ppc.project(currvs[2], projV3);
 		if (isVisible) {
@@ -484,6 +511,7 @@ void TMesh::drawTextured(FrameBuffer & fb, const PPC & ppc, const Texture & text
 					projV1, currcols[0],
 					projV2, currcols[1],
 					projV3, currcols[2],
+					sParameters, tParameters,
 					baryMatrixInverse,
 					perspCorrectMatQ,
 					texture);
@@ -516,17 +544,20 @@ void TMesh::drawWireframe(FrameBuffer &fb, const PPC &ppc) const {
 	}
 
 	// Draw vertices connections as line segments
+	V3 currvs[3];
+	V3 currcols[3];
 	for (int tri = 0; tri < trisN; tri++) {
-		V3 currvs[3];
+		
 		// grab current triangle vertices
 		currvs[0] = verts[tris[3 * tri + 0]];
 		currvs[1] = verts[tris[3 * tri + 1]];
 		currvs[2] = verts[tris[3 * tri + 2]];
-		V3 currcols[3];
+		
 		// grab current triangle vertex colors
 		currcols[0] = cols[tris[3 * tri + 0]];
 		currcols[1] = cols[tris[3 * tri + 1]];
 		currcols[2] = cols[tris[3 * tri + 2]];
+
 		// draw edges between vertices of this triangle
 		// e1 = 0,1  e2 = 1,2  e3 = 2,0 (hence the %3)
 		for (int ei = 0; ei < 3; ei++) {
@@ -546,9 +577,9 @@ void TMesh::drawVertexDots(FrameBuffer &fb,const PPC &ppc, float dotSize) const 
 		return;
 	}
 
+	V3 projP;
 	// Draw vertices as cricles
 	for (int vi = 0; vi < vertsN; vi++) {
-		V3 projP;
 		if (!ppc.project(verts[vi], projP))
 			continue;
 		fb.draw2DCircleIfCloser(projP, dotSize, cols[vi]);

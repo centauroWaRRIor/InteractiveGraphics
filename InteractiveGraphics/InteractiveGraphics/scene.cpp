@@ -148,7 +148,8 @@ Scene::Scene():
 	fb(nullptr), 
     gui(nullptr),
     ppc(nullptr),
-	tms(nullptr)
+	tms(nullptr),
+	texObject(nullptr)
 {
 
   // create user interface
@@ -197,6 +198,8 @@ Scene::~Scene()
 		delete ppcLerp0;
 	if (ppcLerp1)
 		delete ppcLerp1;
+	if (texObject)
+		delete texObject;
 }
 
 // function linked to the DBG GUI button for testing new features
@@ -213,7 +216,9 @@ void Scene::dbgDraw() {
 		fb->clearZB(FLT_MAX);
 	else
 		fb->clearZB(0.0f);
-	drawTMesh(*tms[0], *fb, *ppc, true);
+	//drawTMesh(*tms[0], *fb, *ppc, false);
+	//Woven_flower_pxr128.png
+	tms[0]->drawTextured(*fb, *ppc, *texObject);
 	fb->redraw();
 	return;
 }
@@ -223,30 +228,13 @@ void Scene::dbgInit() {
 	cleanForScene(Scenes::DBG);
 	tms[0] = new TMesh();
 
-	// test teapot
+	// test textured quad
 	ppc->moveForward(-200.0f);
 	
-	tms[0]->loadBin("geometry/teapot1K.bin");
-	
-	tms[0]->translate(V3(10.0f, -10.0f, 0.0f));
-	tms[0]->scale(1.0);
+	tms[0]->createQuadTestTMesh();
 
-	//// test fitToAABB (works fine)
-	//AABB testAABB(tms[0]->getAABB());
-	//testAABB.translate(V3(-40.0f, 0.0f, 0.0f));
-	//testAABB.scale(2.0f);
-	//tms[0]->setToFitAABB(testAABB);
-
-	// test camera positioning functionality (works fine)
-	//ppc->positionRelativeToPoint(
-	//	verts[0], 
-	//	V3(0.0f, -1.0f, 0.0f), 
-	//	V3(0.0f, 0.0f, -1.0f), 
-	//	100.0f);
-
-	// test saving/loading file (works fine)
-	//ppc->saveCameraToFile("cameraSaveTest2.txt");
-	//ppc->loadCameraFromFile("cameraSaveTest1.txt");
+	if (texObject == nullptr)
+		texObject = new Texture("pngs\\Woven_flower_pxr128.png");
 }
 
 void Scene::testRot() {
