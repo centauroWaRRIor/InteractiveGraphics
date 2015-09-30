@@ -1055,9 +1055,25 @@ void FrameBuffer::draw2DTexturedTriangle(
 				texelColor = texture.sampleTex(interpolatedS, interpolatedT);
 				colorVector.setFromColor(texelColor);
 
-				// write to frame buffer if 1/w is closer
-				setIfOneOverWCloser(V3((float)currPixX, (float)currPixY, interpolatedZBufferDepth),
-					colorVector);
+				// write to frame buffer if 1/w is closer works
+				//setIfOneOverWCloser(V3((float)currPixX, (float)currPixY, interpolatedZBufferDepth),
+					//colorVector);
+
+				// test sprite support (alpha based)
+				unsigned char alpha = ((unsigned char*)(&texelColor))[3];
+				//float alphFloat = ((float)(alpha))/255.0f;
+				if (alpha > 0) 
+				{
+					float alphaModulation = (float)(alpha);
+					alphaModulation /= 255.0f;
+					interpolatedColor[0] = interpolatedColor[0] * alphaModulation;
+					interpolatedColor[1] = interpolatedColor[1] * alphaModulation;
+					interpolatedColor[2] = interpolatedColor[2] * alphaModulation;
+					//interpolatedColor = interpolatedColor * alphaModulation;
+					setIfOneOverWCloser(V3((float)currPixX, (float)currPixY, interpolatedZBufferDepth),
+						interpolatedColor);
+				}
+
 			}
 		}
 	}

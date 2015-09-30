@@ -210,7 +210,9 @@ void Scene::dbgDraw() {
 		isDGBInit = true;
 	}
 	// clear screen
-	fb->set(0xFFFFFFFF);
+	//fb->set(0xFFFFFFFF);
+	// clear screen for sprite
+	fb->set(0x00000000);
 	// clear zBuffer
 	if (currentDrawMode == DrawModes::MODELSPACELERP)
 		fb->clearZB(FLT_MAX);
@@ -235,7 +237,8 @@ void Scene::dbgInit() {
 	//tms[0]->loadBin("geometry/teapot1K.bin");
 
 	if (texObject == nullptr)
-		texObject = new Texture("pngs\\Woven_flower_pxr128.png");
+		//texObject = new Texture("pngs\\Woven_flower_pxr128.png");
+		texObject = new Texture("pngs\\Decal_12.png");// tests sprites
 }
 
 void Scene::testRot() {
