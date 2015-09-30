@@ -41,15 +41,16 @@ unsigned int Texture::sampleTex(float floatS, float floatT) const
 {
 	// assumes input s and t go from [0-1]
 	// clamps otherwise
-	unsigned int s = (unsigned int) (clip(floatS, 0.0f, 1.0f) * texWidth);
-	unsigned int t = (unsigned int) (clip(floatT, 0.0f, 1.0f) * texHeight);
+	unsigned int s = (unsigned int) (clip(floatS, 0.0f, 1.0f) * (texWidth - 1));
+	unsigned int t = (unsigned int) (clip(floatT, 0.0f, 1.0f) * (texHeight - 1));
 	unsigned char red, green, blue, alpha;
 	unsigned int sampleColor;
-		
-	red = texels[t * texWidth + s + 0];
-	green = texels[t * texWidth + s + 1];
-	blue = texels[t * texWidth + s + 2];
-	alpha = texels[t * texWidth + s + 3];
+	
+	unsigned int texelIndex = (t * texWidth + s) * 4;
+	red = texels[texelIndex + 0];
+	green = texels[texelIndex + 1];
+	blue = texels[texelIndex + 2];
+	alpha = texels[texelIndex + 3];
 
 	((unsigned char*)(&sampleColor))[0] = red;
 	((unsigned char*)(&sampleColor))[1] = green;

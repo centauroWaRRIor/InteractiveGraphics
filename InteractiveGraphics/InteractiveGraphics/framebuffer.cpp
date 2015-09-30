@@ -890,6 +890,51 @@ void FrameBuffer::draw2DTexturedTriangle(
 		perspCorrectMatQ[1][2] * tParameters[1] +
 		perspCorrectMatQ[2][2] * tParameters[2];
 
+	// Debug with colors ///
+	V3 redParameters(c1.getX(), c2.getX(), c3.getX());
+	V3 greenParameters(c1.getY(), c2.getY(), c3.getY());
+	V3 blueParameters(c1.getZ(), c2.getZ(), c3.getZ());
+
+	float ARed =
+		perspCorrectMatQ[0][0] * redParameters[0] +
+		perspCorrectMatQ[1][0] * redParameters[1] +
+		perspCorrectMatQ[2][0] * redParameters[2];
+	float AGreen =
+		perspCorrectMatQ[0][0] * greenParameters[0] +
+		perspCorrectMatQ[1][0] * greenParameters[1] +
+		perspCorrectMatQ[2][0] * greenParameters[2];
+	float ABlue =
+		perspCorrectMatQ[0][0] * blueParameters[0] +
+		perspCorrectMatQ[1][0] * blueParameters[1] +
+		perspCorrectMatQ[2][0] * blueParameters[2];
+
+	float BRed =
+		perspCorrectMatQ[0][1] * redParameters[0] +
+		perspCorrectMatQ[1][1] * redParameters[1] +
+		perspCorrectMatQ[2][1] * redParameters[2];
+	float BGreen =
+		perspCorrectMatQ[0][1] * greenParameters[0] +
+		perspCorrectMatQ[1][1] * greenParameters[1] +
+		perspCorrectMatQ[2][1] * greenParameters[2];
+	float BBlue =
+		perspCorrectMatQ[0][1] * blueParameters[0] +
+		perspCorrectMatQ[1][1] * blueParameters[1] +
+		perspCorrectMatQ[2][1] * blueParameters[2];
+
+	float CRed =
+		perspCorrectMatQ[0][2] * redParameters[0] +
+		perspCorrectMatQ[1][2] * redParameters[1] +
+		perspCorrectMatQ[2][2] * redParameters[2];
+	float CGreen =
+		perspCorrectMatQ[0][2] * greenParameters[0] +
+		perspCorrectMatQ[1][2] * greenParameters[1] +
+		perspCorrectMatQ[2][2] * greenParameters[2];
+	float CBlue =
+		perspCorrectMatQ[0][2] * blueParameters[0] +
+		perspCorrectMatQ[1][2] * blueParameters[1] +
+		perspCorrectMatQ[2][2] * blueParameters[2];
+	////////////////////////
+
 	float D = perspCorrectMatQ[0][0] + perspCorrectMatQ[1][0] + perspCorrectMatQ[2][0];
 	float E = perspCorrectMatQ[0][1] + perspCorrectMatQ[1][1] + perspCorrectMatQ[2][1];
 	float F = perspCorrectMatQ[0][2] + perspCorrectMatQ[1][2] + perspCorrectMatQ[2][2];
@@ -986,14 +1031,31 @@ void FrameBuffer::draw2DTexturedTriangle(
 					((At * currPixX) + (Bt * currPixY) + Ct) /
 					((D * currPixX) + (E * currPixY) + F);
 
+				/// debug with colors //////
+				V3 interpolatedColor;
+				// find interpolated color by following the model space formula
+				// for rater parameter linear interpolation 
+				// r = ((A * u) + (B * v) + C) / ((D * u) + (E * v) + F)
+				interpolatedColor[0] =
+					((ARed * currPixX) + (BRed * currPixY) + CRed) /
+					((D * currPixX) + (E * currPixY) + F);
+				interpolatedColor[1] =
+					((AGreen * currPixX) + (BGreen * currPixY) + CGreen) /
+					((D * currPixX) + (E * currPixY) + F);
+				interpolatedColor[2] =
+					((ABlue * currPixX) + (BBlue * currPixY) + CBlue) /
+					((D * currPixX) + (E * currPixY) + F);
+
+				///////////////////////////
+
 				// use screen space linear interpolation for the depth since we are using 1/w
 				interpolatedZBufferDepth = abcDepth[0] * currPixX + abcDepth[1] * currPixY + abcDepth[2];
 
 				// sample texture using lerped result of s,t raster parameters (in model space)
 				texelColor = texture.sampleTex(interpolatedS, interpolatedT);
+				colorVector.setFromColor(texelColor);
 
 				// write to frame buffer if 1/w is closer
-				colorVector.setFromColor(texelColor);
 				setIfOneOverWCloser(V3((float)currPixX, (float)currPixY, interpolatedZBufferDepth),
 					colorVector);
 			}

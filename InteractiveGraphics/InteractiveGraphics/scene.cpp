@@ -217,8 +217,8 @@ void Scene::dbgDraw() {
 	else
 		fb->clearZB(0.0f);
 	//drawTMesh(*tms[0], *fb, *ppc, false);
-	//Woven_flower_pxr128.png
 	tms[0]->drawTextured(*fb, *ppc, *texObject);
+	//fb->loadFromPng("pngs\\Woven_flower_pxr128.png");
 	fb->redraw();
 	return;
 }
@@ -232,6 +232,7 @@ void Scene::dbgInit() {
 	ppc->moveForward(-200.0f);
 	
 	tms[0]->createQuadTestTMesh();
+	//tms[0]->loadBin("geometry/teapot1K.bin");
 
 	if (texObject == nullptr)
 		texObject = new Texture("pngs\\Woven_flower_pxr128.png");
