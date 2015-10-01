@@ -210,9 +210,9 @@ void Scene::dbgDraw() {
 		isDGBInit = true;
 	}
 	// clear screen
-	//fb->set(0xFFFFFFFF);
+	fb->set(0xFFFFFFFF);
 	// clear screen for sprite
-	fb->set(0x00000000);
+	//fb->set(0x00000000);
 	// clear zBuffer
 	if (currentDrawMode == DrawModes::MODELSPACELERP)
 		fb->clearZB(FLT_MAX);
@@ -220,7 +220,10 @@ void Scene::dbgDraw() {
 		fb->clearZB(0.0f);
 	//drawTMesh(*tms[0], *fb, *ppc, false);
 	tms[0]->drawTextured(*fb, *ppc, *texObject);
-	//fb->loadFromPng("pngs\\Woven_flower_pxr128.png");
+	// draw original for comparison
+	//fb->loadFromPng("pngs\\Woven_flower_pxr128.png"); 
+	fb->loadFromPng("pngs\\Macbeth_color_checker_pxr128.png"); 
+
 	fb->redraw();
 	return;
 }
@@ -237,8 +240,9 @@ void Scene::dbgInit() {
 	//tms[0]->loadBin("geometry/teapot1K.bin");
 
 	if (texObject == nullptr)
-		//texObject = new Texture("pngs\\Woven_flower_pxr128.png");
-		texObject = new Texture("pngs\\Decal_12.png");// tests sprites
+		//texObject = new Texture("pngs\\Woven_flower_pxr128.png"); // test simple texturing
+		texObject = new Texture("pngs\\Macbeth_color_checker_pxr128.png"); // test tiling
+		//texObject = new Texture("pngs\\Decal_12.png");// tests sprites
 }
 
 void Scene::testRot() {

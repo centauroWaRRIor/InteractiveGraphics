@@ -1052,27 +1052,26 @@ void FrameBuffer::draw2DTexturedTriangle(
 				interpolatedZBufferDepth = abcDepth[0] * currPixX + abcDepth[1] * currPixY + abcDepth[2];
 
 				// sample texture using lerped result of s,t raster parameters (in model space)
-				texelColor = texture.sampleTex(interpolatedS, interpolatedT);
+				//texelColor = texture.sampleTexClamp(interpolatedS, interpolatedT);
+				texelColor = texture.sampleTexTile(interpolatedS, interpolatedT);
 				colorVector.setFromColor(texelColor);
 
 				// write to frame buffer if 1/w is closer works
-				//setIfOneOverWCloser(V3((float)currPixX, (float)currPixY, interpolatedZBufferDepth),
-					//colorVector);
+				setIfOneOverWCloser(V3((float)currPixX, (float)currPixY, interpolatedZBufferDepth),
+					colorVector);
 
-				// test sprite support (alpha based)
-				unsigned char alpha = ((unsigned char*)(&texelColor))[3];
-				//float alphFloat = ((float)(alpha))/255.0f;
-				if (alpha > 0) 
-				{
-					float alphaModulation = (float)(alpha);
-					alphaModulation /= 255.0f;
-					interpolatedColor[0] = interpolatedColor[0] * alphaModulation;
-					interpolatedColor[1] = interpolatedColor[1] * alphaModulation;
-					interpolatedColor[2] = interpolatedColor[2] * alphaModulation;
-					//interpolatedColor = interpolatedColor * alphaModulation;
-					setIfOneOverWCloser(V3((float)currPixX, (float)currPixY, interpolatedZBufferDepth),
-						interpolatedColor);
-				}
+				//// test sprite support (alpha based) works
+				//unsigned char alpha = ((unsigned char*)(&texelColor))[3];
+				//if (alpha > 0) 
+				//{
+				//	float alphaModulation = (float)(alpha);
+				//	alphaModulation /= 255.0f;
+				//	interpolatedColor[0] = interpolatedColor[0] * alphaModulation;
+				//	interpolatedColor[1] = interpolatedColor[1] * alphaModulation;
+				//	interpolatedColor[2] = interpolatedColor[2] * alphaModulation;
+				//	setIfOneOverWCloser(V3((float)currPixX, (float)currPixY, interpolatedZBufferDepth),
+				//		interpolatedColor);
+				//}
 
 			}
 		}

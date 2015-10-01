@@ -37,16 +37,42 @@ Texture::Texture(const string &filename)
 	}
 }
 
-unsigned int Texture::sampleTex(float floatS, float floatT) const
+unsigned int Texture::sampleTexClamp(float floatS, float floatT) const
 {
-	// assumes input s and t go from [0-1]
-	// clamps otherwise
-	unsigned int s = (unsigned int) (clip(floatS, 0.0f, 1.0f) * (texWidth - 1));
-	unsigned int t = (unsigned int) (clip(floatT, 0.0f, 1.0f) * (texHeight - 1));
+	// assumes input s and t go from [0-1] and clamps
+	unsigned int intS = (unsigned int) (clip(floatS, 0.0f, 1.0f) * (texWidth - 1));
+	unsigned int intT = (unsigned int) (clip(floatT, 0.0f, 1.0f) * (texHeight - 1));
 	unsigned char red, green, blue, alpha;
 	unsigned int sampleColor;
 	
-	unsigned int texelIndex = (t * texWidth + s) * 4;
+	unsigned int texelIndex = (intT * texWidth + intS) * 4;
+	red = texels[texelIndex + 0];
+	green = texels[texelIndex + 1];
+	blue = texels[texelIndex + 2];
+	alpha = texels[texelIndex + 3];
+
+	((unsigned char*)(&sampleColor))[0] = red;
+	((unsigned char*)(&sampleColor))[1] = green;
+	((unsigned char*)(&sampleColor))[2] = blue;
+	((unsigned char*)(&sampleColor))[3] = alpha;
+
+	return sampleColor;
+}
+
+unsigned int Texture::sampleTexTile(float floatS, float floatT) const
+{
+	// tile s,t by only keeping decimal part
+	if (floatS > 1.0)
+		floatS = floatS - ((int)floatS);
+	if (floatT > 1.0)
+		floatT = floatT - ((int)floatT);
+	// assumes input s and t go from [0-1] and clamps
+	unsigned int intS = (unsigned int)(floatS * (texWidth - 1));
+	unsigned int intT = (unsigned int)(floatT * (texHeight - 1));
+	unsigned char red, green, blue, alpha;
+	unsigned int sampleColor;
+
+	unsigned int texelIndex = (intT * texWidth + intS) * 4;
 	red = texels[texelIndex + 0];
 	green = texels[texelIndex + 1];
 	blue = texels[texelIndex + 2];

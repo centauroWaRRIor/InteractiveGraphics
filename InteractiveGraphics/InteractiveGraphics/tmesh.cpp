@@ -155,16 +155,16 @@ void TMesh::createQuadTestTMesh(void)
 	tcs[1] = 0.0;
 	verts[1] = V3(40.0f, 0.0f, 0.0f);
 	cols[1] = V3(1.0f, 0.0f, 0.0f);
-	tcs[2] = 1.0;
+	tcs[2] = 2.0;//1.0;
 	tcs[3] = 0.0;
 	verts[2] = V3(40.0f, 40.0f, 0.0f);
 	cols[2] = V3(0.0f, 1.0f, 0.0f);
-	tcs[4] = 1.0;
-	tcs[5] = 1.0;
+	tcs[4] = 2.0;//1.0;
+	tcs[5] = 2.0;// 1.0;
 	verts[3] = V3(0.0f, 40.0f, 0.0f);
 	cols[3] = V3(0.0f, 0.0f, 1.0f);
 	tcs[6] = 0.0;
-	tcs[7] = 1.0;
+	tcs[7] = 2.0;// 1.0;
 
 	trisN = 2;
 
