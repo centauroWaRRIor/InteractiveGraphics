@@ -58,6 +58,11 @@ class GUI {open
               callback {A2Button_cb()}
               xywh {0 0 30 20}
             }
+            MenuItem TestCamVis {
+              label {Test Camera Vis}
+              callback {TestCamVis_cb()}
+              xywh {0 0 30 20}
+            }
           }
         }
       }
@@ -109,7 +114,7 @@ class GUI {open
       }
       Fl_Button A3Button {
         label A3
-        callback {DBG_cb()} selected
+        callback {DBG_cb()}
         xywh {15 92 225 40} selection_color 72
       }
     }
@@ -159,5 +164,9 @@ scene->testCameraLerp();} {}
   } {
     code {scene->regFuncForKbRedraw(Scenes::CAMCONTROL);
 scene->testCameraControl();} {}
+  }
+  Function {TestCamVis_cb()} {open
+  } {
+    code {scene->testCameraVis();} {}
   }
 } 

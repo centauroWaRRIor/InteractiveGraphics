@@ -469,6 +469,21 @@ void Scene::testCameraControl(void)
 	return;
 }
 
+void Scene::testCameraVis(void)
+{
+	PPC cam(60.0f, fb->getWidth(), fb->getHeight());
+	cam.translate(V3(0.0f, 0.0f, -100.0f));
+	for (int i = 0; i < 361; i++) {
+		fb->clearZB(0.0f);
+		fb->set(0xFFFFFFFF);
+		cam.visualizeCamera(*ppc, *fb, 40.0f);
+		fb->redraw();
+		Fl::check();
+		cam.pan(1.0f);
+	}
+	return;
+}
+
 void Scene::a2Init()
 {
 	cleanForScene(Scenes::A2);

@@ -44,6 +44,11 @@ private:
   void cb_A2Demo_i(Fl_Menu_*, void*);
   static void cb_A2Demo(Fl_Menu_*, void*);
 public:
+  static Fl_Menu_Item *TestCamVis;
+private:
+  void cb_TestCamVis_i(Fl_Menu_*, void*);
+  static void cb_TestCamVis(Fl_Menu_*, void*);
+public:
   Fl_Group *CameraFBSaveGroup;
   Fl_Button *SaveCameraButton;
 private:
@@ -101,5 +106,6 @@ public:
   void A2Button_cb();
   void TestCamLerp_cb();
   void TestCamControls_cb();
+  void TestCamVis_cb();
 };
 #endif

@@ -6,6 +6,8 @@ using std::string;
 #include "framebuffer.h"
 #include "tmesh.h"
 
+// Only those function that actually require a TMesh slot are 
+// registered here
 enum class Scenes { 
 	DBG, 
 	A1, 
@@ -63,6 +65,7 @@ public:
 	void testRaster(void);
 	void testCameraLerp(void);
 	void testCameraControl(void);
+	void testCameraVis(void);
 	void a2Init(void);
 	void a2Draw(void);
 	void saveCamera(void) const;

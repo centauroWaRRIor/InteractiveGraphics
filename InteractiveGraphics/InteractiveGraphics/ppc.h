@@ -2,6 +2,7 @@
 
 #include "v3.h"
 #include "m33.h"
+#include "framebuffer.h"
 #include <string>
 using std::string;
 
@@ -48,6 +49,7 @@ public:
 	V3 getPrincipalPoint(void) const;
 
 	// camera translations only affect C vector. a, b, and c remain intact
+	void translate(const V3 &transVector); // move eye using translation vector
 	void moveRight(float step); // negative left means move left
 	void moveUp(float step); // negative step means move down
 	void moveForward(float step); // negative step means move backward
@@ -75,6 +77,9 @@ public:
 	// sets this camera to the ith camera out of n between the 
 	// interpolated result between ppc0 and ppc1
 	void setByInterpolation(PPC &ppc0, PPC &ppc1, int i, int n);
+
+	// draw camera frustum in wireframe, adapt focal length to visF
+	void visualizeCamera(const PPC &visCam, FrameBuffer &fb, float visF);
 
 	// save load from text file
 	void saveCameraToFile(string fName) const;

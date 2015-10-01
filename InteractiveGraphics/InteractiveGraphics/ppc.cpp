@@ -106,6 +106,11 @@ V3 PPC::getPrincipalPoint(void) const
 	return V3(PPu, PPv, 0.0f);
 }
 
+void PPC::translate(const V3 & transVector)
+{
+	C = C + transVector;
+}
+
 void PPC::moveRight(float step)
 {
 	// assumes a is unit length
@@ -240,6 +245,65 @@ void PPC::setByInterpolation(PPC  &ppc0, PPC &ppc1, int i, int n)
 		vdi*f;
 	// update projection matrix
 	buildProjM();
+}
+
+void PPC::visualizeCamera(const PPC & visCam, FrameBuffer & fb, float visF)
+{
+	float scf = visF / getFocalLength();
+	V3 c0(0.0f, 0.2f, 1.0f);
+	V3 c1(0.0f, 0.0f, 0.0f);
+	V3 v0, v1, projv0, projv1;
+	bool isInViewFrustrum;
+	
+	// Draw camera projection plane
+	v0 = C + c*scf;
+	v1 = C + (c + a*(float)w)*scf;
+	isInViewFrustrum = visCam.project(v0, projv0);
+	isInViewFrustrum &= visCam.project(v1, projv1);
+	fb.draw2DSegment(projv0, c1, projv1, c1);
+
+	v0 = C + (c + a*(float)w)*scf;
+	v1 = C + (c + a*(float)w + b*(float)h)*scf;
+	isInViewFrustrum = visCam.project(v0, projv0);
+	isInViewFrustrum &= visCam.project(v1, projv1);
+	fb.draw2DSegment(projv0, c1, projv1, c1);
+
+	v0 = C + (c + a*(float)w + b*(float)h)*scf;
+	v1 = C + (c + b*(float)h)*scf, c1;
+	isInViewFrustrum = visCam.project(v0, projv0);
+	isInViewFrustrum &= visCam.project(v1, projv1);
+	fb.draw2DSegment(projv0, c1, projv1, c1);
+
+	v0 = C + (c + b*(float)h)*scf;
+	v1 = C + c*scf;
+	isInViewFrustrum = visCam.project(v0, projv0);
+	isInViewFrustrum &= visCam.project(v1, projv1);
+	fb.draw2DSegment(projv0, c1, projv1, c1);
+
+	// draw lines connecting to eye
+	v0 = C;
+	v1 = C + c*scf, c1;
+	isInViewFrustrum = visCam.project(v0, projv0);
+	isInViewFrustrum &= visCam.project(v1, projv1);
+	fb.draw2DSegment(projv0, c0, projv1, c1);
+
+	v0 = C;
+	v1 = C + (c + a*(float)w)*scf;
+	isInViewFrustrum = visCam.project(v0, projv0);
+	isInViewFrustrum &= visCam.project(v1, projv1);
+	fb.draw2DSegment(projv0, c0, projv1, c1);
+
+	v0 = C;
+	v1 = C + (c + a*(float)w + b*(float)h)*scf;
+	isInViewFrustrum = visCam.project(v0, projv0);
+	isInViewFrustrum &= visCam.project(v1, projv1);
+	fb.draw2DSegment(projv0, c0, projv1, c1);
+
+	v0 = C;
+	v1 = C + (c + b*(float)h)*scf;
+	isInViewFrustrum = visCam.project(v0, projv0);
+	isInViewFrustrum &= visCam.project(v1, projv1);
+	fb.draw2DSegment(projv0, c0, projv1, c1);
 }
 
 // projects given point, returns false if point behind head
