@@ -63,18 +63,16 @@ void Scene::drawTMesh(
 
 void Scene::cleanForNewScene(void)
 {
-	// clean TMeshes
+	// clean TMeshes and Texture objects
 	for (int i = 0; i < tmsN; i++) {
 		if (tms[i]) {
 			delete tms[i];
 			tms[i] = nullptr;
 		}
-	}
-
-	// clean texture object
-	if (texObject) {
-		delete texObject;
-		texObject = nullptr;
+		if (texObjects[i]) {
+			delete texObjects[i];
+			texObjects[i] = nullptr;
+		}
 	}
 	
 	// Reset interpolation cameras
@@ -108,7 +106,7 @@ Scene::Scene():
     gui(nullptr),
     ppc(nullptr),
 	tms(nullptr),
-	texObject(nullptr)
+	texObjects(nullptr)
 {
 
   // create user interface
@@ -125,10 +123,15 @@ Scene::Scene():
   ppcLerp1 = nullptr;
 
   // allocate pointer of TMesh objects
+  // and allocate pointer of Texture objects
+  // tmsN is used as a bound for the maximum
+  // number of Texture objects that can be at once
   tmsN = 6;
   tms = new TMesh*[tmsN];
+  texObjects = new Texture*[tmsN];
   for (int i = 0; i < tmsN; i++) {
 	  tms[i] = nullptr;
+	  texObjects[i] = nullptr;
   }
 
   fb->show();
@@ -153,15 +156,16 @@ Scene::~Scene()
 	delete gui;
 	delete ppc;
 	// delete array of pointers
-	for (int i = 0; i<tmsN; i++)
-		delete[] tms[i];
+	for (int i = 0; i < tmsN; i++) {
+		delete tms[i];
+		delete texObjects[i];
+	}
 	delete[] tms;
+	delete[] texObjects;
 	if (ppcLerp0)
 		delete ppcLerp0;
 	if (ppcLerp1)
 		delete ppcLerp1;
-	if (texObject)
-		delete texObject;
 }
 
 // function linked to the DBG GUI button for testing new features
@@ -178,10 +182,9 @@ void Scene::dbgDraw() {
 		tms[0]->createQuadTestTMesh(true);
 		//tms[0]->loadBin("geometry/teapot1K.bin");
 
-		if (texObject == nullptr)
-			//texObject = new Texture("pngs\\Woven_flower_pxr128.png"); // test simple texturing
-			texObject = new Texture("pngs\\Macbeth_color_checker_pxr128.png"); // test tiling
-		   //texObject = new Texture("pngs\\Decal_12.png");// tests sprites
+		//texObject = new Texture("pngs\\Woven_flower_pxr128.png"); // test simple texturing
+		texObjects[0] = new Texture("pngs\\Macbeth_color_checker_pxr128.png"); // test tiling
+		  //texObject = new Texture("pngs\\Decal_12.png");// tests sprites
 		isDGBInit = true;
 	}
 	// clear screen
@@ -194,7 +197,7 @@ void Scene::dbgDraw() {
 	else
 		fb->clearZB(0.0f);
 	//drawTMesh(*tms[0], *fb, *ppc, false);
-	tms[0]->drawTextured(*fb, *ppc, *texObject);
+	tms[0]->drawTextured(*fb, *ppc, *texObjects[0]);
 	// draw original for comparison
 	//fb->loadFromPng("pngs\\Woven_flower_pxr128.png"); 
 	fb->loadFromPng("pngs\\Macbeth_color_checker_pxr128.png"); 
@@ -558,7 +561,7 @@ void Scene::testTexture(void)
 		tms[0]->createQuadTestTMesh(true); // enables tiling
 
 		//texObject = new Texture("pngs\\Woven_flower_pxr128.png"); // test simple texturing
-		texObject = new Texture("pngs\\Macbeth_color_checker_pxr128.png"); // test tiling
+		texObjects[0] = new Texture("pngs\\Macbeth_color_checker_pxr128.png"); // test tiling
 		this->isTextureInit = true;
 	}
 	// clear screen
@@ -566,7 +569,7 @@ void Scene::testTexture(void)
 	// clear zBuffer
 	fb->clearZB(0.0f);
 	//drawTMesh(*tms[0], *fb, *ppc, false);
-	tms[0]->drawTextured(*fb, *ppc, *texObject);
+	tms[0]->drawTextured(*fb, *ppc, *texObjects[0]);
 	// draw original for comparison
 	fb->loadFromPng("pngs\\Macbeth_color_checker_pxr128.png");
 
@@ -586,14 +589,14 @@ void Scene::testSprites(void)
 
 		tms[0]->createQuadTestTMesh(false); // no tiling
 
-		texObject = new Texture("pngs\\Decal_12.png");
+		texObjects[0] = new Texture("pngs\\Decal_12.png");
 		this->isSpriteTestInit = true;
 	}
 	// clear screen for sprite
 	fb->set(0x00000000);
 	// clear zBuffer
 	fb->clearZB(0.0f);
-	tms[0]->drawSprite(*fb, *ppc, *texObject);
+	tms[0]->drawSprite(*fb, *ppc, *texObjects[0]);
 	// draw original for comparison
 	fb->redraw();
 	return;
