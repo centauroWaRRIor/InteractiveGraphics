@@ -58,6 +58,10 @@ public:
 	// draws triangle mesh in texture mode using model space for s,t linear interpolation 
 	// and screen space for depth linear interpolation
 	void drawTextured(FrameBuffer &fb, const PPC &ppc, const Texture &texture) const;
+	// same as drawTextured but fragments are discarded based on alpha value. If animated = true
+	// then this function iterates over the sprite atlas texture using time as an input
+	void drawSprite(FrameBuffer &fb, const PPC &ppc, const Texture &texture,
+		bool isAnimated = false) const;
 
 	// rotate about axis
 	void rotateAboutAxis(const V3 &aO, const V3 &adir, float theta);
@@ -83,7 +87,7 @@ public:
 	// constructs a tetrahedron for testing purposes
 	void createTetrahedronTestMesh(void);
 	// creates a quad for texture testing purposes
-	void createQuadTestTMesh(void);
+	void createQuadTestTMesh(bool isTiling);
 
 	// small static utitlities
 	// self note: because they are static no need for object instance.

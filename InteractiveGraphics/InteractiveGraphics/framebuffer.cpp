@@ -1078,6 +1078,273 @@ void FrameBuffer::draw2DTexturedTriangle(
 	}
 }
 
+void FrameBuffer::draw2DSprite(
+	const V3 & v1, const V3 & c1, 
+	const V3 & v2, const V3 & c2, 
+	const V3 & v3, const V3 & c3, 
+	const V3 & sCoords, const V3 & tCoords, 
+	M33 baryMatrixInverse, 
+	M33 perspCorrectMatQ, 
+	const Texture & texture, 
+	bool isAnimated)
+{
+	float xCoords[3], yCoords[3]; // this format is more triangle edge equation friendly 
+	xCoords[0] = v1.getX();
+	xCoords[1] = v2.getX();
+	xCoords[2] = v3.getX();
+	yCoords[0] = v1.getY();
+	yCoords[1] = v2.getY();
+	yCoords[2] = v3.getY();
+
+	// compute screen axes-aligned bounding box for triangle
+	float bbox[2][2]; // for each x and y, store the min and max values
+	bbox[0][0] = FLT_MAX;
+	bbox[0][1] = FLT_MIN; // take into account that y is inverted in screen coordinates
+	bbox[1][0] = FLT_MIN;
+	bbox[1][1] = FLT_MAX; // take into account that y is inverted in screen coordinates
+	for (int i = 0; i < 3; i++) {
+		// find min x
+		if (xCoords[i] < bbox[0][0])
+			bbox[0][0] = xCoords[i];
+		// find min y
+		if (yCoords[i] > bbox[0][1])
+			bbox[0][1] = yCoords[i];
+		// find max x
+		if (xCoords[i] > bbox[1][0])
+			bbox[1][0] = xCoords[i];
+		// find max y
+		if (yCoords[i] < bbox[1][1])
+			bbox[1][1] = yCoords[i];
+	}
+
+	// clip bounding box to screen boundaries
+	if (bbox[1][1] > (h - 1) || bbox[0][1] < 0 || bbox[1][0] < 0 || (bbox[0][0] > w - 1))
+		return; // discard this triangle
+	if (bbox[0][0] < 0)
+		bbox[0][0] = 0;
+	if (bbox[1][0] > w - 1)
+		bbox[1][0] = (float)w - 1;
+	if (bbox[1][1] < 0)
+		bbox[1][1] = 0;
+	if (bbox[0][1] > h - 1)
+		bbox[0][1] = (float)h - 1;
+
+	// make copy to honor const
+	V3 sParameters(sCoords);
+	V3 tParameters(tCoords);
+
+	// 1/w is linear in screen space and gives greater precision for near 
+	// objects when depth testing.
+	V3 oneOverWParameters(v1.getZ(), v2.getZ(), v3.getZ());
+
+	// refer to slide 7 of RastParInterp.pdf for the math 
+	// derivation of the persp correct coefficients for 
+	// model space interpolation
+	float As =
+		perspCorrectMatQ[0][0] * sParameters[0] +
+		perspCorrectMatQ[1][0] * sParameters[1] +
+		perspCorrectMatQ[2][0] * sParameters[2];
+	float At =
+		perspCorrectMatQ[0][0] * tParameters[0] +
+		perspCorrectMatQ[1][0] * tParameters[1] +
+		perspCorrectMatQ[2][0] * tParameters[2];
+
+	float Bs =
+		perspCorrectMatQ[0][1] * sParameters[0] +
+		perspCorrectMatQ[1][1] * sParameters[1] +
+		perspCorrectMatQ[2][1] * sParameters[2];
+	float Bt =
+		perspCorrectMatQ[0][1] * tParameters[0] +
+		perspCorrectMatQ[1][1] * tParameters[1] +
+		perspCorrectMatQ[2][1] * tParameters[2];
+
+	float Cs =
+		perspCorrectMatQ[0][2] * sParameters[0] +
+		perspCorrectMatQ[1][2] * sParameters[1] +
+		perspCorrectMatQ[2][2] * sParameters[2];
+	float Ct =
+		perspCorrectMatQ[0][2] * tParameters[0] +
+		perspCorrectMatQ[1][2] * tParameters[1] +
+		perspCorrectMatQ[2][2] * tParameters[2];
+
+	// Lerp colors too
+	V3 redParameters(c1.getX(), c2.getX(), c3.getX());
+	V3 greenParameters(c1.getY(), c2.getY(), c3.getY());
+	V3 blueParameters(c1.getZ(), c2.getZ(), c3.getZ());
+
+	float ARed =
+		perspCorrectMatQ[0][0] * redParameters[0] +
+		perspCorrectMatQ[1][0] * redParameters[1] +
+		perspCorrectMatQ[2][0] * redParameters[2];
+	float AGreen =
+		perspCorrectMatQ[0][0] * greenParameters[0] +
+		perspCorrectMatQ[1][0] * greenParameters[1] +
+		perspCorrectMatQ[2][0] * greenParameters[2];
+	float ABlue =
+		perspCorrectMatQ[0][0] * blueParameters[0] +
+		perspCorrectMatQ[1][0] * blueParameters[1] +
+		perspCorrectMatQ[2][0] * blueParameters[2];
+
+	float BRed =
+		perspCorrectMatQ[0][1] * redParameters[0] +
+		perspCorrectMatQ[1][1] * redParameters[1] +
+		perspCorrectMatQ[2][1] * redParameters[2];
+	float BGreen =
+		perspCorrectMatQ[0][1] * greenParameters[0] +
+		perspCorrectMatQ[1][1] * greenParameters[1] +
+		perspCorrectMatQ[2][1] * greenParameters[2];
+	float BBlue =
+		perspCorrectMatQ[0][1] * blueParameters[0] +
+		perspCorrectMatQ[1][1] * blueParameters[1] +
+		perspCorrectMatQ[2][1] * blueParameters[2];
+
+	float CRed =
+		perspCorrectMatQ[0][2] * redParameters[0] +
+		perspCorrectMatQ[1][2] * redParameters[1] +
+		perspCorrectMatQ[2][2] * redParameters[2];
+	float CGreen =
+		perspCorrectMatQ[0][2] * greenParameters[0] +
+		perspCorrectMatQ[1][2] * greenParameters[1] +
+		perspCorrectMatQ[2][2] * greenParameters[2];
+	float CBlue =
+		perspCorrectMatQ[0][2] * blueParameters[0] +
+		perspCorrectMatQ[1][2] * blueParameters[1] +
+		perspCorrectMatQ[2][2] * blueParameters[2];
+
+	float D = perspCorrectMatQ[0][0] + perspCorrectMatQ[1][0] + perspCorrectMatQ[2][0];
+	float E = perspCorrectMatQ[0][1] + perspCorrectMatQ[1][1] + perspCorrectMatQ[2][1];
+	float F = perspCorrectMatQ[0][2] + perspCorrectMatQ[1][2] + perspCorrectMatQ[2][2];
+
+	// final raster parameter interpolated result stored here
+	float interpolatedS, interpolatedT;
+	float interpolatedZBufferDepth;
+	unsigned int texelColor;
+
+	// abc coefficients for the raster parameter interpolation
+	// in screen space
+	V3 abcDepth = baryMatrixInverse * oneOverWParameters;
+
+	float a[3], b[3], c[3]; // a,b,c for the three triangle edge expressions
+
+	// establish the three edge equations 
+	// edge that goes through vertices 0 and 1
+	a[0] = yCoords[1] - yCoords[0];
+	b[0] = -xCoords[1] + xCoords[0];
+	c[0] = -xCoords[0] * yCoords[1] + yCoords[0] * xCoords[1];
+	// edge that goes through vertices 1 and 2
+	a[1] = yCoords[2] - yCoords[1];
+	b[1] = -xCoords[2] + xCoords[1];
+	c[1] = -xCoords[1] * yCoords[2] + yCoords[1] * xCoords[2];
+	// edge that goes through vertices 2 and 0
+	a[2] = yCoords[0] - yCoords[2];
+	b[2] = -xCoords[0] + xCoords[2];
+	c[2] = -xCoords[2] * yCoords[0] + yCoords[2] * xCoords[0];
+
+	// temporary used to establish correct sidedness
+	float sidedness;
+	sidedness = a[0] * xCoords[2] + b[0] * yCoords[2] + c[0];
+	// I need to investigate if this special case has to do with the
+	// order in which the vertices are specified (i.e., cw vs ccw)
+	if (sidedness < 0) { // special case, normally inside half space is positive
+						 // flip
+		a[0] = -a[0];
+		b[0] = -b[0];
+		c[0] = -c[0];
+	}
+	sidedness = a[1] * xCoords[0] + b[1] * yCoords[0] + c[1];
+	if (sidedness < 0) { // special case, normally inside half space is positive
+						 // flip
+		a[1] = -a[1];
+		b[1] = -b[1];
+		c[1] = -c[1];
+	}
+	sidedness = a[2] * xCoords[1] + b[2] * yCoords[1] + c[2];
+	if (sidedness < 0) { // special case, normally inside half space is positive
+						 // flip
+		a[2] = -a[2];
+		b[2] = -b[2];
+		c[2] = -c[2];
+	}
+
+	// use clipped AABB
+	int left = (int)(bbox[0][0] + 0.5);
+	int right = (int)(bbox[1][0] - 0.5);
+	int top = (int)(bbox[1][1] + 0.5);
+	int bottom = (int)(bbox[0][1] - 0.5);
+
+	int currPixX, currPixY; // current pixel considered
+	float currEELS[3], currEE[3]; // edge expression values for the line starts and within line
+	for (currPixY = top,
+		currEELS[0] = a[0] * (left + 0.5f) + b[0] * (top + 0.5f) + c[0],
+		currEELS[1] = a[1] * (left + 0.5f) + b[1] * (top + 0.5f) + c[1],
+		currEELS[2] = a[2] * (left + 0.5f) + b[2] * (top + 0.5f) + c[2];
+		currPixY <= bottom;
+		currPixY++,
+		currEELS[0] += b[0],
+		currEELS[1] += b[1],
+		currEELS[2] += b[2]) {
+		for (currPixX = left,
+			currEE[0] = currEELS[0],
+			currEE[1] = currEELS[1],
+			currEE[2] = currEELS[2];
+			currPixX <= right;
+			currPixX++,
+			currEE[0] += a[0],
+			currEE[1] += a[1],
+			currEE[2] += a[2]) {
+
+			if (currEE[0] < 0 || currEE[1] < 0 || currEE[2] < 0) {
+				continue; // outside triangle
+			}
+			else { // found pixel inside of triangle; set it to interpolated color
+
+				   // use model space linear interpolation for the s,t raster parameters
+				interpolatedS =
+					((As * currPixX) + (Bs * currPixY) + Cs) /
+					((D * currPixX) + (E * currPixY) + F);
+				interpolatedT =
+					((At * currPixX) + (Bt * currPixY) + Ct) /
+					((D * currPixX) + (E * currPixY) + F);
+
+				// interpolate colors here
+				V3 interpolatedColor;
+				// find interpolated color by following the model space formula
+				// for rater parameter linear interpolation 
+				// r = ((A * u) + (B * v) + C) / ((D * u) + (E * v) + F)
+				interpolatedColor[0] =
+					((ARed * currPixX) + (BRed * currPixY) + CRed) /
+					((D * currPixX) + (E * currPixY) + F);
+				interpolatedColor[1] =
+					((AGreen * currPixX) + (BGreen * currPixY) + CGreen) /
+					((D * currPixX) + (E * currPixY) + F);
+				interpolatedColor[2] =
+					((ABlue * currPixX) + (BBlue * currPixY) + CBlue) /
+					((D * currPixX) + (E * currPixY) + F);
+
+				// use screen space linear interpolation for the depth since we are using 1/w
+				interpolatedZBufferDepth = abcDepth[0] * currPixX + abcDepth[1] * currPixY + abcDepth[2];
+
+				// sample texture using lerped result of s,t raster parameters (in model space)
+				texelColor = texture.sampleTexClamp(interpolatedS, interpolatedT);
+
+				// test sprite support (alpha based) works
+				unsigned char alpha = ((unsigned char*)(&texelColor))[3];
+				if (alpha > 0) 
+				{
+					float alphaModulation = (float)(alpha);
+					alphaModulation /= 255.0f;
+					interpolatedColor[0] = interpolatedColor[0] * alphaModulation;
+					interpolatedColor[1] = interpolatedColor[1] * alphaModulation;
+					interpolatedColor[2] = interpolatedColor[2] * alphaModulation;
+					setIfOneOverWCloser(V3((float)currPixX, (float)currPixY, interpolatedZBufferDepth),
+						interpolatedColor);
+				}
+
+			}
+		}
+	}
+}
+
 void FrameBuffer::draw2DSegment(const V3 &v0, const V3 &c0, const V3 &v1, const V3 &c1) {
 
 	int stepsN;

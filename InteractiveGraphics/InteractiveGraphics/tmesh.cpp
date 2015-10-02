@@ -136,7 +136,7 @@ void TMesh::createTetrahedronTestMesh(void)
 	aabb = new AABB(computeAABB());
 }
 
-void TMesh::createQuadTestTMesh(void)
+void TMesh::createQuadTestTMesh(bool isTiling)
 {
 	this->cleanUp();
 
@@ -155,16 +155,16 @@ void TMesh::createQuadTestTMesh(void)
 	tcs[1] = 0.0;
 	verts[1] = V3(40.0f, 0.0f, 0.0f);
 	cols[1] = V3(1.0f, 0.0f, 0.0f);
-	tcs[2] = 2.0;//1.0;
+	tcs[2] = isTiling ? 2.0f : 1.0f;
 	tcs[3] = 0.0;
 	verts[2] = V3(40.0f, 40.0f, 0.0f);
 	cols[2] = V3(0.0f, 1.0f, 0.0f);
-	tcs[4] = 2.0;//1.0;
-	tcs[5] = 2.0;// 1.0;
+	tcs[4] = isTiling ? 2.0f : 1.0f;
+	tcs[5] = isTiling ? 2.0f : 1.0f;
 	verts[3] = V3(0.0f, 40.0f, 0.0f);
 	cols[3] = V3(0.0f, 0.0f, 1.0f);
 	tcs[6] = 0.0;
-	tcs[7] = 2.0;// 1.0;
+	tcs[7] = isTiling ? 2.0f : 1.0f;
 
 	trisN = 2;
 
@@ -440,7 +440,7 @@ void TMesh::drawTextured(FrameBuffer & fb, const PPC & ppc, const Texture & text
 {
 	if ((vertsN == 0) || (trisN < 1)) {
 		cerr << "ERROR: Attempted to draw an empty mesh. "
-			<< "drawFilledFlatPerspCorrect() command was aborted." << endl;
+			<< "drawTextured() command was aborted." << endl;
 		return;
 	}
 
@@ -515,6 +515,97 @@ void TMesh::drawTextured(FrameBuffer & fb, const PPC & ppc, const Texture & text
 					baryMatrixInverse,
 					perspCorrectMatQ,
 					texture);
+			}
+			else
+				cerr << "WARNING: Triangle screen footprint is stoo small, discarding..." << endl;
+		}
+	}
+}
+
+void TMesh::drawSprite(
+	FrameBuffer & fb, 
+	const PPC & ppc, 
+	const Texture & texture, 
+	bool isAnimated) const
+{
+	if ((vertsN == 0) || (trisN < 1)) {
+		cerr << "ERROR: Attempted to draw an empty mesh. "
+			<< "drawSprite() command was aborted." << endl;
+		return;
+	}
+
+	// Matrix used for perspective correct linear 
+	// interpolation of raster parameters.
+	// (refer to slide 7 of RastParInterp.pdf for the math 
+	// derivation of Q matrix)
+	M33 perspCorrectMatQ, VMinC, abc;
+	abc.setColumn(ppc.getLowerCaseA(), 0);
+	abc.setColumn(ppc.getLowerCaseB(), 1);
+	abc.setColumn(ppc.getLowerCaseC(), 2);
+
+	// Draw textured triangles with s,t linearly
+	// interpolated in model space and depth linearly
+	// interpolated in screen space.
+	V3 currvs[3];
+	V3 currcols[3];
+	V3 sParameters, tParameters;
+	V3 projV1, projV2, projV3;
+	bool isVisible;
+	for (int tri = 0; tri < trisN; tri++) {
+
+		// grab current triangle vertices
+		currvs[0] = verts[tris[3 * tri + 0]];
+		currvs[1] = verts[tris[3 * tri + 1]];
+		currvs[2] = verts[tris[3 * tri + 2]];
+
+		// grab current triangle vertex colors
+		currcols[0] = cols[tris[3 * tri + 0]];
+		currcols[1] = cols[tris[3 * tri + 1]];
+		currcols[2] = cols[tris[3 * tri + 2]];
+
+		// grab current triangle texture coordinates
+		sParameters[0] = tcs[tris[3 * tri + 0] * 2 + 0];
+		sParameters[1] = tcs[tris[3 * tri + 1] * 2 + 0];
+		sParameters[2] = tcs[tris[3 * tri + 2] * 2 + 0];
+
+		tParameters[0] = tcs[tris[3 * tri + 0] * 2 + 1];
+		tParameters[1] = tcs[tris[3 * tri + 1] * 2 + 1];
+		tParameters[2] = tcs[tris[3 * tri + 2] * 2 + 1];
+
+		// project triangle vertices using camera
+		isVisible = ppc.project(currvs[0], projV1);
+		isVisible &= ppc.project(currvs[1], projV2);
+		isVisible &= ppc.project(currvs[2], projV3);
+		if (isVisible) {
+
+			// Rasterizer should reject triangles whose screen footprint is very small.
+			float projTriangleArea = compute2DTriangleArea(projV1, projV2, projV3);
+
+			if (projTriangleArea > epsilonMinArea) {
+
+				// build screen space linear interpolation matrix for 1/w
+				M33 baryMatrixInverse(
+					V3(projV1[0], projV1[1], 1),
+					V3(projV2[0], projV2[1], 1),
+					V3(projV3[0], projV3[1], 1));
+				baryMatrixInverse.setInverted();
+
+				// build model space linear interpolation for s and t
+				VMinC.setColumn(currvs[0] - ppc.getEyePoint(), 0);
+				VMinC.setColumn(currvs[1] - ppc.getEyePoint(), 1);
+				VMinC.setColumn(currvs[2] - ppc.getEyePoint(), 2);
+				VMinC.setInverted();
+				perspCorrectMatQ = VMinC * abc;
+
+				fb.draw2DSprite(
+					projV1, currcols[0],
+					projV2, currcols[1],
+					projV3, currcols[2],
+					sParameters, tParameters,
+					baryMatrixInverse,
+					perspCorrectMatQ,
+					texture,
+					isAnimated);
 			}
 			else
 				cerr << "WARNING: Triangle screen footprint is stoo small, discarding..." << endl;

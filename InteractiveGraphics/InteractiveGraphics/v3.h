@@ -36,7 +36,7 @@ private:
 		const V3 &newBasisVectorZ) const;
 public:
 	// constructors (builds a 0 vector by default)
-	V3(float x=0, float y=0, float z=0);
+	V3(float x = 0, float y = 0, float z = 0);
 	//V3() {}; // No need for this since I'm specifying default values above
 
 	// copy constructor

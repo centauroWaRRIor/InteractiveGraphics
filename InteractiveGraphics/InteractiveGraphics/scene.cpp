@@ -70,6 +70,12 @@ void Scene::cleanForNewScene(void)
 			tms[i] = nullptr;
 		}
 	}
+
+	// clean texture object
+	if (texObject) {
+		delete texObject;
+		texObject = nullptr;
+	}
 	
 	// Reset interpolation cameras
 	if (ppcLerp0) {
@@ -88,10 +94,13 @@ void Scene::cleanForNewScene(void)
 	ppc = new PPC(hfov, w, h);
 
 	// reset init flags for the different scenes
-	isDGBInit = false;
-	isTestCamControlsInit = false;
-	isA2Init = false;
-	isTestCamControlsInit = false;
+	this->isDGBInit = false;
+	this->isTestCamControlsInit = false;
+	this->isA2Init = false;
+	this->isTestCamControlsInit = false;
+	this->isTextureInit = false;
+	this->isSpriteTestInit = false;
+	this->isA3Init = false;
 }
 
 Scene::Scene():
@@ -166,13 +175,13 @@ void Scene::dbgDraw() {
 		// test textured quad
 		ppc->moveForward(-200.0f);
 
-		tms[0]->createQuadTestTMesh();
+		tms[0]->createQuadTestTMesh(true);
 		//tms[0]->loadBin("geometry/teapot1K.bin");
 
 		if (texObject == nullptr)
 			//texObject = new Texture("pngs\\Woven_flower_pxr128.png"); // test simple texturing
 			texObject = new Texture("pngs\\Macbeth_color_checker_pxr128.png"); // test tiling
-																			   //texObject = new Texture("pngs\\Decal_12.png");// tests sprites
+		   //texObject = new Texture("pngs\\Decal_12.png");// tests sprites
 		isDGBInit = true;
 	}
 	// clear screen
@@ -538,10 +547,56 @@ void Scene::a3Demo(void)
 
 void Scene::testTexture(void)
 {
+	if (!(this->isTextureInit)) {
+
+		cleanForNewScene();
+		tms[0] = new TMesh();
+
+		// create textured quad
+		ppc->moveForward(-200.0f);
+
+		tms[0]->createQuadTestTMesh(true); // enables tiling
+
+		//texObject = new Texture("pngs\\Woven_flower_pxr128.png"); // test simple texturing
+		texObject = new Texture("pngs\\Macbeth_color_checker_pxr128.png"); // test tiling
+		this->isTextureInit = true;
+	}
+	// clear screen
+	fb->set(0xFFFFFFFF);
+	// clear zBuffer
+	fb->clearZB(0.0f);
+	//drawTMesh(*tms[0], *fb, *ppc, false);
+	tms[0]->drawTextured(*fb, *ppc, *texObject);
+	// draw original for comparison
+	fb->loadFromPng("pngs\\Macbeth_color_checker_pxr128.png");
+
+	fb->redraw();
+	return;
 }
 
 void Scene::testSprites(void)
 {
+	if (!(this->isSpriteTestInit)) {
+
+		cleanForNewScene();
+		tms[0] = new TMesh();
+
+		// test textured quad
+		ppc->moveForward(-200.0f);
+
+		tms[0]->createQuadTestTMesh(false); // no tiling
+
+		texObject = new Texture("pngs\\Decal_12.png");
+		this->isSpriteTestInit = true;
+	}
+	// clear screen for sprite
+	fb->set(0x00000000);
+	// clear zBuffer
+	fb->clearZB(0.0f);
+	tms[0]->drawSprite(*fb, *ppc, *texObject);
+	// draw original for comparison
+	fb->redraw();
+	return;
 }
 
 void Scene::saveCamera(void) const
