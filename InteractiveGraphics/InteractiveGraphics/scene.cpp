@@ -187,6 +187,8 @@ void Scene::dbgDraw() {
 		ppc->moveUp(100.0f);
 		ppc->moveRight(20.0f);
 		ppc->tilt(-25);
+		// save initial camera settings into ppcLerp0
+		ppcLerp0 = new PPC(*ppc);
 
 		// enable tiling for all the quads
 		tms[0]->createQuadTestTMesh(false);
@@ -229,19 +231,35 @@ void Scene::dbgDraw() {
 
 		isDGBInit = true;
 	}
-	// clear screen
-	fb->set(0xFFFFFFFF);
-	fb->clearZB(0.0f);
 
-	// draw floor
-	tms[5]->drawTextured(*fb, *ppc, *texObjects[0]);
+	const static V3 lookAtPoint(20.0f, 20.0f, -20.0f); // cube centroid
+	const static V3 up(0.0f, 1.0f, 0.0f);
+	V3 viewDirection = ppcLerp0->getViewDir();
 
-	// draw textured cube
-	for (int i = 0; i < 5; i++) {
-		tms[i]->drawTextured(*fb, *ppc, *texObjects[1]);
+	for (float steps = 0.0f; steps < 100.0f; steps += 10.0f) {
+
+		// rotate view direction
+		V3 rotVD = viewDirection;
+		rotVD.rotateThisVectorAboutDirection(V3(0.0f, 0.0f, 1.0f), steps);
+
+		// set up the look at cube camera (dolly camera setup)
+		ppc->positionRelativeToPoint(lookAtPoint, rotVD, up, 180.0f);
+
+		// clear screen
+		fb->set(0xFFFFFFFF);
+		fb->clearZB(0.0f);
+
+		// draw floor
+		tms[5]->drawTextured(*fb, *ppc, *texObjects[0]);
+
+		// draw textured cube
+		for (int i = 0; i < 5; i++) {
+			tms[i]->drawTextured(*fb, *ppc, *texObjects[1]);
+		}
+
+		fb->redraw();
+		Fl::check();
 	}
-
-	fb->redraw();
 	return;
 }
 
