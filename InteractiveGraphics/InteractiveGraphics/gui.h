@@ -19,6 +19,7 @@ private:
   static void cb_dbgButton(Fl_Button*, void*);
   static Fl_Menu_Item menu_Main[];
 public:
+  static Fl_Menu_Item *A1SubMenu;
   static Fl_Menu_Item *A1TestRot;
 private:
   void cb_A1TestRot_i(Fl_Menu_*, void*);
@@ -29,6 +30,7 @@ private:
   void cb_A1TestRaster_i(Fl_Menu_*, void*);
   static void cb_A1TestRaster(Fl_Menu_*, void*);
 public:
+  static Fl_Menu_Item *A2SubMenu;
   static Fl_Menu_Item *A2TestCamLerp;
 private:
   void cb_A2TestCamLerp_i(Fl_Menu_*, void*);
@@ -48,6 +50,22 @@ public:
 private:
   void cb_TestCamVis_i(Fl_Menu_*, void*);
   static void cb_TestCamVis(Fl_Menu_*, void*);
+public:
+  static Fl_Menu_Item *A3;
+  static Fl_Menu_Item *TestTexture;
+private:
+  void cb_TestTexture_i(Fl_Menu_*, void*);
+  static void cb_TestTexture(Fl_Menu_*, void*);
+public:
+  static Fl_Menu_Item *TestSprite;
+private:
+  void cb_TestSprite_i(Fl_Menu_*, void*);
+  static void cb_TestSprite(Fl_Menu_*, void*);
+public:
+  static Fl_Menu_Item *A3Demo;
+private:
+  void cb_A3Demo_i(Fl_Menu_*, void*);
+  static void cb_A3Demo(Fl_Menu_*, void*);
 public:
   Fl_Group *CameraFBSaveGroup;
   Fl_Button *SaveCameraButton;
@@ -107,5 +125,8 @@ public:
   void TestCamLerp_cb();
   void TestCamControls_cb();
   void TestCamVis_cb();
+  void TestTexture_cb();
+  void TestSprites_cb();
+  void A3Demo_cb();
 };
 #endif

@@ -24,7 +24,7 @@ class GUI {open
           label {Previous Assignments} open
           xywh {0 0 62 20}
         } {
-          Submenu {} {
+          Submenu A1SubMenu {
             label A1 open
             xywh {0 0 62 20}
           } {
@@ -39,7 +39,7 @@ class GUI {open
               xywh {0 0 30 20}
             }
           }
-          Submenu {} {
+          Submenu A2SubMenu {
             label A2 open
             xywh {0 0 62 20}
           } {
@@ -61,6 +61,26 @@ class GUI {open
             MenuItem TestCamVis {
               label {Test Camera Vis}
               callback {TestCamVis_cb()}
+              xywh {0 0 30 20}
+            }
+          }
+          Submenu A3 {
+            label A3 open
+            xywh {0 0 62 20}
+          } {
+            MenuItem TestTexture {
+              label {Test Texture}
+              callback {TestTexture_cb()}
+              xywh {0 0 30 20}
+            }
+            MenuItem TestSprite {
+              label {Test Sprite}
+              callback {TestSprites_cb()}
+              xywh {0 0 30 20}
+            }
+            MenuItem A3Demo {
+              label {A3 Demo}
+              callback {A3Demo_cb()}
               xywh {0 0 30 20}
             }
           }
@@ -153,7 +173,8 @@ scene->dbgDraw();} {}
   Function {A2Button_cb()} {open
   } {
     code {scene->regFuncForKbRedraw(Scenes::A2);
-scene->a2Draw();} {}
+scene->a2Demo();} {selected
+    }
   }
   Function {TestCamLerp_cb()} {open
   } {
@@ -168,5 +189,20 @@ scene->testCameraControl();} {}
   Function {TestCamVis_cb()} {open
   } {
     code {scene->testCameraVis();} {}
+  }
+  Function {TestTexture_cb()} {open
+  } {
+    code {scene->regFuncForKbRedraw(Scenes::TEXTURE);
+scene->testTexture();} {}
+  }
+  Function {TestSprites_cb()} {open
+  } {
+    code {scene->regFuncForKbRedraw(Scenes::SPRITETEST);
+scene->testSprites();} {}
+  }
+  Function {A3Demo_cb()} {open
+  } {
+    code {scene->regFuncForKbRedraw(Scenes::A3);
+scene->a3Demo();} {}
   }
 } 

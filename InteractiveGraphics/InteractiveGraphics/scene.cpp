@@ -61,87 +61,37 @@ void Scene::drawTMesh(
 		tMesh.drawAABB(frameBuffer, planarPinholeCamera, 0xFF00FF00, 0xFF000000);
 }
 
-void Scene::cleanForScene(Scenes currentScene)
+void Scene::cleanForNewScene(void)
 {
-	if (currentScene == Scenes::A2) {
-		for (int i = 0; i < tmsN; i++) {
-			if (tms[i]) {
-				delete tms[i];
-				tms[i] = nullptr;
-			}
+	// clean TMeshes
+	for (int i = 0; i < tmsN; i++) {
+		if (tms[i]) {
+			delete tms[i];
+			tms[i] = nullptr;
 		}
-		if (ppcLerp0)
-			delete ppcLerp0;
-		if (ppcLerp1)
-			delete ppcLerp1;
-		ppcLerp0 = nullptr;
-		ppcLerp1 = nullptr;
-		// reset camera
-		delete ppc;
-		ppc = nullptr;
-		ppc = new PPC(hfov, w, h);
-		// reset init flags
-		isDGBInit = false;
-		isTestCamControlsInit = false;
 	}
-	else if (currentScene == Scenes::DBG) {
-		if (tms[0]) {
-			delete tms[0];
-			tms[0] = nullptr;
-		}
-		if (ppcLerp0)
-			delete ppcLerp0;
-		if (ppcLerp1)
-			delete ppcLerp1;
+	
+	// Reset interpolation cameras
+	if (ppcLerp0) {
+		delete ppcLerp0;
 		ppcLerp0 = nullptr;
-		ppcLerp1 = nullptr;
-		// reset camera
-		delete ppc;
-		ppc = nullptr;
-		ppc = new PPC(hfov, w, h);
-		// reset init flags
-		isA2Init = false;
-		isTestCamControlsInit = false;
+
 	}
-	else if (currentScene == Scenes::CAMLERP) {
-		if (tms[0]) {
-			delete tms[0];
-			tms[0] = nullptr;
-		}
-		if (ppcLerp0)
-			delete ppcLerp0;
-		if (ppcLerp1)
-			delete ppcLerp1;
-		ppcLerp0 = nullptr;
+	if (ppcLerp1) {
+		delete ppcLerp1;
 		ppcLerp1 = nullptr;
-		// reset camera
-		delete ppc;
-		ppc = nullptr;
-		ppc = new PPC(hfov, w, h);
-		// reset init flags
-		isA2Init = false;
-		isDGBInit = false;
-		isTestCamControlsInit = false;
 	}
-	else if (currentScene == Scenes::CAMCONTROL) {
-		if (tms[0]) {
-			delete tms[0];
-			tms[0] = nullptr;
-		}
-		if (ppcLerp0)
-			delete ppcLerp0;
-		if (ppcLerp1)
-			delete ppcLerp1;
-		ppcLerp0 = nullptr;
-		ppcLerp1 = nullptr;
-		// reset camera
-		delete ppc;
-		ppc = nullptr;
-		ppc = new PPC(hfov, w, h);
-		// reset init flags
-		isA2Init = false;
-		isDGBInit = false;
-	}
+
+	// reset main camera
+	delete ppc;
+	ppc = nullptr;
+	ppc = new PPC(hfov, w, h);
+
+	// reset init flags for the different scenes
+	isDGBInit = false;
+	isTestCamControlsInit = false;
+	isA2Init = false;
+	isTestCamControlsInit = false;
 }
 
 Scene::Scene():
@@ -183,6 +133,9 @@ Scene::Scene():
   isA2Init = false;
   isDGBInit = false;
   isTestCamControlsInit = false;
+  isTextureInit = false;
+  isA3Init = false;
+  isSpriteTestInit = false;
 }
 
 Scene::~Scene()
@@ -206,7 +159,20 @@ Scene::~Scene()
 void Scene::dbgDraw() {
 
 	if (!isDGBInit) {
-		dbgInit();
+		
+		cleanForNewScene();
+		tms[0] = new TMesh();
+
+		// test textured quad
+		ppc->moveForward(-200.0f);
+
+		tms[0]->createQuadTestTMesh();
+		//tms[0]->loadBin("geometry/teapot1K.bin");
+
+		if (texObject == nullptr)
+			//texObject = new Texture("pngs\\Woven_flower_pxr128.png"); // test simple texturing
+			texObject = new Texture("pngs\\Macbeth_color_checker_pxr128.png"); // test tiling
+																			   //texObject = new Texture("pngs\\Decal_12.png");// tests sprites
 		isDGBInit = true;
 	}
 	// clear screen
@@ -226,23 +192,6 @@ void Scene::dbgDraw() {
 
 	fb->redraw();
 	return;
-}
-
-void Scene::dbgInit() {
-
-	cleanForScene(Scenes::DBG);
-	tms[0] = new TMesh();
-
-	// test textured quad
-	ppc->moveForward(-200.0f);
-	
-	tms[0]->createQuadTestTMesh();
-	//tms[0]->loadBin("geometry/teapot1K.bin");
-
-	if (texObject == nullptr)
-		//texObject = new Texture("pngs\\Woven_flower_pxr128.png"); // test simple texturing
-		texObject = new Texture("pngs\\Macbeth_color_checker_pxr128.png"); // test tiling
-		//texObject = new Texture("pngs\\Decal_12.png");// tests sprites
 }
 
 void Scene::testRot() {
@@ -400,7 +349,7 @@ void Scene::testRaster() {
 void Scene::testCameraLerp(void)
 {
 	// test simple cam lerp with simple tetrahedron
-	cleanForScene(Scenes::CAMLERP);
+	cleanForNewScene();
 	tms[0] = new TMesh();
 	ppcLerp0 = new PPC("camera_saves\\cameraSaveTest1.txt");
 	ppcLerp1 = new PPC("camera_saves\\cameraSaveTest2.txt");
@@ -431,7 +380,7 @@ void Scene::testCameraControl(void)
 {
 	if (!isTestCamControlsInit) {
 
-		cleanForScene(Scenes::CAMCONTROL);
+		cleanForNewScene();
 		tms[0] = new TMesh();
 
 		// test teapot
@@ -488,45 +437,42 @@ void Scene::testCameraVis(void)
 	return;
 }
 
-void Scene::a2Init()
-{
-	cleanForScene(Scenes::A2);
-
-	tms[0] = new TMesh("geometry/teapot1K.bin");
-	tms[1] = new TMesh("geometry/teapot1K.bin");
-	tms[2] = new TMesh("geometry/teapot1K.bin");
-	tms[3] = new TMesh("geometry/teapot1K.bin");
-	tms[4] = new TMesh("geometry/happy4.bin");
-	tms[5] = new TMesh("geometry/terrain.bin");
-
-	ppcLerp0 = new PPC("camera_saves\\2015-9-26-21-42-57-camera.txt");
-	ppcLerp1 = new PPC("camera_saves\\2015-9-26-22-42-55-camera.txt");
-
-	// scale happy mesh to be same scale as teapots
-	AABB teapotAABB = tms[0]->getAABB();
-	tms[4]->setToFitAABB(teapotAABB);
-
-	// scale terrain mesh to multiple of teapot reference
-	tms[5]->setToFitAABB(teapotAABB);
-	tms[5]->rotateAboutAxis(tms[0]->getCenter(), V3(1.0f, 0.0f, 0.0f), -90.0f);
-	tms[5]->rotateAboutAxis(tms[0]->getCenter(), V3(0.0f, 1.0f, 0.0f), 180.0f);
-	tms[5]->scale(4.0);
-	tms[5]->translate(V3(50.0f, -200.0f, 120.0f));
-
-	// place teapots at a cross formation around happy
-	tms[0]->translate(V3(200.0f, 0.0f, 0.0f));
-	tms[1]->translate(V3(-200.0f, 0.0f, 0.0f));
-	tms[2]->translate(V3(-200.0f, 90.0f, 0.0f));
-	tms[3]->translate(V3(200.0f, 90.0f, 0.0f));
-	
-	// place initial position for camera
-	ppc->moveForward(-600.0f);
-}
-
-void Scene::a2Draw()
+void Scene::a2Demo()
 {
 	if (!isA2Init) {
-		a2Init();
+		
+		cleanForNewScene();
+
+		tms[0] = new TMesh("geometry/teapot1K.bin");
+		tms[1] = new TMesh("geometry/teapot1K.bin");
+		tms[2] = new TMesh("geometry/teapot1K.bin");
+		tms[3] = new TMesh("geometry/teapot1K.bin");
+		tms[4] = new TMesh("geometry/happy4.bin");
+		tms[5] = new TMesh("geometry/terrain.bin");
+
+		ppcLerp0 = new PPC("camera_saves\\2015-9-26-21-42-57-camera.txt");
+		ppcLerp1 = new PPC("camera_saves\\2015-9-26-22-42-55-camera.txt");
+
+		// scale happy mesh to be same scale as teapots
+		AABB teapotAABB = tms[0]->getAABB();
+		tms[4]->setToFitAABB(teapotAABB);
+
+		// scale terrain mesh to multiple of teapot reference
+		tms[5]->setToFitAABB(teapotAABB);
+		tms[5]->rotateAboutAxis(tms[0]->getCenter(), V3(1.0f, 0.0f, 0.0f), -90.0f);
+		tms[5]->rotateAboutAxis(tms[0]->getCenter(), V3(0.0f, 1.0f, 0.0f), 180.0f);
+		tms[5]->scale(4.0);
+		tms[5]->translate(V3(50.0f, -200.0f, 120.0f));
+
+		// place teapots at a cross formation around happy
+		tms[0]->translate(V3(200.0f, 0.0f, 0.0f));
+		tms[1]->translate(V3(-200.0f, 0.0f, 0.0f));
+		tms[2]->translate(V3(-200.0f, 90.0f, 0.0f));
+		tms[3]->translate(V3(200.0f, 90.0f, 0.0f));
+
+		// place initial position for camera
+		ppc->moveForward(-600.0f);
+
 		isA2Init = true;
 	}
 
@@ -586,6 +532,18 @@ void Scene::a2Draw()
 	return;
 }
 
+void Scene::a3Demo(void)
+{
+}
+
+void Scene::testTexture(void)
+{
+}
+
+void Scene::testSprites(void)
+{
+}
+
 void Scene::saveCamera(void) const
 {
 	string filename = retrieveTimeDate();
@@ -611,19 +569,28 @@ void Scene::currentSceneRedraw(void)
 {
 	switch (currentScene) {
 	case Scenes::DBG:
-		dbgDraw();
+		this->dbgDraw();
 		break;
 	case Scenes::A1:
-		testRot();
+		this->testRot();
 		break;
 	case Scenes::A2:
-		a2Draw();
+		this->a2Demo();
 		break;
 	case Scenes::CAMLERP:
-		testCameraLerp();
+		this->testCameraLerp();
 		break;
 	case Scenes::CAMCONTROL:
-		testCameraControl();
+		this->testCameraControl();
+		break;
+	case Scenes::A3:
+		this->a3Demo();
+		break;
+	case Scenes::TEXTURE:
+		this->testTexture();
+		break;
+	case Scenes::SPRITETEST:
+		this->testSprites();
 		break;
 	default:
 		dbgDraw();

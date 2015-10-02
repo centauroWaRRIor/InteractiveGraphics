@@ -51,6 +51,27 @@ void GUI::cb_TestCamVis(Fl_Menu_* o, void* v) {
   ((GUI*)(o->parent()->user_data()))->cb_TestCamVis_i(o,v);
 }
 
+void GUI::cb_TestTexture_i(Fl_Menu_*, void*) {
+  TestTexture_cb();
+}
+void GUI::cb_TestTexture(Fl_Menu_* o, void* v) {
+  ((GUI*)(o->parent()->user_data()))->cb_TestTexture_i(o,v);
+}
+
+void GUI::cb_TestSprite_i(Fl_Menu_*, void*) {
+  TestSprites_cb();
+}
+void GUI::cb_TestSprite(Fl_Menu_* o, void* v) {
+  ((GUI*)(o->parent()->user_data()))->cb_TestSprite_i(o,v);
+}
+
+void GUI::cb_A3Demo_i(Fl_Menu_*, void*) {
+  A3Demo_cb();
+}
+void GUI::cb_A3Demo(Fl_Menu_* o, void* v) {
+  ((GUI*)(o->parent()->user_data()))->cb_A3Demo_i(o,v);
+}
+
 Fl_Menu_Item GUI::menu_Main[] = {
  {"Previous Assignments", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
  {"A1", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
@@ -63,15 +84,26 @@ Fl_Menu_Item GUI::menu_Main[] = {
  {"A2 Demo", 0,  (Fl_Callback*)GUI::cb_A2Demo, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Test Camera Vis", 0,  (Fl_Callback*)GUI::cb_TestCamVis, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
+ {"A3", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Test Texture", 0,  (Fl_Callback*)GUI::cb_TestTexture, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Test Sprite", 0,  (Fl_Callback*)GUI::cb_TestSprite, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"A3 Demo", 0,  (Fl_Callback*)GUI::cb_A3Demo, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {0,0,0,0,0,0,0,0,0},
  {0,0,0,0,0,0,0,0,0},
  {0,0,0,0,0,0,0,0,0}
 };
+Fl_Menu_Item* GUI::A1SubMenu = GUI::menu_Main + 1;
 Fl_Menu_Item* GUI::A1TestRot = GUI::menu_Main + 2;
 Fl_Menu_Item* GUI::A1TestRaster = GUI::menu_Main + 3;
+Fl_Menu_Item* GUI::A2SubMenu = GUI::menu_Main + 5;
 Fl_Menu_Item* GUI::A2TestCamLerp = GUI::menu_Main + 6;
 Fl_Menu_Item* GUI::TestCamControls = GUI::menu_Main + 7;
 Fl_Menu_Item* GUI::A2Demo = GUI::menu_Main + 8;
 Fl_Menu_Item* GUI::TestCamVis = GUI::menu_Main + 9;
+Fl_Menu_Item* GUI::A3 = GUI::menu_Main + 11;
+Fl_Menu_Item* GUI::TestTexture = GUI::menu_Main + 12;
+Fl_Menu_Item* GUI::TestSprite = GUI::menu_Main + 13;
+Fl_Menu_Item* GUI::A3Demo = GUI::menu_Main + 14;
 
 void GUI::cb_SaveCameraButton_i(Fl_Button*, void*) {
   SaveCameraButton_cb();
@@ -1196,7 +1228,7 @@ void GUI::SaveFB_cb() {
 
 void GUI::A2Button_cb() {
   scene->regFuncForKbRedraw(Scenes::A2);
-scene->a2Draw();
+scene->a2Demo();
 }
 
 void GUI::TestCamLerp_cb() {
@@ -1211,4 +1243,19 @@ scene->testCameraControl();
 
 void GUI::TestCamVis_cb() {
   scene->testCameraVis();
+}
+
+void GUI::TestTexture_cb() {
+  scene->regFuncForKbRedraw(Scenes::TEXTURE);
+scene->testTexture();
+}
+
+void GUI::TestSprites_cb() {
+  scene->regFuncForKbRedraw(Scenes::SPRITETEST);
+scene->testSprites();
+}
+
+void GUI::A3Demo_cb() {
+  scene->regFuncForKbRedraw(Scenes::A3);
+scene->a3Demo();
 }

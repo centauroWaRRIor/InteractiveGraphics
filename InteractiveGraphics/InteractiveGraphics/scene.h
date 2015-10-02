@@ -13,7 +13,10 @@ enum class Scenes {
 	A1, 
 	A2, 
 	CAMLERP,
-	CAMCONTROL};
+	CAMCONTROL,
+	TEXTURE,
+	A3,
+	SPRITETEST};
 enum class DrawModes { 
 	DOTS, 
 	WIREFRAME, 
@@ -33,7 +36,8 @@ private:
 	Scenes currentScene; // used for keyboard callback to invokate the correct redraw
 	DrawModes currentDrawMode; // controls how to draw current scene
 	// helps initializnig the different demo functions
-	bool isA2Init, isDGBInit, isTestCamControlsInit; 
+	bool isA2Init, isDGBInit, isTestCamControlsInit,
+		isTextureInit, isA3Init, isSpriteTestInit; 
 	
 	static const float hfov; // field of view
 	static const int u0, v0; // initial window coordinates
@@ -54,20 +58,22 @@ private:
 	// utility function to clean in between different scene demos
 	// and avoid memory leaks every time I click on the gui
 	// buttons
-	void cleanForScene(Scenes currentScene);
+	void cleanForNewScene(void);
 public:
 	Scene();
 	~Scene();
 	
-	void dbgInit(void);
 	void dbgDraw(void);
 	void testRot(void);
 	void testRaster(void);
 	void testCameraLerp(void);
 	void testCameraControl(void);
 	void testCameraVis(void);
-	void a2Init(void);
-	void a2Draw(void);
+	void a2Demo(void);
+	void a3Demo(void);
+	void testTexture(void);
+	void testSprites(void);
+
 	void saveCamera(void) const;
 	void saveThisFramebuffer(void) const;
 	void regFuncForKbRedraw(Scenes newScene);
