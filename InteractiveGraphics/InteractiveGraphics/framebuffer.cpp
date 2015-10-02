@@ -890,7 +890,7 @@ void FrameBuffer::draw2DTexturedTriangle(
 		perspCorrectMatQ[1][2] * tParameters[1] +
 		perspCorrectMatQ[2][2] * tParameters[2];
 
-	// Debug with colors ///
+	// colors are available for future modes and for debug
 	V3 redParameters(c1.getX(), c2.getX(), c3.getX());
 	V3 greenParameters(c1.getY(), c2.getY(), c3.getY());
 	V3 blueParameters(c1.getZ(), c2.getZ(), c3.getZ());
@@ -933,7 +933,6 @@ void FrameBuffer::draw2DTexturedTriangle(
 		perspCorrectMatQ[0][2] * blueParameters[0] +
 		perspCorrectMatQ[1][2] * blueParameters[1] +
 		perspCorrectMatQ[2][2] * blueParameters[2];
-	////////////////////////
 
 	float D = perspCorrectMatQ[0][0] + perspCorrectMatQ[1][0] + perspCorrectMatQ[2][0];
 	float E = perspCorrectMatQ[0][1] + perspCorrectMatQ[1][1] + perspCorrectMatQ[2][1];
@@ -1031,7 +1030,7 @@ void FrameBuffer::draw2DTexturedTriangle(
 					((At * currPixX) + (Bt * currPixY) + Ct) /
 					((D * currPixX) + (E * currPixY) + F);
 
-				/// debug with colors //////
+				// use model space linear interpolation for the r,g,b raster parameters
 				V3 interpolatedColor;
 				// find interpolated color by following the model space formula
 				// for rater parameter linear interpolation 
@@ -1046,33 +1045,16 @@ void FrameBuffer::draw2DTexturedTriangle(
 					((ABlue * currPixX) + (BBlue * currPixY) + CBlue) /
 					((D * currPixX) + (E * currPixY) + F);
 
-				///////////////////////////
-
 				// use screen space linear interpolation for the depth since we are using 1/w
 				interpolatedZBufferDepth = abcDepth[0] * currPixX + abcDepth[1] * currPixY + abcDepth[2];
 
 				// sample texture using lerped result of s,t raster parameters (in model space)
-				//texelColor = texture.sampleTexClamp(interpolatedS, interpolatedT);
 				texelColor = texture.sampleTexTile(interpolatedS, interpolatedT);
 				colorVector.setFromColor(texelColor);
 
 				// write to frame buffer if 1/w is closer works
 				setIfOneOverWCloser(V3((float)currPixX, (float)currPixY, interpolatedZBufferDepth),
 					colorVector);
-
-				//// test sprite support (alpha based) works
-				//unsigned char alpha = ((unsigned char*)(&texelColor))[3];
-				//if (alpha > 0) 
-				//{
-				//	float alphaModulation = (float)(alpha);
-				//	alphaModulation /= 255.0f;
-				//	interpolatedColor[0] = interpolatedColor[0] * alphaModulation;
-				//	interpolatedColor[1] = interpolatedColor[1] * alphaModulation;
-				//	interpolatedColor[2] = interpolatedColor[2] * alphaModulation;
-				//	setIfOneOverWCloser(V3((float)currPixX, (float)currPixY, interpolatedZBufferDepth),
-				//		interpolatedColor);
-				//}
-
 			}
 		}
 	}

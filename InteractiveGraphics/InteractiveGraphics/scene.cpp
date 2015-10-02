@@ -174,33 +174,72 @@ void Scene::dbgDraw() {
 	if (!isDGBInit) {
 		
 		cleanForNewScene();
+		// prepare 6 meshes
 		tms[0] = new TMesh();
+		tms[1] = new TMesh();
+		tms[2] = new TMesh();
+		tms[3] = new TMesh();
+		tms[4] = new TMesh();
+		tms[5] = new TMesh();
 
-		// test textured quad
-		ppc->moveForward(-200.0f);
+		// look at quads full frontal
+		ppc->moveForward(-180.0f);
+		ppc->moveUp(100.0f);
+		ppc->moveRight(20.0f);
+		ppc->tilt(-25);
 
-		tms[0]->createQuadTestTMesh(true);
-		//tms[0]->loadBin("geometry/teapot1K.bin");
+		// enable tiling for all the quads
+		tms[0]->createQuadTestTMesh(false);
+		tms[1]->createQuadTestTMesh(false);
+		tms[2]->createQuadTestTMesh(false);
+		tms[3]->createQuadTestTMesh(false);
+		tms[4]->createQuadTestTMesh(false);
+		tms[5]->createQuadTestTMesh(true);
 
-		//texObject = new Texture("pngs\\Woven_flower_pxr128.png"); // test simple texturing
-		texObjects[0] = new Texture("pngs\\Macbeth_color_checker_pxr128.png"); // test tiling
-		  //texObject = new Texture("pngs\\Decal_12.png");// tests sprites
+		// load five different textures for demoing
+		texObjects[0] = new Texture("pngs\\Woven_flower_pxr128.png");
+		texObjects[1] = new Texture("pngs\\Macbeth_color_checker_pxr128.png");
+
+		// use 5 quads to cover five faces of a 3D cube
+		// tms[0] is the front face
+		// tms[1] is the left face
+		tms[1]->rotateAboutAxis(V3(0.0f, 0.0f, 0.0f), V3(0.0f, 1.0f, 0.0f), -90.0f);
+		// push in place
+		tms[1]->translate(V3(0.0f, 0.0f, -40.0f));
+		// tms[2] is the right face
+		tms[2]->rotateAboutAxis(V3(0.0f, 0.0f, 0.0f), V3(0.0f, 1.0f, 0.0f), 90.0f);
+		// push in place
+		tms[2]->translate(V3(40.0f, 0.0f, 0.0f));
+		// tms[3] is the back face
+		tms[3]->rotateAboutAxis(V3(0.0f, 0.0f, 0.0f), V3(0.0f, 1.0f, 0.0f), 180.0f);
+		// push in place
+		tms[3]->translate(V3(40.0f, 0.0f, -40.0f));
+		// tms[4] is the top face
+		tms[4]->rotateAboutAxis(V3(0.0f, 0.0f, 0.0f), V3(1.0f, 0.0f, 0.0f), -90.0f);
+		// push in place
+		tms[4]->translate(V3(0.0f, 40.0f, 0.0f));
+		
+		// use 6th quad as the floor
+		// make bigger
+		tms[5]->scale(6.0f);
+		// put in floor position
+		tms[5]->rotateAboutAxis(V3(0.0f, 0.0f, 0.0f), V3(1.0f, 0.0f, 0.0f), -90.0f);
+		// center
+		tms[5]->translate(V3(-100.0f, 0.0f, 80.0f));
+
 		isDGBInit = true;
 	}
 	// clear screen
 	fb->set(0xFFFFFFFF);
-	// clear screen for sprite
-	//fb->set(0x00000000);
-	// clear zBuffer
-	if (currentDrawMode == DrawModes::MODELSPACELERP)
-		fb->clearZB(FLT_MAX);
-	else
-		fb->clearZB(0.0f);
-	//drawTMesh(*tms[0], *fb, *ppc, false);
-	tms[0]->drawTextured(*fb, *ppc, *texObjects[0]);
-	// draw original for comparison
-	//fb->loadFromPng("pngs\\Woven_flower_pxr128.png"); 
-	fb->loadFromPng("pngs\\Macbeth_color_checker_pxr128.png"); 
+	fb->clearZB(0.0f);
+
+	// draw floor
+	tms[5]->drawTextured(*fb, *ppc, *texObjects[0]);
+
+	// draw textured cube
+	for (int i = 0; i < 5; i++) {
+		tms[i]->drawTextured(*fb, *ppc, *texObjects[1]);
+	}
 
 	fb->redraw();
 	return;

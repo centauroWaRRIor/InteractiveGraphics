@@ -68,6 +68,9 @@ unsigned int Texture::sampleTexTile(float floatS, float floatT) const
 		floatS = floatS - ((int)floatS);
 	if (floatT > 1.0)
 		floatT = floatT - ((int)floatT);
+	// clip negative numbers
+	floatS = clip(floatS, 0.0f, 1.0f);
+	floatT = clip(floatT, 0.0f, 1.0f);
 	// assumes input s and t go from [0-1] and clamps
 	unsigned int intS = (unsigned int)(floatS * (texWidth - 1));
 	unsigned int intT = (unsigned int)(floatT * (texHeight - 1));
