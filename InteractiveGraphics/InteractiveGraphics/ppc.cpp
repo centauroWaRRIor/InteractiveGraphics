@@ -190,24 +190,47 @@ void PPC::positionRelativeToPoint(
 		return;
 	}
 
-	// capture principal point and focal length 
-	// before we modify a, b, and c
-	V3 principalPoint = getPrincipalPoint();
-	float focalLength = getFocalLength();
-
+	V3 newa, newb, newc, newC;
 	// compute new C, a, and b
-	C = P - (vd * distance);
-	V3 orthoNormalVector = vd ^ up;
-	orthoNormalVector.normalize();
-	a = orthoNormalVector * a.length();
-	orthoNormalVector = vd ^ a;
-	b = orthoNormalVector * b.length();
+	newC = P - (vd * distance);
+	newa = (vd ^ up).getNormalized() * a.length();
+	newb = (vd ^ newa).getNormalized() * b.length();
 
-	// compute new c
+	V3 principalPoint = getPrincipalPoint();
 	float PPu = principalPoint.getX();
 	float PPv = principalPoint.getY();
-	c = -1.0f * (PPu * a) - (PPv * b) +
-		vd*focalLength;
+	// compute new c
+	newc = vd*getFocalLength() - (PPu * newa) - (PPv * newb);
+
+	// commit new values
+	C = newC;
+	a = newa;
+	b = newb;
+	c = newc;
+
+	// update projection matrix
+	buildProjM();
+}
+
+void PPC::positionAndOrient(V3 newC, V3 lookAtPoint, V3 vInVPlane) {
+
+	// assumes square pixels, and that the principal point (PPu,PPv)
+	// projects right at the center of the screen.
+
+	// we need to compute the camera elements for the new position and orientation
+	V3 newa, newb, newc; // newC is given
+
+	V3 newVD = (lookAtPoint - newC);
+	newVD.normalize();
+	newa = (newVD ^ vInVPlane).getNormalized() * a.length();
+	newb = (newVD ^ newa).getNormalized()*b.length();
+	newc = newVD*getFocalLength() - newa*(float)w / 2.0f - newb*(float)h / 2.0f;
+
+	// commit new values
+	C = newC;
+	a = newa;
+	b = newb;
+	c = newc;
 
 	// update projection matrix
 	buildProjM();

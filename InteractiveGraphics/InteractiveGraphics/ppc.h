@@ -69,6 +69,9 @@ public:
 		const V3 &vd,
 		const V3 &up,
 		float distance);
+	// place cemara so that it looks at point lookAtPoint from point C given
+	// an up vector
+	void positionAndOrient(V3 newC, V3 lookAtPoint, V3 vInVPlane);
 
 	// projection of 3D point
 	bool project(const V3 &P, V3& projP) const;

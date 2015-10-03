@@ -240,10 +240,11 @@ void Scene::dbgDraw() {
 
 		// rotate view direction
 		V3 rotVD = viewDirection;
-		rotVD.rotateThisVectorAboutDirection(V3(0.0f, 0.0f, 1.0f), steps);
+		rotVD.rotateThisVectorAboutDirection(V3(0.0f, 1.0f, 0.0f), steps);
 
 		// set up the look at cube camera (dolly camera setup)
 		ppc->positionRelativeToPoint(lookAtPoint, rotVD, up, 180.0f);
+		//ppc->positionAndOrient((lookAtPoint - (rotVD * 180.0f)), lookAtPoint, up);
 
 		// clear screen
 		fb->set(0xFFFFFFFF);

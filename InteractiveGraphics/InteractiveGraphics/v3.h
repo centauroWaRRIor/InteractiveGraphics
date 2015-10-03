@@ -80,6 +80,7 @@ public:
 
 	// normalization of this vector
 	void normalize(void);
+	V3 getNormalized(void) const;
 
 	// length computation
 	float length(void) const;
@@ -96,7 +97,6 @@ public:
 
 	// rotation of "this" point about arbitrary axis
 	void rotateThisPointAboutAxis(const V3 &axisOrigin, const V3 &axisDirection, float theta);
-
 	// rotation of "this" vector about arbitrary direction
 	void rotateThisVectorAboutDirection(const V3 &direction, float theta);
 };

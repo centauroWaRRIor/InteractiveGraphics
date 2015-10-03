@@ -97,6 +97,13 @@ void V3::normalize(void)
 	}
 }
 
+V3 V3::getNormalized(void) const
+{
+	V3 result(*this);
+	result.normalize();
+	return result;
+}
+
 float V3::length(void) const
 {
 	// option A (faster)
@@ -150,21 +157,22 @@ void V3::rotateThisPointAboutAxis(const V3 &axisOrigin, const V3 &axisDirection,
 	V3 xAxis(1.0f, 0.0f, 0.0f);
 	V3 yAxis(0.0f, 1.0f, 0.0f);
 
-	float dotProductXAxis = xAxis * axisDirection;
-	float dotProductYAxis = yAxis * axisDirection;
-
 	// choose the axis that makes the larger angle with axisDirection
-	// assumes axisDirection is also a unit vector at this point
-	V3 chosenAxis = dotProductXAxis < dotProductYAxis ? xAxis : yAxis;
+	// assumes axisDirection is also a unit vector at this point,
+	// therefore the dot product between axisDirection and the x and 
+	// y axis tells the magnitude of the angle between them. Smaller
+	// the dot product the greater the angle.
+	V3 chosenAxis = (fabs(axisDirection.getX()) < fabs(fabs(axisDirection.getY()))) ?
+			xAxis : yAxis;
 
 	// derive a vector that is perpendicular to axisDirection
 	V3 basisVector2 = chosenAxis ^ axisDirection;
+	// normalize in order to have an orthonormal basis set
+	basisVector2.normalize();
 	// derive a third vector that is perpendicular to axisDirection
 	// and basisVector2
 	V3 basisVector3 = axisDirection ^ basisVector2;
-
 	// normalize in order to have an orthonormal basis set
-	basisVector2.normalize();
 	basisVector3.normalize();
 
 	// get representation of this point in new coordinate system
@@ -195,6 +203,43 @@ void V3::rotateThisPointAboutAxis(const V3 &axisOrigin, const V3 &axisDirection,
 	V3 &P = *this;
 	P = (R.getTranspose() * tempPoint) + axisOrigin;
 }
+
+#if 0
+// Professor's implemetation is more elegant and compact
+V3 V3::rotateThisPointAboutAxis(V3 Oa, V3 aDir, float theta) {
+	// build aux coordinate system with axis as one of its principal axes
+	V3 auxAxis;
+	if (fabsf(aDir[0]) > fabsf(aDir[1])) {
+		auxAxis = V3(0.0f, 1.0f, 0.0f);
+	}
+	else {
+		auxAxis = V3(1.0f, 0.0f, 0.0f);
+	}
+
+	V3 yl = aDir;
+	V3 zl = (aDir ^ auxAxis);
+	zl.normalize();
+	V3 xl = (yl ^ zl);
+	xl.normalize();
+	M33 lcs;
+	lcs[0] = xl;
+	lcs[1] = yl;
+	lcs[2] = zl;
+
+	// transform to aux coordinate system
+	V3 &p = *this;
+	V3 p1 = lcs*(p - Oa);
+
+	// rotate about principal axis
+	M33 roty;
+	roty.setRotationAboutY(theta);
+	V3 p2 = roty * p1;
+
+	// transform back to old world
+	V3 ret = lcs.getInverted()*p2 + Oa;
+	return ret;
+}
+#endif
 
 void V3::rotateThisVectorAboutDirection(const V3 &direction, float theta) {
 
