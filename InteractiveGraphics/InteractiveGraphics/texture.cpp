@@ -111,19 +111,44 @@ unsigned int Texture::sampleTexBilinearTile(float floatS, float floatT) const
 	// clips negative numbers and then maps [0,1) to [0, texHeight - 1]
 	floatT = clip(floatT, 0.0f, 1.0f) * (texHeight - 1);
 	
-	// get decimal parts for deltaS and deltaT
-	float dS = floatT - ((int)floatT);
+	// get decimal parts
+	float dS = floatS - ((int)floatS);
 	float dT = floatT - ((int)floatT);
+	// get delta from texel center
+	dS -= 0.5f;
+	dT -= 0.5f;
+	// negative deltas are a special case in which we shift the c0,c1,c2,c3 grid
+	// one texel to the left or one texel up
+	if (dS < 0.0f) {
+		// shift sample grid one texel to the left;
+		floatS--;
+		// wrap around
+		if (floatS < 0.0f) {
+			floatS = (float) ((texWidth - 1) + dS);
+		}
+		// adjust ds relative to new grid
+		dS = floatS - ((int)floatS);
+	}
+	if (dT < 0.0f) {
+		// shift sample grid one texel up
+		floatT--;
+		// wrap around
+		if (floatT < 0.0f) {
+			floatT = (float)(texHeight - 1 + dT);
+		}
+		// adjust dt relative to new grid
+		dT = floatT - ((int)floatT);
+	}
 
-	unsigned int baseS = (unsigned int)(floatS + 0.5f); // round up >5 or down <5
-	unsigned int baseT = (unsigned int)(floatT + 0.5f); // round up >5 or down <5
+	unsigned int baseS = (unsigned int)(floatS); // always round towards 0
+	unsigned int baseT = (unsigned int)(floatT); // always round towards 0
 
 	unsigned char red, green, blue, alpha;
 
 	// compute C0
 	unsigned int intS = baseS;
 	unsigned int intT = baseT;
-	baseT = intT = (texHeight - 1) - intT; // t needs to be inverted
+	//intT = intT = (texHeight - 1) - intT; // t needs to be inverted
 	unsigned int texelIndex = (intT * texWidth + intS) * 4;
 	red = texels[texelIndex + 0];
 	green = texels[texelIndex + 1];
@@ -134,7 +159,7 @@ unsigned int Texture::sampleTexBilinearTile(float floatS, float floatT) const
 	// compute C1
 	intS = baseS;
 	intT = (baseT + 1) % (texHeight);
-	baseT = intT = (texHeight - 1) - intT; // t needs to be inverted
+	//intT = intT = (texHeight - 1) - intT; // t needs to be inverted
 	texelIndex = (intT * texWidth + intS) * 4;
 	red = texels[texelIndex + 0];
 	green = texels[texelIndex + 1];
@@ -145,7 +170,7 @@ unsigned int Texture::sampleTexBilinearTile(float floatS, float floatT) const
 	// compute C2
 	intS = (baseS + 1) % (texWidth);
 	intT = (baseT + 1) % (texHeight);
-	baseT = intT = (texHeight - 1) - intT; // t needs to be inverted
+	//intT = intT = (texHeight - 1) - intT; // t needs to be inverted
 	texelIndex = (intT * texWidth + intS) * 4;
 	red = texels[texelIndex + 0];
 	green = texels[texelIndex + 1];
@@ -156,7 +181,7 @@ unsigned int Texture::sampleTexBilinearTile(float floatS, float floatT) const
 	// compute C3
 	intS = (baseS + 1) % (texWidth);
 	intT = baseT;
-	baseT = intT = (texHeight - 1) - intT; // t needs to be inverted
+	//intT = intT = (texHeight - 1) - intT; // t needs to be inverted
 	texelIndex = (intT * texWidth + intS) * 4;
 	red = texels[texelIndex + 0];
 	green = texels[texelIndex + 1];
@@ -169,9 +194,9 @@ unsigned int Texture::sampleTexBilinearTile(float floatS, float floatT) const
 
 	return bilinearResult.getColor();
 #if 0
---C0-----C1--
+--C0-----C3--
    |     |
    |     |
---C2-----C3--
+--C1-----C2--
 #endif
 }

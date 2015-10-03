@@ -252,7 +252,7 @@ void Scene::dbgDraw() {
 		fb->clearZB(0.0f);
 
 		// draw floor
-		tms[5]->drawTextured(*fb, *ppc, *texObjects[0]);
+		tms[5]->drawTextured(*fb, *ppc, *texObjects[1]);
 
 		// draw textured cube
 		for (int i = 0; i < 5; i++) {
