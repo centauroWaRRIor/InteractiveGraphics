@@ -236,7 +236,8 @@ void Scene::dbgDraw() {
 	const static V3 up(0.0f, 1.0f, 0.0f);
 	V3 viewDirection = ppcLerp0->getViewDir();
 
-	for (float steps = 0.0f; steps < 100.0f; steps += 10.0f) {
+	// 10 second video at 30 fps
+	for (float steps = 0.0f; steps < 360.0f; steps += 1.2f) {
 
 		// rotate view direction
 		V3 rotVD = viewDirection;
@@ -244,7 +245,7 @@ void Scene::dbgDraw() {
 
 		// set up the look at cube camera (dolly camera setup)
 		ppc->positionRelativeToPoint(lookAtPoint, rotVD, up, 180.0f);
-		//ppc->positionAndOrient((lookAtPoint - (rotVD * 180.0f)), lookAtPoint, up);
+		//ppc->positionAndOrient((lookAtPoint - (rotVD * 180.0f)), lookAtPoint, up); // also works
 
 		// clear screen
 		fb->set(0xFFFFFFFF);

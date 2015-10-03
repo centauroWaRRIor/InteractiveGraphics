@@ -20,6 +20,7 @@ public:
 	unsigned int getTexWidth(void) const { return texWidth; }
 	unsigned int getTexHeight(void) const { return texHeight; }
 
-	unsigned int sampleTexClamp(float s, float t) const;
-	unsigned int sampleTexTile(float s, float t) const;
+	unsigned int sampleTexNearClamp(float s, float t) const;
+	unsigned int sampleTexNearTile(float s, float t) const;
+	unsigned int sampleTexBilinearTile(float s, float t) const;
 };

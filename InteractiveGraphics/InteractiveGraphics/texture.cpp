@@ -37,13 +37,17 @@ Texture::Texture(const string &filename)
 	}
 }
 
-unsigned int Texture::sampleTexClamp(float floatS, float floatT) const
+unsigned int Texture::sampleTexNearClamp(float floatS, float floatT) const
 {
-	// assumes input s and t go from [0-1] and clamps
-	unsigned int intS = (unsigned int) (clip(floatS, 0.0f, 1.0f) * (texWidth - 1));
-	unsigned int intT = (unsigned int) (clip(floatT, 0.0f, 1.0f) * (texHeight - 1));
+	// clamps [0-1] and then maps to [0, texWidth - 1]
+	floatS = clip(floatS, 0.0f, 1.0f) * (texWidth - 1);
+	unsigned int intS = (unsigned int)(floatS + 0.5f); // round up >5 or down <5
+	// clamps [0-1] and then maps to [0, texHeight - 1]
+	floatT = clip(floatT, 0.0f, 1.0f) * (texHeight - 1);
+	unsigned int intT = (unsigned int)(floatT + 0.5f); // round up >5 or down <5
 	// t needs to be inverted
 	intT = (texHeight - 1) - intT;
+
 	unsigned char red, green, blue, alpha;
 	unsigned int sampleColor;
 	
@@ -61,21 +65,22 @@ unsigned int Texture::sampleTexClamp(float floatS, float floatT) const
 	return sampleColor;
 }
 
-unsigned int Texture::sampleTexTile(float floatS, float floatT) const
+unsigned int Texture::sampleTexNearTile(float floatS, float floatT) const
 {
 	// tile s,t by only keeping decimal part
 	if (floatS > 1.0)
 		floatS = floatS - ((int)floatS);
 	if (floatT > 1.0)
 		floatT = floatT - ((int)floatT);
-	// clip negative numbers
-	floatS = clip(floatS, 0.0f, 1.0f);
-	floatT = clip(floatT, 0.0f, 1.0f);
-	// assumes input s and t go from [0-1] and clamps
-	unsigned int intS = (unsigned int)(floatS * (texWidth - 1));
-	unsigned int intT = (unsigned int)(floatT * (texHeight - 1));
+	// clips negative numbers and then maps [0,1) to [0, texWidth - 1]
+	floatS = clip(floatS, 0.0f, 1.0f) * (texWidth - 1);
+	unsigned int intS = (unsigned int)(floatS + 0.5f); // round up >5 or down <5
+	// clips negative numbers and then maps [0,1) to [0, texHeight - 1]
+	floatT = clip(floatT, 0.0f, 1.0f) * (texHeight - 1);
+	unsigned int intT = (unsigned int)(floatT + 0.5f); // round up >5 or down <5
 	// t needs to be inverted
 	intT = (texHeight - 1) - intT;
+
 	unsigned char red, green, blue, alpha;
 	unsigned int sampleColor;
 
@@ -91,4 +96,48 @@ unsigned int Texture::sampleTexTile(float floatS, float floatT) const
 	((unsigned char*)(&sampleColor))[3] = alpha;
 
 	return sampleColor;
+}
+
+unsigned int Texture::sampleTexBilinearTile(float floatS, float floatT) const
+{
+	// tile s,t by only keeping decimal part
+	if (floatS > 1.0)
+		floatS = floatS - ((int)floatS);
+	if (floatT > 1.0)
+		floatT = floatT - ((int)floatT);
+	// clips negative numbers and then maps [0,1) to [0, texWidth - 1]
+	floatS = clip(floatS, 0.0f, 1.0f) * (texWidth - 1);
+	// clips negative numbers and then maps [0,1) to [0, texHeight - 1]
+	floatT = clip(floatT, 0.0f, 1.0f) * (texHeight - 1);
+	
+	// get decimal parts
+	float dS = floatT - ((int)floatT);
+	float dT = floatT - ((int)floatT);
+
+	unsigned int intS = (unsigned int)(floatS + 0.5f); // round up >5 or down <5
+	unsigned int intT = (unsigned int)(floatT + 0.5f); // round up >5 or down <5
+
+	// t needs to be inverted
+	intT = (texHeight - 1) - intT;
+
+	// hint use modulo in order to wrap up in the corner cases
+	
+	// t needs to be inverted
+	//intT = (texHeight - 1) - intT;
+	//unsigned char red, green, blue, alpha;
+	//unsigned int sampleColor;
+
+	//unsigned int texelIndex = (intT * texWidth + intS) * 4;
+	//red = texels[texelIndex + 0];
+	//green = texels[texelIndex + 1];
+	//blue = texels[texelIndex + 2];
+	//alpha = texels[texelIndex + 3];
+
+	//((unsigned char*)(&sampleColor))[0] = red;
+	//((unsigned char*)(&sampleColor))[1] = green;
+	//((unsigned char*)(&sampleColor))[2] = blue;
+	//((unsigned char*)(&sampleColor))[3] = alpha;
+
+	//return sampleColor;
+	return 0;
 }

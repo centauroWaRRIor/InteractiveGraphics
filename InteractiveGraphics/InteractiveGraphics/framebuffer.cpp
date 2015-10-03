@@ -1049,7 +1049,7 @@ void FrameBuffer::draw2DTexturedTriangle(
 				interpolatedZBufferDepth = abcDepth[0] * currPixX + abcDepth[1] * currPixY + abcDepth[2];
 
 				// sample texture using lerped result of s,t raster parameters (in model space)
-				texelColor = texture.sampleTexTile(interpolatedS, interpolatedT);
+				texelColor = texture.sampleTexNearTile(interpolatedS, interpolatedT);
 				colorVector.setFromColor(texelColor);
 
 				// write to frame buffer if 1/w is closer works
@@ -1307,7 +1307,7 @@ void FrameBuffer::draw2DSprite(
 				interpolatedZBufferDepth = abcDepth[0] * currPixX + abcDepth[1] * currPixY + abcDepth[2];
 
 				// sample texture using lerped result of s,t raster parameters (in model space)
-				texelColor = texture.sampleTexClamp(interpolatedS, interpolatedT);
+				texelColor = texture.sampleTexNearClamp(interpolatedS, interpolatedT);
 
 				// test sprite support (alpha based) works
 				unsigned char alpha = ((unsigned char*)(&texelColor))[3];
