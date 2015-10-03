@@ -1049,7 +1049,8 @@ void FrameBuffer::draw2DTexturedTriangle(
 				interpolatedZBufferDepth = abcDepth[0] * currPixX + abcDepth[1] * currPixY + abcDepth[2];
 
 				// sample texture using lerped result of s,t raster parameters (in model space)
-				texelColor = texture.sampleTexNearTile(interpolatedS, interpolatedT);
+				//texelColor = texture.sampleTexNearTile(interpolatedS, interpolatedT);
+				texelColor = texture.sampleTexBilinearTile(interpolatedS, interpolatedT);
 				colorVector.setFromColor(texelColor);
 
 				// write to frame buffer if 1/w is closer works

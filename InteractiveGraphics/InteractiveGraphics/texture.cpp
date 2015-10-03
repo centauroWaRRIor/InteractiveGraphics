@@ -1,5 +1,6 @@
 #include "texture.h"
 #include "lodepng.h"
+#include "v3.h"
 using std::size_t;
 #include <iostream>
 using std::endl;
@@ -110,34 +111,67 @@ unsigned int Texture::sampleTexBilinearTile(float floatS, float floatT) const
 	// clips negative numbers and then maps [0,1) to [0, texHeight - 1]
 	floatT = clip(floatT, 0.0f, 1.0f) * (texHeight - 1);
 	
-	// get decimal parts
+	// get decimal parts for deltaS and deltaT
 	float dS = floatT - ((int)floatT);
 	float dT = floatT - ((int)floatT);
 
-	unsigned int intS = (unsigned int)(floatS + 0.5f); // round up >5 or down <5
-	unsigned int intT = (unsigned int)(floatT + 0.5f); // round up >5 or down <5
+	unsigned int baseS = (unsigned int)(floatS + 0.5f); // round up >5 or down <5
+	unsigned int baseT = (unsigned int)(floatT + 0.5f); // round up >5 or down <5
 
-	// t needs to be inverted
-	intT = (texHeight - 1) - intT;
+	unsigned char red, green, blue, alpha;
 
-	// hint use modulo in order to wrap up in the corner cases
+	// compute C0
+	unsigned int intS = baseS;
+	unsigned int intT = baseT;
+	baseT = intT = (texHeight - 1) - intT; // t needs to be inverted
+	unsigned int texelIndex = (intT * texWidth + intS) * 4;
+	red = texels[texelIndex + 0];
+	green = texels[texelIndex + 1];
+	blue = texels[texelIndex + 2];
+	alpha = texels[texelIndex + 3];	
+	V3 C0((float)red / 255.0f, (float)green / 255.0f, (float)blue / 255.0f);
 	
-	// t needs to be inverted
-	//intT = (texHeight - 1) - intT;
-	//unsigned char red, green, blue, alpha;
-	//unsigned int sampleColor;
+	// compute C1
+	intS = baseS;
+	intT = (baseT + 1) % (texHeight);
+	baseT = intT = (texHeight - 1) - intT; // t needs to be inverted
+	texelIndex = (intT * texWidth + intS) * 4;
+	red = texels[texelIndex + 0];
+	green = texels[texelIndex + 1];
+	blue = texels[texelIndex + 2];
+	alpha = texels[texelIndex + 3];
+	V3 C1((float)red / 255.0f, (float)green / 255.0f, (float)blue / 255.0f);
 
-	//unsigned int texelIndex = (intT * texWidth + intS) * 4;
-	//red = texels[texelIndex + 0];
-	//green = texels[texelIndex + 1];
-	//blue = texels[texelIndex + 2];
-	//alpha = texels[texelIndex + 3];
+	// compute C2
+	intS = (baseS + 1) % (texWidth);
+	intT = (baseT + 1) % (texHeight);
+	baseT = intT = (texHeight - 1) - intT; // t needs to be inverted
+	texelIndex = (intT * texWidth + intS) * 4;
+	red = texels[texelIndex + 0];
+	green = texels[texelIndex + 1];
+	blue = texels[texelIndex + 2];
+	alpha = texels[texelIndex + 3];
+	V3 C2((float)red / 255.0f, (float)green / 255.0f, (float)blue / 255.0f);
 
-	//((unsigned char*)(&sampleColor))[0] = red;
-	//((unsigned char*)(&sampleColor))[1] = green;
-	//((unsigned char*)(&sampleColor))[2] = blue;
-	//((unsigned char*)(&sampleColor))[3] = alpha;
+	// compute C3
+	intS = (baseS + 1) % (texWidth);
+	intT = baseT;
+	baseT = intT = (texHeight - 1) - intT; // t needs to be inverted
+	texelIndex = (intT * texWidth + intS) * 4;
+	red = texels[texelIndex + 0];
+	green = texels[texelIndex + 1];
+	blue = texels[texelIndex + 2];
+	alpha = texels[texelIndex + 3];
+	V3 C3((float)red / 255.0f, (float)green / 255.0f, (float)blue / 255.0f);
+	
+	V3 bilinearResult = C0 * ((1 - dS) * (1 - dT)) + C1 * ((1 - dS) * dT)
+		+ C2 * (dS * dT) + C3 * (dS * (1 - dT));
 
-	//return sampleColor;
-	return 0;
+	return bilinearResult.getColor();
+#if 0
+--C0-----C1--
+   |     |
+   |     |
+--C2-----C3--
+#endif
 }
