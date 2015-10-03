@@ -128,13 +128,13 @@ class GUI {open
         }
         Fl_Round_Button TextureRadialButton {
           label Texture
-          callback {DrawMode_cb(6)}
+          callback {DrawMode_cb(6)} selected
           xywh {30 289 140 15} type Radio down_box ROUND_DOWN_BOX
         }
       }
       Fl_Button A3Button {
         label A3
-        callback {DBG_cb()}
+        callback {A3Demo_cb()}
         xywh {15 92 225 40} selection_color 72
       }
     }
@@ -173,8 +173,7 @@ scene->dbgDraw();} {}
   Function {A2Button_cb()} {open
   } {
     code {scene->regFuncForKbRedraw(Scenes::A2);
-scene->a2Demo();} {selected
-    }
+scene->a2Demo();} {}
   }
   Function {TestCamLerp_cb()} {open
   } {

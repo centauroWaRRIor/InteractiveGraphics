@@ -605,6 +605,111 @@ void Scene::a2Demo()
 
 void Scene::a3Demo(void)
 {
+	if (!this->isA3Init) {
+
+		cleanForNewScene();
+		// prepare 6 meshes
+		tms[0] = new TMesh();
+		tms[1] = new TMesh();
+		tms[2] = new TMesh();
+		tms[3] = new TMesh();
+		tms[4] = new TMesh();
+		tms[5] = new TMesh();
+
+		// look at quads full frontal
+		ppc->moveForward(-180.0f);
+		ppc->moveUp(100.0f);
+		ppc->moveRight(20.0f);
+		ppc->tilt(-25);
+		// save initial camera settings into ppcLerp0
+		ppcLerp0 = new PPC(*ppc);
+
+		// enable tiling for all the quads
+		tms[0]->createQuadTestTMesh(false);
+		tms[1]->createQuadTestTMesh(true);
+		tms[2]->createQuadTestTMesh(true);
+		tms[3]->createQuadTestTMesh(false);
+		tms[4]->createQuadTestTMesh(false);
+		tms[5]->createQuadTestTMesh(true);
+
+		// load five different textures for demoing
+		texObjects[0] = new Texture("pngs\\White_brick_block_pxr128.png");
+		texObjects[1] = new Texture("pngs\\Alloy_diamond_plate_pxr128.png");
+		texObjects[2] = new Texture("pngs\\Brown_staggered_pxr128.png");
+		texObjects[3] = new Texture("pngs\\Woven_flower_pxr128.png");
+		texObjects[4] = new Texture("pngs\\MeAtPyramid.png");
+		texObjects[5] = new Texture("pngs\\American_walnut_pxr128.png");
+
+		// use 5 quads to cover five faces of a 3D cube
+		// tms[0] is the front face
+		// tms[1] is the left face
+		tms[1]->rotateAboutAxis(V3(0.0f, 0.0f, 0.0f), V3(0.0f, 1.0f, 0.0f), -90.0f);
+		// push in place
+		tms[1]->translate(V3(0.0f, 0.0f, -40.0f));
+		// tms[2] is the right face
+		tms[2]->rotateAboutAxis(V3(0.0f, 0.0f, 0.0f), V3(0.0f, 1.0f, 0.0f), 90.0f);
+		// push in place
+		tms[2]->translate(V3(40.0f, 0.0f, 0.0f));
+		// tms[3] is the back face
+		tms[3]->rotateAboutAxis(V3(0.0f, 0.0f, 0.0f), V3(0.0f, 1.0f, 0.0f), 180.0f);
+		// push in place
+		tms[3]->translate(V3(40.0f, 0.0f, -40.0f));
+		// tms[4] is the top face
+		tms[4]->rotateAboutAxis(V3(0.0f, 0.0f, 0.0f), V3(1.0f, 0.0f, 0.0f), -90.0f);
+		// push in place
+		tms[4]->translate(V3(0.0f, 40.0f, 0.0f));
+
+		// use 6th quad as the floor
+		// make bigger
+		tms[5]->scale(6.0f);
+		// put in floor position
+		tms[5]->rotateAboutAxis(V3(0.0f, 0.0f, 0.0f), V3(1.0f, 0.0f, 0.0f), -90.0f);
+		// center
+		tms[5]->translate(V3(-100.0f, 0.0f, 80.0f));
+
+		isA3Init = true;
+	}
+
+	const static V3 lookAtPoint(20.0f, 20.0f, -20.0f); // cube centroid
+	const static V3 up(0.0f, 1.0f, 0.0f);
+	V3 viewDirection = ppcLerp0->getViewDir();
+
+	// 10 second video at 30 fps
+#ifdef _MAKE_VIDEO_
+	string pngFilename;
+#endif
+	//for (float steps = 0.0f; steps < 360.0f; steps += 1.2f) {
+	for (float steps = 0.0f; steps < 360.0f; steps += 50.0f) {
+
+		// rotate view direction
+		V3 rotVD = viewDirection;
+		rotVD.rotateThisVectorAboutDirection(V3(0.0f, 1.0f, 0.0f), steps);
+
+		// set up the look at cube camera (dolly camera setup)
+		ppc->positionRelativeToPoint(lookAtPoint, rotVD, up, 180.0f);
+		//ppc->positionAndOrient((lookAtPoint - (rotVD * 180.0f)), lookAtPoint, up); // also works
+
+		// clear screen
+		fb->set(0xFFFFFFFF);
+		fb->clearZB(0.0f);
+
+		// draw floor
+		tms[5]->drawTextured(*fb, *ppc, *texObjects[5]);
+
+		// draw textured cube
+		for (int i = 0; i < 5; i++) {
+			tms[i]->drawTextured(*fb, *ppc, *texObjects[i]);
+		}
+
+		fb->redraw();
+		Fl::check();
+#ifdef _MAKE_VIDEO_
+		pngFilename = string("movieFrame");
+		pngFilename += std::to_string(si) + ".png";
+		fb->saveAsPng(pngFilename);
+#endif
+	}
+	return;
 }
 
 void Scene::testTexture(void)

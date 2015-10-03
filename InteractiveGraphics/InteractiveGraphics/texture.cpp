@@ -148,7 +148,7 @@ unsigned int Texture::sampleTexBilinearTile(float floatS, float floatT) const
 	// compute C0
 	unsigned int intS = baseS;
 	unsigned int intT = baseT;
-	//intT = intT = (texHeight - 1) - intT; // t needs to be inverted
+	intT = intT = (texHeight - 1) - intT; // t needs to be inverted
 	unsigned int texelIndex = (intT * texWidth + intS) * 4;
 	red = texels[texelIndex + 0];
 	green = texels[texelIndex + 1];
@@ -159,7 +159,7 @@ unsigned int Texture::sampleTexBilinearTile(float floatS, float floatT) const
 	// compute C1
 	intS = baseS;
 	intT = (baseT + 1) % (texHeight);
-	//intT = intT = (texHeight - 1) - intT; // t needs to be inverted
+	intT = intT = (texHeight - 1) - intT; // t needs to be inverted
 	texelIndex = (intT * texWidth + intS) * 4;
 	red = texels[texelIndex + 0];
 	green = texels[texelIndex + 1];
@@ -170,7 +170,7 @@ unsigned int Texture::sampleTexBilinearTile(float floatS, float floatT) const
 	// compute C2
 	intS = (baseS + 1) % (texWidth);
 	intT = (baseT + 1) % (texHeight);
-	//intT = intT = (texHeight - 1) - intT; // t needs to be inverted
+	intT = intT = (texHeight - 1) - intT; // t needs to be inverted
 	texelIndex = (intT * texWidth + intS) * 4;
 	red = texels[texelIndex + 0];
 	green = texels[texelIndex + 1];
@@ -181,7 +181,7 @@ unsigned int Texture::sampleTexBilinearTile(float floatS, float floatT) const
 	// compute C3
 	intS = (baseS + 1) % (texWidth);
 	intT = baseT;
-	//intT = intT = (texHeight - 1) - intT; // t needs to be inverted
+	intT = intT = (texHeight - 1) - intT; // t needs to be inverted
 	texelIndex = (intT * texWidth + intS) * 4;
 	red = texels[texelIndex + 0];
 	green = texels[texelIndex + 1];

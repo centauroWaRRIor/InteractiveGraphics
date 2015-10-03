@@ -1120,7 +1120,7 @@ void GUI::cb_TextureRadialButton(Fl_Round_Button* o, void* v) {
 }
 
 void GUI::cb_A3Button_i(Fl_Button*, void*) {
-  DBG_cb();
+  A3Demo_cb();
 }
 void GUI::cb_A3Button(Fl_Button* o, void* v) {
   ((GUI*)(o->parent()->user_data()))->cb_A3Button_i(o,v);
