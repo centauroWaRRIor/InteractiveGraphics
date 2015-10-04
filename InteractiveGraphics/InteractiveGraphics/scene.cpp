@@ -749,18 +749,24 @@ void Scene::testSprites(void)
 		cleanForNewScene();
 		tms[0] = new TMesh();
 
-		// test textured quad
+		// set up camera
 		ppc->moveForward(-200.0f);
+		ppc->moveRight(20.0f);
+		ppc->moveUp(20.0f);
 
+		// test textured quad
 		tms[0]->createQuadTestTMesh(false); // no tiling
 
 		//texObjects[0] = new Texture("pngs\\Decal_12.png");
 		texObjects[0] = new Texture("pngs\\T_Explosion_SubUV.png");
+		texObjects[1] = new Texture("pngs\\Bride-sprite-sheet.png");
+		texObjects[2] = new Texture("pngs\\FireTorchSpriteAtlas.png");
 		this->isSpriteTestInit = true;
 	}
-	// draw animated sprite
+	// draw explosion animated sprite
 	unsigned int subRows = 6;
 	unsigned int subColumns = 6;
+	unsigned int timesDrawn;
 	for (int i = (subRows - 1); i >= 0; i--) {
 		for (unsigned int j = 0; j < subColumns; j++) {
 			// clear screen for sprite
@@ -774,6 +780,49 @@ void Scene::testSprites(void)
 				j, (unsigned int) i, subColumns, subRows);
 			fb->redraw();
 			Fl::check();
+		}
+	}
+
+	// draw torch animated sprite
+	tms[0]->scale(1.0);
+	subRows = 6;
+	subColumns = 6;
+	for (timesDrawn = 0; timesDrawn < 2; timesDrawn++) {
+		for (int i = (subRows - 1); i >= 0; i--) {
+			for (unsigned int j = 0; j < subColumns; j++) {
+				// clear screen for sprite
+				fb->set(0x00000000);
+				// clear zBuffer
+				fb->clearZB(0.0f);
+				tms[0]->drawSprite(
+					*fb,
+					*ppc,
+					*texObjects[2],
+					j, (unsigned int)i, subColumns, subRows);
+				fb->redraw();
+				Fl::check();
+			}
+		}
+	}
+	// draw Braid animated sprite
+	tms[0]->scale(0.5);
+	subRows = 4;
+	subColumns = 7;
+	for (timesDrawn = 0; timesDrawn < 2; timesDrawn++) {
+		for (int i = (subRows - 1); i >= 0; i--) {
+			for (unsigned int j = 0; j < subColumns; j++) {
+				// clear screen for sprite
+				fb->set(0x00000000);
+				// clear zBuffer
+				fb->clearZB(0.0f);
+				tms[0]->drawSprite(
+					*fb,
+					*ppc,
+					*texObjects[1],
+					j, (unsigned int)i, subColumns, subRows);
+				fb->redraw();
+				Fl::check();
+			}
 		}
 	}
 	return;
