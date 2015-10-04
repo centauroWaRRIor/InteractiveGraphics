@@ -1068,8 +1068,7 @@ void FrameBuffer::draw2DSprite(
 	const V3 & sCoords, const V3 & tCoords, 
 	M33 baryMatrixInverse, 
 	M33 perspCorrectMatQ, 
-	const Texture & texture, 
-	bool isAnimated)
+	const Texture & texture)
 {
 	float xCoords[3], yCoords[3]; // this format is more triangle edge equation friendly 
 	xCoords[0] = v1.getX();
@@ -1309,6 +1308,9 @@ void FrameBuffer::draw2DSprite(
 
 				// sample texture using lerped result of s,t raster parameters (in model space)
 				texelColor = texture.sampleTexNearClamp(interpolatedS, interpolatedT);
+
+				// override models vertex colors
+				interpolatedColor.setFromColor(texelColor);
 
 				// test sprite support (alpha based) works
 				unsigned char alpha = ((unsigned char*)(&texelColor))[3];

@@ -177,9 +177,9 @@ void TMesh::createQuadTestTMesh(bool isTiling)
 	tris[3 * tri + 2] = 3;
 
 	tri++;
-	tris[3 * tri + 0] = 1;
-	tris[3 * tri + 1] = 2;
-	tris[3 * tri + 2] = 3;
+	tris[3 * tri + 0] = 3;
+	tris[3 * tri + 1] = 1;
+	tris[3 * tri + 2] = 2;
 
 	// compute aabb
 	aabb = new AABB(computeAABB());
@@ -525,8 +525,11 @@ void TMesh::drawTextured(FrameBuffer & fb, const PPC & ppc, const Texture & text
 void TMesh::drawSprite(
 	FrameBuffer & fb, 
 	const PPC & ppc, 
-	const Texture & texture, 
-	bool isAnimated) const
+	const Texture & texture,
+	unsigned int subSIndex, 
+	unsigned int subTIndex,
+	unsigned int subSTotal,
+	unsigned int subTTotal) const
 {
 	if ((vertsN == 0) || (trisN < 1)) {
 		cerr << "ERROR: Attempted to draw an empty mesh. "
@@ -567,10 +570,27 @@ void TMesh::drawSprite(
 		sParameters[0] = tcs[tris[3 * tri + 0] * 2 + 0];
 		sParameters[1] = tcs[tris[3 * tri + 1] * 2 + 0];
 		sParameters[2] = tcs[tris[3 * tri + 2] * 2 + 0];
-
 		tParameters[0] = tcs[tris[3 * tri + 0] * 2 + 1];
 		tParameters[1] = tcs[tris[3 * tri + 1] * 2 + 1];
 		tParameters[2] = tcs[tris[3 * tri + 2] * 2 + 1];
+
+		// shift triangle texture coordinates by subS and subB
+		if ((tri % 2) == 0) { // if first triangle of quad
+			sParameters[0] += subSIndex * (1 / (float)subSTotal);
+			sParameters[1] *= (subSIndex + 1) * (1 / (float)subSTotal);
+			sParameters[2] += subSIndex * (1 / (float)subSTotal);
+			tParameters[0] += subTIndex * (1 / (float)subTTotal);
+			tParameters[1] += subTIndex * (1 / (float)subTTotal);
+			tParameters[2] *= (subTIndex + 1) * (1 / (float)subTTotal);
+		}
+		else { // if second triangle of quad
+			sParameters[0] += subSIndex * (1 / (float)subSTotal);
+			sParameters[1] *= (subSIndex + 1) * (1 / (float)subSTotal);
+			sParameters[2] *= (subSIndex + 1) * (1 / (float)subSTotal);
+			tParameters[0] *= (subTIndex + 1) * (1 / (float)subTTotal);
+			tParameters[1] += subTIndex * (1 / (float)subTTotal);
+			tParameters[2] *= (subTIndex + 1) * (1 / (float)subTTotal);
+		}
 
 		// project triangle vertices using camera
 		isVisible = ppc.project(currvs[0], projV1);
@@ -604,8 +624,7 @@ void TMesh::drawSprite(
 					sParameters, tParameters,
 					baryMatrixInverse,
 					perspCorrectMatQ,
-					texture,
-					isAnimated);
+					texture);
 			}
 			else
 				cerr << "WARNING: Triangle screen footprint is stoo small, discarding..." << endl;

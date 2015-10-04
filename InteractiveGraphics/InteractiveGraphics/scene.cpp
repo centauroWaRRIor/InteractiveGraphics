@@ -677,9 +677,9 @@ void Scene::a3Demo(void)
 	// 10 second video at 30 fps
 #ifdef _MAKE_VIDEO_
 	string pngFilename;
+	int si = 0;
 #endif
-	//for (float steps = 0.0f; steps < 360.0f; steps += 1.2f) {
-	for (float steps = 0.0f; steps < 360.0f; steps += 50.0f) {
+	for (float steps = 0.0f; steps < 360.0f; steps += 1.2f) {
 
 		// rotate view direction
 		V3 rotVD = viewDirection;
@@ -707,6 +707,7 @@ void Scene::a3Demo(void)
 		pngFilename = string("movieFrame");
 		pngFilename += std::to_string(si) + ".png";
 		fb->saveAsPng(pngFilename);
+		si++;
 #endif
 	}
 	return;
@@ -753,16 +754,28 @@ void Scene::testSprites(void)
 
 		tms[0]->createQuadTestTMesh(false); // no tiling
 
-		texObjects[0] = new Texture("pngs\\Decal_12.png");
+		//texObjects[0] = new Texture("pngs\\Decal_12.png");
+		texObjects[0] = new Texture("pngs\\T_Explosion_SubUV.png");
 		this->isSpriteTestInit = true;
 	}
-	// clear screen for sprite
-	fb->set(0x00000000);
-	// clear zBuffer
-	fb->clearZB(0.0f);
-	tms[0]->drawSprite(*fb, *ppc, *texObjects[0]);
-	// draw original for comparison
-	fb->redraw();
+	// draw animated sprite
+	unsigned int subRows = 6;
+	unsigned int subColumns = 6;
+	for (int i = (subRows - 1); i >= 0; i--) {
+		for (unsigned int j = 0; j < subColumns; j++) {
+			// clear screen for sprite
+			fb->set(0x00000000);
+			// clear zBuffer
+			fb->clearZB(0.0f);
+			tms[0]->drawSprite(
+				*fb,
+				*ppc,
+				*texObjects[0],
+				j, (unsigned int) i, subColumns, subRows);
+			fb->redraw();
+			Fl::check();
+		}
+	}
 	return;
 }
 

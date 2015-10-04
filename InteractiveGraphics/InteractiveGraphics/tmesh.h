@@ -61,7 +61,8 @@ public:
 	// same as drawTextured but fragments are discarded based on alpha value. If animated = true
 	// then this function iterates over the sprite atlas texture using time as an input
 	void drawSprite(FrameBuffer &fb, const PPC &ppc, const Texture &texture,
-		bool isAnimated = false) const;
+		unsigned int subSIndex = 0, unsigned int subTIndex = 0,
+		unsigned int subSTotal = 1, unsigned int subTTotal = 1) const;
 
 	// rotate about axis
 	void rotateAboutAxis(const V3 &aO, const V3 &adir, float theta);
