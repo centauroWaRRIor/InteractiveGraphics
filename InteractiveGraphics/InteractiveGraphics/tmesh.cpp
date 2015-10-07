@@ -12,6 +12,8 @@ TMesh::TMesh():
 	vertsN(0),
 	trisN(0),
 	verts(nullptr),
+	projVerts(nullptr),
+	isVertProjVis(nullptr),
 	cols(nullptr),
 	tcs(nullptr),
 	tris(nullptr),
@@ -34,7 +36,11 @@ void TMesh::cleanUp(void)
 {
 	if (verts) {
 		delete[] verts;
+		delete[] projVerts;
+		delete[] isVertProjVis;
 		verts = nullptr;
+		projVerts = nullptr;
+		isVertProjVis = nullptr;
 	}
 	if (cols) {
 		delete[] cols;
@@ -94,6 +100,8 @@ void TMesh::createTetrahedronTestMesh(void)
 	vertsN = 4;
 	// allocate vertices array
 	verts = new V3[vertsN];
+	projVerts = new V3[vertsN];
+	isVertProjVis = new bool[vertsN];
 	// allocate colors array
 	cols = new V3[vertsN];
 
@@ -143,6 +151,8 @@ void TMesh::createQuadTestTMesh(bool isTiling)
 	vertsN = 4;
 	// allocate vertices array
 	verts = new V3[vertsN];
+	projVerts = new V3[vertsN];
+	isVertProjVis = new bool[vertsN];
 	// allocate colors array
 	cols = new V3[vertsN];
 	// allocate tex coords array
@@ -206,6 +216,8 @@ void TMesh::loadBin(const char * fname)
 	}
 	// allocate space for the vertex data
 	verts = new V3[vertsN];
+	projVerts = new V3[vertsN];
+	isVertProjVis = new bool[vertsN];
 
 	// reads whether or not there is color info in the file
 	ifs.read(&yn, 1); // cols 3 floats
@@ -258,7 +270,72 @@ void TMesh::loadBin(const char * fname)
 	delete[]normals;
 }
 
-void TMesh::drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color) const
+
+void TMesh::drawWireframe(FrameBuffer &fb, const PPC &ppc) {
+
+	if ((vertsN == 0) || (trisN < 1)) {
+		cerr << "ERROR: Attempted to draw an empty mesh. "
+			<< "drawWireframe() command was aborted." << endl;
+		return;
+	}
+
+	// Draw vertices connections as line segments
+	V3 currcols[3];
+	V3 projV[3];
+	bool isVisible;
+
+	// optimization: project each vertex only once
+	projectVertices(ppc);
+
+	for (int tri = 0; tri < trisN; tri++) {
+
+		// grab current projected triangle vertices
+		projV[0] = projVerts[tris[3 * tri + 0]];
+		projV[1] = projVerts[tris[3 * tri + 1]];
+		projV[2] = projVerts[tris[3 * tri + 2]];
+		isVisible = isVertProjVis[tris[3 * tri + 0]];
+		isVisible &= isVertProjVis[tris[3 * tri + 1]];
+		isVisible &= isVertProjVis[tris[3 * tri + 2]];
+
+		// grab current triangle vertex colors
+		currcols[0] = cols[tris[3 * tri + 0]];
+		currcols[1] = cols[tris[3 * tri + 1]];
+		currcols[2] = cols[tris[3 * tri + 2]];
+
+		// draw edges between vertices of this triangle
+		// e1 = 0,1  e2 = 1,2  e3 = 2,0 (hence the %3)
+		for (int ei = 0; ei < 3; ei++) {
+
+			if(isVisible)
+				fb.draw2DSegment(
+					projV[ei],
+					currcols[ei], 
+					projV[(ei + 1) % 3],
+					currcols[(ei + 1) % 3]);
+		}
+	}
+}
+
+void TMesh::drawVertexDots(FrameBuffer &fb, const PPC &ppc, float dotSize) {
+
+	if ((vertsN == 0) || (trisN < 1)) {
+		cerr << "ERROR: Attempted to draw an empty mesh. "
+			<< "drawVertexDots() command was aborted." << endl;
+		return;
+	}
+
+	// optimization: project each vertex only once
+	projectVertices(ppc);
+
+	for (int vi = 0; vi < vertsN; vi++) {
+		if (!isVertProjVis[verts[vi]])
+			continue;
+		// Draw vertices as cricles
+		fb.draw2DCircleIfCloser(projVerts[vi], dotSize, cols[vi]);
+	}
+}
+
+void TMesh::drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color)
 {
 	if ((vertsN == 0) || (trisN < 1)) {
 		cerr << "ERROR: Attempted to draw an empty mesh. "
@@ -266,28 +343,28 @@ void TMesh::drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color) 
 		return;
 	}
 
-	// Draw filled triangles with single color (provided)
-	V3 currvs[3];
+	// draw filled triangles with single color (provided)
 	V3 currcols[3];
 	V3 projV1, projV2, projV3;
 	bool isVisible;
+	
+	// optimization: project each vertex only once
+	projectVertices(ppc);
+
 	for (int tri = 0; tri < trisN; tri++) {
 		
-		// grab current triangle vertices
-		currvs[0] = verts[tris[3 * tri + 0]];
-		currvs[1] = verts[tris[3 * tri + 1]];
-		currvs[2] = verts[tris[3 * tri + 2]];
+		// grab current projected triangle vertices
+		projV1 = projVerts[tris[3 * tri + 0]];
+		projV2 = projVerts[tris[3 * tri + 1]];
+		projV3 = projVerts[tris[3 * tri + 2]];
+		isVisible = isVertProjVis[tris[3 * tri + 0]];
+		isVisible &= isVertProjVis[tris[3 * tri + 1]];
+		isVisible &= isVertProjVis[tris[3 * tri + 2]];
 		
 		// grab current triangle vertex colors
 		currcols[0] = cols[tris[3 * tri + 0]];
 		currcols[1] = cols[tris[3 * tri + 1]];
 		currcols[2] = cols[tris[3 * tri + 2]];
-
-		// project triangle vertices using camera
-		V3 projV1, projV2, projV3;
-		isVisible = ppc.project(currvs[0], projV1);
-		isVisible &= ppc.project(currvs[1], projV2);
-		isVisible &= ppc.project(currvs[2], projV3);
 
 		if (isVisible) {
 
@@ -310,7 +387,7 @@ void TMesh::drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color) 
 	}
 }
 
-void TMesh::drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc) const {
+void TMesh::drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc) {
 
 	if ((vertsN == 0) || (trisN < 1)) {
 		cerr << "ERROR: Attempted to draw an empty mesh. "
@@ -320,27 +397,28 @@ void TMesh::drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc) const {
 
 	// Draw filled triangles with color and depth linearly 
 	// interpolated in screen space.
-	V3 currvs[3];
 	V3 currcols[3];
 	V3 projV1, projV2, projV3;
 	bool isVisible;
+
+	// optimization: project each vertex only once
+	projectVertices(ppc);
+
 	for (int tri = 0; tri < trisN; tri++) {
-		
-		// grab current triangle vertices
-		currvs[0] = verts[tris[3 * tri + 0]];
-		currvs[1] = verts[tris[3 * tri + 1]];
-		currvs[2] = verts[tris[3 * tri + 2]];
-		
+
+		// grab current projected triangle vertices
+		projV1 = projVerts[tris[3 * tri + 0]];
+		projV2 = projVerts[tris[3 * tri + 1]];
+		projV3 = projVerts[tris[3 * tri + 2]];
+		isVisible = isVertProjVis[tris[3 * tri + 0]];
+		isVisible &= isVertProjVis[tris[3 * tri + 1]];
+		isVisible &= isVertProjVis[tris[3 * tri + 2]];
+
 		// grab current triangle vertex colors
 		currcols[0] = cols[tris[3 * tri + 0]];
 		currcols[1] = cols[tris[3 * tri + 1]];
 		currcols[2] = cols[tris[3 * tri + 2]];
 
-		// project triangle vertices using camera
-		V3 projV1, projV2, projV3;
-		isVisible = ppc.project(currvs[0], projV1);
-		isVisible &= ppc.project(currvs[1], projV2);
-		isVisible &= ppc.project(currvs[2], projV3);
 		if (isVisible) {
 
 			// The discriminat of the matrix used in screen space interpolation 
@@ -371,7 +449,7 @@ void TMesh::drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc) const {
 	}
 }
 
-void TMesh::drawFilledFlatPerspCorrect(FrameBuffer & fb, const PPC & ppc) const
+void TMesh::drawFilledFlatPerspCorrect(FrameBuffer & fb, const PPC & ppc)
 {
 	if ((vertsN == 0) || (trisN < 1)) {
 		cerr << "ERROR: Attempted to draw an empty mesh. "
@@ -394,23 +472,30 @@ void TMesh::drawFilledFlatPerspCorrect(FrameBuffer & fb, const PPC & ppc) const
 	V3 currcols[3];
 	V3 projV1, projV2, projV3;
 	bool isVisible;
+
+	// optimization: project each vertex only once
+	projectVertices(ppc);
+
 	for (int tri = 0; tri < trisN; tri++) {
-		
+
 		// grab current triangle vertices
 		currvs[0] = verts[tris[3 * tri + 0]];
 		currvs[1] = verts[tris[3 * tri + 1]];
 		currvs[2] = verts[tris[3 * tri + 2]];
-		
+
+		// grab current projected triangle vertices
+		projV1 = projVerts[tris[3 * tri + 0]];
+		projV2 = projVerts[tris[3 * tri + 1]];
+		projV3 = projVerts[tris[3 * tri + 2]];
+		isVisible = isVertProjVis[tris[3 * tri + 0]];
+		isVisible &= isVertProjVis[tris[3 * tri + 1]];
+		isVisible &= isVertProjVis[tris[3 * tri + 2]];
+
 		// grab current triangle vertex colors
 		currcols[0] = cols[tris[3 * tri + 0]];
 		currcols[1] = cols[tris[3 * tri + 1]];
 		currcols[2] = cols[tris[3 * tri + 2]];
 
-		// project triangle vertices using camera
-		V3 projV1, projV2, projV3;
-		isVisible = ppc.project(currvs[0], projV1);
-		isVisible &= ppc.project(currvs[1], projV2);
-		isVisible &= ppc.project(currvs[2], projV3);
 		if (isVisible) {
 
 			// Rasterizer should reject triangles whose screen footprint is very small.
@@ -436,7 +521,7 @@ void TMesh::drawFilledFlatPerspCorrect(FrameBuffer & fb, const PPC & ppc) const
 	}
 }
 
-void TMesh::drawTextured(FrameBuffer & fb, const PPC & ppc, const Texture & texture) const
+void TMesh::drawTextured(FrameBuffer & fb, const PPC & ppc, const Texture & texture)
 {
 	if ((vertsN == 0) || (trisN < 1)) {
 		cerr << "ERROR: Attempted to draw an empty mesh. "
@@ -461,12 +546,24 @@ void TMesh::drawTextured(FrameBuffer & fb, const PPC & ppc, const Texture & text
 	V3 sParameters, tParameters;
 	V3 projV1, projV2, projV3;
 	bool isVisible;
+
+	// optimization: project each vertex only once
+	projectVertices(ppc);
+
 	for (int tri = 0; tri < trisN; tri++) {
-		
+
 		// grab current triangle vertices
 		currvs[0] = verts[tris[3 * tri + 0]];
 		currvs[1] = verts[tris[3 * tri + 1]];
 		currvs[2] = verts[tris[3 * tri + 2]];
+
+		// grab current projected triangle vertices
+		projV1 = projVerts[tris[3 * tri + 0]];
+		projV2 = projVerts[tris[3 * tri + 1]];
+		projV3 = projVerts[tris[3 * tri + 2]];
+		isVisible = isVertProjVis[tris[3 * tri + 0]];
+		isVisible &= isVertProjVis[tris[3 * tri + 1]];
+		isVisible &= isVertProjVis[tris[3 * tri + 2]];
 		
 		// grab current triangle vertex colors
 		currcols[0] = cols[tris[3 * tri + 0]];
@@ -482,10 +579,6 @@ void TMesh::drawTextured(FrameBuffer & fb, const PPC & ppc, const Texture & text
 		tParameters[1] = tcs[tris[3 * tri + 1] * 2 + 1];
 		tParameters[2] = tcs[tris[3 * tri + 2] * 2 + 1];
 
-		// project triangle vertices using camera
-		isVisible = ppc.project(currvs[0], projV1);
-		isVisible &= ppc.project(currvs[1], projV2);
-		isVisible &= ppc.project(currvs[2], projV3);
 		if (isVisible) {
 
 			// Rasterizer should reject triangles whose screen footprint is very small.
@@ -529,7 +622,7 @@ void TMesh::drawSprite(
 	unsigned int subSIndex, 
 	unsigned int subTIndex,
 	unsigned int subSTotal,
-	unsigned int subTTotal) const
+	unsigned int subTTotal)
 {
 	if ((vertsN == 0) || (trisN < 1)) {
 		cerr << "ERROR: Attempted to draw an empty mesh. "
@@ -554,12 +647,24 @@ void TMesh::drawSprite(
 	V3 sParameters, tParameters;
 	V3 projV1, projV2, projV3;
 	bool isVisible;
+
+	// optimization: project each vertex only once
+	projectVertices(ppc);
+
 	for (int tri = 0; tri < trisN; tri++) {
 
 		// grab current triangle vertices
 		currvs[0] = verts[tris[3 * tri + 0]];
 		currvs[1] = verts[tris[3 * tri + 1]];
 		currvs[2] = verts[tris[3 * tri + 2]];
+
+		// grab current projected triangle vertices
+		projV1 = projVerts[tris[3 * tri + 0]];
+		projV2 = projVerts[tris[3 * tri + 1]];
+		projV3 = projVerts[tris[3 * tri + 2]];
+		isVisible = isVertProjVis[tris[3 * tri + 0]];
+		isVisible &= isVertProjVis[tris[3 * tri + 1]];
+		isVisible &= isVertProjVis[tris[3 * tri + 2]];
 
 		// grab current triangle vertex colors
 		currcols[0] = cols[tris[3 * tri + 0]];
@@ -592,10 +697,6 @@ void TMesh::drawSprite(
 			tParameters[2] *= (subTIndex + 1) * (1 / (float)subTTotal);
 		}
 
-		// project triangle vertices using camera
-		isVisible = ppc.project(currvs[0], projV1);
-		isVisible &= ppc.project(currvs[1], projV2);
-		isVisible &= ppc.project(currvs[2], projV3);
 		if (isVisible) {
 
 			// Rasterizer should reject triangles whose screen footprint is very small.
@@ -632,67 +733,10 @@ void TMesh::drawSprite(
 	}
 }
 
-void TMesh::draw3DSegment(
-	const V3 &v0, const V3 &c0, 
-	const V3 &v1, const V3 &c1, 
-	FrameBuffer &fb, const PPC &ppc) const 
+void TMesh::projectVertices(const PPC & ppc)
 {
-	V3 projv0, projv1;
-	if (!ppc.project(v0, projv0))
-		return;
-	if (!ppc.project(v1, projv1))
-		return;
-	fb.draw2DSegment(projv0, c0, projv1, c1);
-}
-
-void TMesh::drawWireframe(FrameBuffer &fb, const PPC &ppc) const {
-
-	if ((vertsN == 0) || (trisN < 1)) {
-		cerr << "ERROR: Attempted to draw an empty mesh. "
-			<< "drawWireframe() command was aborted." << endl;
-		return;
-	}
-
-	// Draw vertices connections as line segments
-	V3 currvs[3];
-	V3 currcols[3];
-	for (int tri = 0; tri < trisN; tri++) {
-		
-		// grab current triangle vertices
-		currvs[0] = verts[tris[3 * tri + 0]];
-		currvs[1] = verts[tris[3 * tri + 1]];
-		currvs[2] = verts[tris[3 * tri + 2]];
-		
-		// grab current triangle vertex colors
-		currcols[0] = cols[tris[3 * tri + 0]];
-		currcols[1] = cols[tris[3 * tri + 1]];
-		currcols[2] = cols[tris[3 * tri + 2]];
-
-		// draw edges between vertices of this triangle
-		// e1 = 0,1  e2 = 1,2  e3 = 2,0 (hence the %3)
-		for (int ei = 0; ei < 3; ei++) {
-			draw3DSegment(
-				currvs[ei], currcols[ei],
-				currvs[(ei + 1) % 3], currcols[(ei + 1) % 3], 
-				fb, ppc);
-		}
-	}
-}
-
-void TMesh::drawVertexDots(FrameBuffer &fb,const PPC &ppc, float dotSize) const {
-
-	if ((vertsN == 0) || (trisN < 1)) {
-		cerr << "ERROR: Attempted to draw an empty mesh. "
-			<< "drawVertexDots() command was aborted." << endl;
-		return;
-	}
-
-	V3 projP;
-	// Draw vertices as cricles
 	for (int vi = 0; vi < vertsN; vi++) {
-		if (!ppc.project(verts[vi], projP))
-			continue;
-		fb.draw2DCircleIfCloser(projP, dotSize, cols[vi]);
+		isVertProjVis[vi] = ppc.project(verts[vi], projVerts[vi]);
 	}
 }
 

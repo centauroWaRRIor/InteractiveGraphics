@@ -9,7 +9,12 @@
 // connectivity data.
 class TMesh {
 private:
-	V3 *verts, *cols; // verices and colors arrays
+	V3 *verts; // verices
+	// leverage vertex shared triangles to avoid paying for projection
+	// more than once:
+	V3 *projVerts; // projected vertices
+	bool *isVertProjVis; // quickly look up vertex projection status 
+	V3 *cols; // colors arrays
 	float *tcs; // texture coorindates array (s,t)'s
 	int vertsN; // number of vertices
 	unsigned int *tris; // triangle indices array of size trisN*3
@@ -18,10 +23,7 @@ private:
 
 	void cleanUp(void); // helper function for destructor
 	AABB computeAABB(void) const; // computes a bounding box of the centers
-	void draw3DSegment(
-		const V3 &v0, const V3 &c0,
-		const V3 &v1, const V3 &c1,
-		FrameBuffer &fb, const PPC &ppc) const;
+	void projectVertices(const PPC &ppc); // optimization: project each vertex only once
 public:	
 	// empty constructor
 	TMesh();
@@ -46,23 +48,23 @@ public:
 
 	// drawing functionality
 	// draws the triangle mesh vertices as dots
-	void drawVertexDots(FrameBuffer &fb, const PPC &ppc, float dotSize) const;
+	void drawVertexDots(FrameBuffer &fb, const PPC &ppc, float dotSize);
 	// draws triangle mesh in wireframe mode
-	void drawWireframe(FrameBuffer &fb, const PPC &ppc) const;
+	void drawWireframe(FrameBuffer &fb, const PPC &ppc);
 	// draws triangle mesh in filled mode using a single color
-	void drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color) const;
+	void drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color);
 	// draws triangle mesh in filled mode using screen space interpolation of colors
-	void drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc) const;
+	void drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc);
 	// draws triangle mesh in filled mode using model space interpolation of colors
-	void drawFilledFlatPerspCorrect(FrameBuffer &fb, const PPC &ppc) const;
+	void drawFilledFlatPerspCorrect(FrameBuffer &fb, const PPC &ppc);
 	// draws triangle mesh in texture mode using model space for s,t linear interpolation 
 	// and screen space for depth linear interpolation
-	void drawTextured(FrameBuffer &fb, const PPC &ppc, const Texture &texture) const;
+	void drawTextured(FrameBuffer &fb, const PPC &ppc, const Texture &texture);
 	// same as drawTextured but fragments are discarded based on alpha value. If animated = true
 	// then this function iterates over the sprite atlas texture using time as an input
 	void drawSprite(FrameBuffer &fb, const PPC &ppc, const Texture &texture,
 		unsigned int subSIndex = 0, unsigned int subTIndex = 0,
-		unsigned int subSTotal = 1, unsigned int subTTotal = 1) const;
+		unsigned int subSTotal = 1, unsigned int subTTotal = 1);
 
 	// rotate about axis
 	void rotateAboutAxis(const V3 &aO, const V3 &adir, float theta);

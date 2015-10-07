@@ -38,7 +38,7 @@ void Scene::drawTMesh(
 	const TMesh & tMesh, 
 	FrameBuffer & frameBuffer, 
 	const PPC & planarPinholeCamera,
-	bool isAABBDrawn) const
+	bool isAABBDrawn)
 {
 	if (currentDrawMode == DrawModes::DOTS)
 		tMesh.drawVertexDots(frameBuffer, planarPinholeCamera, 2.0f);

@@ -56,7 +56,7 @@ private:
 		const TMesh &tMesh, 
 		FrameBuffer &fB, 
 		const PPC &ppc,
-		bool isAABBDrawn) const;
+		bool isAABBDrawn);
 	// utility function to clean in between different scene demos
 	// and avoid memory leaks every time I click on the gui
 	// buttons
