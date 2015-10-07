@@ -328,7 +328,7 @@ void TMesh::drawVertexDots(FrameBuffer &fb, const PPC &ppc, float dotSize) {
 	projectVertices(ppc);
 
 	for (int vi = 0; vi < vertsN; vi++) {
-		if (!isVertProjVis[verts[vi]])
+		if (!isVertProjVis[vi])
 			continue;
 		// Draw vertices as cricles
 		fb.draw2DCircleIfCloser(projVerts[vi], dotSize, cols[vi]);
@@ -770,78 +770,15 @@ AABB TMesh::computeAABB(void) const
 
 void TMesh::drawAABB(FrameBuffer & fb, const PPC & ppc, unsigned int colorNear, unsigned int colorFar) const
 {
-	V3 cnear;
-	cnear.setFromColor(colorNear);
-	V3 cfar;
-	cfar.setFromColor(colorFar);
+
 
 	if (vertsN == 0) {
 		cerr << "ERROR: Attempted to draw the AABB of an empty mesh. "
 			<< "Aborting..." << endl;
 	}
-
-	V3 p0, p1;
-
-	V3 corner1 = aabb->getFristCorner();
-	V3 corner2 = aabb->getSecondCorner();
-
-	p0 = V3(corner1[0], corner2[1], corner2[2]);
-	p1 = V3(corner1[0], corner1[1], corner2[2]);
-	draw3DSegment(p0, cnear, p1, cnear, fb, ppc);
-
-	p0 = V3(corner1[0], corner1[1], corner2[2]);
-	p1 = V3(corner2[0], corner1[1], corner2[2]);
-	draw3DSegment(p0, cnear, p1, cnear, fb, ppc);
-
-	p0 = V3(corner2[0], corner1[1], corner2[2]);
-	p1 = V3(corner2[0], corner2[1], corner2[2]);
-	draw3DSegment(p0, cnear, p1, cnear, fb, ppc);
-
-	p0 = V3(corner2[0], corner2[1], corner2[2]);
-	p1 = V3(corner1[0], corner2[1], corner2[2]);
-	draw3DSegment(p0, cnear, p1, cnear, fb, ppc);
-
-	p0 = V3(corner1[0], corner2[1], corner1[2]);
-	p1 = V3(corner1[0], corner1[1], corner1[2]);
-	draw3DSegment(p0, cfar, p1, cfar, fb, ppc);
-
-	p0 = V3(corner1[0], corner1[1], corner1[2]);
-	p1 = V3(corner2[0], corner1[1], corner1[2]);
-	draw3DSegment(p0, cfar, p1, cfar, fb, ppc);
-
-	p0 = V3(corner2[0], corner1[1], corner1[2]);
-	p1 = V3(corner2[0], corner2[1], corner1[2]);
-	draw3DSegment(p0, cfar, p1, cfar, fb, ppc);
-
-	p0 = V3(corner2[0], corner2[1], corner1[2]);
-	p1 = V3(corner1[0], corner2[1], corner1[2]);
-	draw3DSegment(p0, cfar, p1, cfar, fb, ppc);
-
-	p0 = V3(corner1[0], corner2[1], corner2[2]);
-	p1 = V3(corner1[0], corner2[1], corner1[2]);
-	draw3DSegment(p0, cnear, p1, cfar, fb, ppc);
-
-	p0 = V3(corner1[0], corner1[1], corner2[2]);
-	p1 = V3(corner1[0], corner1[1], corner1[2]);
-	draw3DSegment(p0, cnear, p1, cfar, fb, ppc);
-
-	p0 = V3(corner2[0], corner1[1], corner2[2]);
-	p1 = V3(corner2[0], corner1[1], corner1[2]);
-	draw3DSegment(p0, cnear, p1, cfar, fb, ppc);
-
-	p0 = V3(corner2[0], corner2[1], corner2[2]);
-	p1 = V3(corner2[0], corner2[1], corner1[2]);
-	draw3DSegment(p0, cnear, p1, cfar, fb, ppc);
-
-#if 0
-	4		7
-
-0-------3
-|	5	|	6
-|		|
-1-------2
-#endif
-
+	else {
+		this->aabb->draw(fb, ppc, colorNear, colorFar);
+	}
 }
 
 V3 TMesh::getCenter(void) const

@@ -53,7 +53,7 @@ private:
 	string retrieveTimeDate(void) const;
 	// utility function to centralize all triangle mesh drawing options
 	void drawTMesh(
-		const TMesh &tMesh, 
+		TMesh &tMesh, 
 		FrameBuffer &fB, 
 		const PPC &ppc,
 		bool isAABBDrawn);

@@ -35,7 +35,7 @@ string Scene::retrieveTimeDate(void) const
 }
 
 void Scene::drawTMesh(
-	const TMesh & tMesh, 
+	TMesh & tMesh, 
 	FrameBuffer & frameBuffer, 
 	const PPC & planarPinholeCamera,
 	bool isAABBDrawn)
