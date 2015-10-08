@@ -30,6 +30,37 @@ void AABB::translate(const V3 & translationVector)
 	corners[1] = corners[1] + translationVector;
 }
 
+bool AABB::clipWithFrame(float left, float top, float right, float bottom)
+{
+	// entire 2D AABB is off screen
+	if (
+		corners[0][0] >= right ||
+		corners[1][0] <= left ||
+		corners[0][1] >= bottom ||
+		corners[1][1] <= top
+	)
+	return false;
+
+	if (corners[0][0] < left)
+		corners[0][0] = left;
+	if (corners[1][0] > right)
+		corners[1][0] = right;
+	if (corners[0][1] < top)
+		corners[0][1] = top;
+	if (corners[1][1] > bottom)
+		corners[1][1] = bottom;
+
+	return true;
+}
+
+void AABB::setPixelRectangle(int & left, int & right, int & top, int & bottom)
+{
+	left = (int)(corners[0][0] + 0.5f);
+	right = (int)(corners[1][0] - 0.5f);
+	top = (int)(corners[0][1] + 0.5f);
+	bottom = (int)(corners[1][1] - 0.5f);
+}
+
 void AABB::draw3DSegment(
 	const V3 &v0, 
 	const V3 &c0, 

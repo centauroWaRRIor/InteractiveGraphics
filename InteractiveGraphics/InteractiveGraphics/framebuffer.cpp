@@ -364,6 +364,17 @@ void FrameBuffer::draw2DFlatTriangle(const float * xCoords, const float * yCoord
 	}
 
 	// compute screen axes-aligned bounding box for triangle
+//	AABB aabb(pvs[0]);
+//	aabb.AddPoint(pvs[1]);
+//	aabb.AddPoint(pvs[2]);
+
+//	if (!aabb.ClipWithFrame(0.0f, 0.0f, (float)w, (float)h))
+//		return;
+
+//	int left, right, top, bottom;
+//	aabb.SetPixelRectangle(left, right, top, bottom);
+
+	// compute screen axes-aligned bounding box for triangle
 	float bbox[2][2]; // for each x and y, store the min and max values
 	bbox[0][0] = FLT_MAX;
 	bbox[0][1] = FLT_MIN; // take into account that y is inverted in screen coordinates

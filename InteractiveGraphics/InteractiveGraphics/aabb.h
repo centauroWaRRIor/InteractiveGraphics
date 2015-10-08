@@ -26,6 +26,9 @@ public:
 	void scale(float scaleFactor);
 	void translate(const V3 &translationVector);
 
+	bool clipWithFrame(float left, float top, float right, float bottom);
+	void setPixelRectangle(int& left, int& right, int& top, int& bottom);
+
 	void draw(
 		FrameBuffer & fb, 
 		const PPC & ppc, 
