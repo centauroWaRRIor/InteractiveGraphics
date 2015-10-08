@@ -4,7 +4,7 @@
 #include "scene.h"
 #include <iostream>
 #include <math.h>
-#include <cfloat>
+#include <cfloat> // delete me when no longer using FLT_MAX
 #include <vector>
 using std::vector;
 
@@ -320,97 +320,67 @@ void FrameBuffer::draw2DRectangle(
 	}
 }
 
-void FrameBuffer::draw2DFlatTriangle(const float * xCoords, const float * yCoords, unsigned int color)
+void FrameBuffer::draw2DFlatTriangle(const V3 *const pvs, unsigned int color)
 {
-	float a[3], b[3], c[3]; // a,b,c for the three edge expressions
+	// copy projected vertices to honor const pointer to const data
+	V3 pvs_c[3] = { V3(pvs[0]), V3(pvs[1]), V3(pvs[2])};
+
+	// compute screen axes-aligned bounding box for triangle 
+	// clipping against framebuffer
+	AABB aabb(pvs_c[0]);
+	aabb.AddPoint(pvs_c[1]);
+	aabb.AddPoint(pvs_c[2]);
+
+	if (!aabb.clipWithFrame(0.0f, 0.0f, (float)w, (float)h))
+		return;
+
+	int left, right, top, bottom;
+	aabb.setPixelRectangle(left, right, top, bottom);
+
+	// set edge equations
+	V3 eeqs[3]; // eeqs[0] = (A, B, C), where Au + Bv + C
+	for (int ei = 0; ei < 3; ei++) {
+		int e1 = (ei + 1) % 3;
+		eeqs[ei][0] = pvs_c[e1][1] - pvs_c[ei][1];
+		eeqs[ei][1] = pvs_c[ei][0] - pvs_c[e1][0];
+		eeqs[ei][2] = -pvs_c[ei][1] * eeqs[ei][1] - pvs_c[ei][0] * eeqs[ei][0];
+		int e2 = (e1 + 1) % 3;
+		// plug third vertex into edge equation to establish
+		// correct sidedness
+		V3 pv3(pvs_c[e2][0], pvs_c[e2][1], 1.0f); // (u2, v2, 1)
+		if (eeqs[ei] * pv3 < 0.0f)
+			eeqs[ei] = eeqs[ei] * -1.0f;
+	}
+#if 0
+	(v-v1) = (v2 - v1) (u - u1) 
+		     ---------
+		     (u2 - u1)
+
+	(v - v1) (u2 - u1) = (v2 - v1) (u - u1)
+
+	v (u2 - u1) - v1 (u2 - u1) = u (v2 - v1) - u1 (v2 - v1)
+
+	u (v2 - v1) + v (u1 - u2) - u1 (v2 - v1) + v1 (u2 - u1) = 0
+
+	u(v2 - v1) + v(u1 - u2) - u1(v2 - v1) - v1(u1 - u2) = 0
+
+#endif
+	// a,b,c for the three edge expressions in a loop
+	// differential incremental friendly mode
+	float a[3], b[3], c[3]; 
 	// establish the three edge equations
 	// edge that goes through vertices 0 and 1
-	a[0] = yCoords[1] - yCoords[0];
-	b[0] = -xCoords[1] + xCoords[0];
-	c[0] = -xCoords[0] * yCoords[1] + yCoords[0] * xCoords[1];
+	a[0] = eeqs[0][0];
+	b[0] = eeqs[0][1];
+	c[0] = eeqs[0][2];
 	// edge that goes through vertices 1 and 2
-	a[1] = yCoords[2] - yCoords[1];
-	b[1] = -xCoords[2] + xCoords[1];
-	c[1] = -xCoords[1] * yCoords[2] + yCoords[1] * xCoords[2];
+	a[1] = eeqs[1][0];
+	b[1] = eeqs[1][1];
+	c[1] = eeqs[1][2];
 	// edge that goes through vertices 2 and 0
-	a[2] = yCoords[0] - yCoords[2];
-	b[2] = -xCoords[0] + xCoords[2];
-	c[2] = -xCoords[2] * yCoords[0] + yCoords[2] * xCoords[0];
-
-	// temporary used to establish correct sidedness
-	float sidedness;
-	sidedness = a[0] * xCoords[2] + b[0] * yCoords[2] + c[0];
-	// I need to investigate if this special case has to do with the
-	// order in which the vertices are specified (i.e., cw vs ccw)
-	if (sidedness < 0) { // special case, normally inside half space is positive
-		// flip
-		a[0] = -a[0];
-		b[0] = -b[0];
-		c[0] = -c[0];
-	}
-	sidedness = a[1] * xCoords[0] + b[1] * yCoords[0] + c[1];
-	if (sidedness < 0) { // special case, normally inside half space is positive
-		// flip
-		a[1] = -a[1];
-		b[1] = -b[1];
-		c[1] = -c[1];
-	}
-	sidedness = a[2] * xCoords[1] + b[2] * yCoords[1] + c[2];
-	if (sidedness < 0) { // special case, normally inside half space is positive
-		// flip
-		a[2] = -a[2];
-		b[2] = -b[2];
-		c[2] = -c[2];
-	}
-
-	// compute screen axes-aligned bounding box for triangle
-//	AABB aabb(pvs[0]);
-//	aabb.AddPoint(pvs[1]);
-//	aabb.AddPoint(pvs[2]);
-
-//	if (!aabb.ClipWithFrame(0.0f, 0.0f, (float)w, (float)h))
-//		return;
-
-//	int left, right, top, bottom;
-//	aabb.SetPixelRectangle(left, right, top, bottom);
-
-	// compute screen axes-aligned bounding box for triangle
-	float bbox[2][2]; // for each x and y, store the min and max values
-	bbox[0][0] = FLT_MAX;
-	bbox[0][1] = FLT_MIN; // take into account that y is inverted in screen coordinates
-	bbox[1][0] = FLT_MIN;
-	bbox[1][1] = FLT_MAX; // take into account that y is inverted in screen coordinates
-	for (int i = 0; i < 3; i++) {
-		// find min x
-		if (xCoords[i] < bbox[0][0])
-			bbox[0][0] = xCoords[i];
-		// find min y
-		if (yCoords[i] > bbox[0][1])
-			bbox[0][1] = yCoords[i];
-		// find max x
-		if (xCoords[i] > bbox[1][0])
-			bbox[1][0] = xCoords[i];
-		// find max y
-		if (yCoords[i] < bbox[1][1])
-			bbox[1][1] = yCoords[i];
-	}
-
-	// clip bounding box to screen boundaries
-	if (bbox[1][1] > (h - 1) || bbox[0][1] < 0 || bbox[1][0] < 0 || (bbox[0][0] > w - 1))
-		return;
-	if (bbox[0][0] < 0)
-		bbox[0][0] = 0;
-	if (bbox[1][0] > w - 1)
-		bbox[1][0] = (float) w - 1;
-	if (bbox[1][1] < 0)
-		bbox[1][1] = 0;
-	if (bbox[0][1] > h - 1)
-		bbox[0][1] = (float) h - 1;
-
-	int left = (int)(bbox[0][0] + 0.5);
-	int right = (int)(bbox[1][0] - 0.5);
-	int top = (int)(bbox[1][1] + 0.5);
-	int bottom = (int)(bbox[0][1] - 0.5);
+	a[2] = eeqs[2][0];
+	b[2] = eeqs[2][1];
+	c[2] = eeqs[2][2];
 
 	int currPixX, currPixY; // current pixel considered
 	float currEELS[3], currEE[3]; // edge expression values for the line starts and within line
@@ -442,6 +412,9 @@ void FrameBuffer::draw2DFlatTriangle(const float * xCoords, const float * yCoord
 			}
 		}
 	}
+	// note, could make loop code more compact by creating a pixel vertex vector
+	// and doing a cross prduct of the eeqs[] and the given vector but prefer
+	// readibility of current more verbose implementation
 }
 
 void FrameBuffer::draw2DFlatBarycentricTriangle(

@@ -391,13 +391,10 @@ void Scene::testRaster() {
 	// move triangle from right to left, into scene and out
 	float triangleWidth = 400.0f;
 	float triangleHeight = 200.0f;
-	float xCoords[3] = { (float) fb->getWidth(),
-						fb->getWidth() + (triangleWidth/2.0f),
-						fb->getWidth() + triangleWidth };
-
-	float yCoords[3] = { fb->getHeight() / 2.0f,
-						(fb->getHeight() / 2.0f) - triangleHeight,
-						(fb->getHeight() / 2.0f) - (triangleHeight/3.0f) };
+	V3 tProjVerts[3];
+	tProjVerts[0] = V3((float)fb->getWidth(), fb->getHeight() / 2.0f);
+	tProjVerts[1] = V3(fb->getWidth() + (triangleWidth / 2.0f), (fb->getHeight() / 2.0f) - triangleHeight);
+	tProjVerts[2] = V3(fb->getWidth() + triangleWidth, (fb->getHeight() / 2.0f) - (triangleHeight / 3.0f));
 
 	for (float steps = 0;
 		steps <= fb->getWidth() + triangleWidth;
@@ -406,11 +403,10 @@ void Scene::testRaster() {
 		// clear screen
 		fb->set(0xFFFFFFFF);
 		// draw triangle
-		xCoords[0] = xCoords[0] - steps;
-		xCoords[1] = xCoords[1] - steps;
-		xCoords[2] = xCoords[2] - steps;
-
-		fb->draw2DFlatTriangle(xCoords, yCoords, triangleColor);
+		tProjVerts[0][0] -= steps;
+		tProjVerts[1][0] -= steps;
+		tProjVerts[2][0] -= steps;
+		fb->draw2DFlatTriangle(tProjVerts, triangleColor);
 		fb->redraw();
 		Fl::check();
 	}

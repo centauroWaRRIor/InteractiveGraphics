@@ -345,7 +345,7 @@ void TMesh::drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color)
 
 	// draw filled triangles with single color (provided)
 	V3 currcols[3];
-	V3 projV1, projV2, projV3;
+	V3 tProjVerts[3];
 	bool isVisible;
 	
 	// optimization: project each vertex only once
@@ -354,9 +354,9 @@ void TMesh::drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color)
 	for (int tri = 0; tri < trisN; tri++) {
 		
 		// grab current projected triangle vertices
-		projV1 = projVerts[tris[3 * tri + 0]];
-		projV2 = projVerts[tris[3 * tri + 1]];
-		projV3 = projVerts[tris[3 * tri + 2]];
+		tProjVerts[0] = projVerts[tris[3 * tri + 0]];
+		tProjVerts[1] = projVerts[tris[3 * tri + 1]];
+		tProjVerts[2] = projVerts[tris[3 * tri + 2]];
 		isVisible = isVertProjVis[tris[3 * tri + 0]];
 		isVisible &= isVertProjVis[tris[3 * tri + 1]];
 		isVisible &= isVertProjVis[tris[3 * tri + 2]];
@@ -369,17 +369,13 @@ void TMesh::drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color)
 		if (isVisible) {
 
 			// Rasterizer should reject triangles whose screen footprint is very small.
-			float projTriangleArea = compute2DTriangleArea(projV1, projV2, projV3);
+			float projTriangleArea = compute2DTriangleArea(
+				tProjVerts[0],
+				tProjVerts[1],
+				tProjVerts[2]);
 			if (projTriangleArea > epsilonMinArea) {
 
-				float u[3], v[3];
-				u[0] = projV1.getX();
-				u[1] = projV2.getX();
-				u[2] = projV3.getX();
-				v[0] = projV1.getY();
-				v[1] = projV2.getY();
-				v[2] = projV3.getY();
-				fb.draw2DFlatTriangle(u, v, color);
+				fb.draw2DFlatTriangle(tProjVerts, color);
 			}
 			else
 				cerr << "WARNING: Triangle screen footprint is stoo small, discarding..." << endl;

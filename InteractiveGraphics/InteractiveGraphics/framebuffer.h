@@ -57,7 +57,9 @@ public:
 	void draw2DRectangle(float llu, float llv, float width, float height, unsigned int color);
 	// draw single color 2D triangle with no depth test
 	// Quick note on pointers vs references: int &x =  y is the same as const int * x = &y
-	void draw2DFlatTriangle(const float *uCoords, const float *vCoords, unsigned int color);
+	void draw2DFlatTriangle(
+		const V3 *const pvs,
+		unsigned int color);
 	// draw 2D triangle using barycentric interpolation of colors (screen space interpolation)
 	// and depth test
 	void draw2DFlatBarycentricTriangle(
