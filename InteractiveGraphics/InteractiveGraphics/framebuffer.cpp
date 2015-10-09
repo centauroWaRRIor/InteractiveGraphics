@@ -362,53 +362,36 @@ void FrameBuffer::draw2DFlatTriangle(V3 *const pvs, unsigned int color)
 	u(v2 - v1) + v(u1 - u2) - u1(v2 - v1) - v1(u1 - u2) = 0
 
 #endif
-	// a,b,c for the three edge expressions in a loop
-	// differential incremental friendly mode. Kept it 
-	// as unrolled as possible to increase readibility
-	// and unrolling the loop will be an optimization the
-	// compiler will probably do anyways.
-	float a[3], b[3], c[3]; 
-	// establish the three edge equations
-	// edge that goes through vertices 0 and 1
-	a[0] = eeqs[0][0];
-	b[0] = eeqs[0][1];
-	c[0] = eeqs[0][2];
-	// edge that goes through vertices 1 and 2
-	a[1] = eeqs[1][0];
-	b[1] = eeqs[1][1];
-	c[1] = eeqs[1][2];
-	// edge that goes through vertices 2 and 0
-	a[2] = eeqs[2][0];
-	b[2] = eeqs[2][1];
-	c[2] = eeqs[2][2];
+	int currPixU, currPixV; // current pixel considered
+	V3 pixC; // current pixel center
+	V3 topLeftPixC(left + 0.5f, top + 0.5f, 1.0f); // top left pixel center
+	V3 currEELS; // edge expression values for the line start
+	V3 currEE; // edge expression value within a given line 
 
-	int currPixX, currPixY; // current pixel considered
-	float currEELS[3], currEE[3]; // edge expression values for the line starts and within line
-	for (currPixY = top,
-		currEELS[0] = a[0] * (left + 0.5f) + b[0] * (top + 0.5f) + c[0],
-		currEELS[1] = a[1] * (left + 0.5f) + b[1] * (top + 0.5f) + c[1],
-		currEELS[2] = a[2] * (left + 0.5f) + b[2] * (top + 0.5f) + c[2];
-		currPixY <= bottom;
-		currPixY++,
-		currEELS[0] += b[0],
-		currEELS[1] += b[1],
-		currEELS[2] += b[2]) {
-		for (currPixX = left,
-			currEE[0] = currEELS[0],
-			currEE[1] = currEELS[1],
-			currEE[2] = currEELS[2];
-			currPixX <= right;
-			currPixX++,
-			currEE[0] += a[0],
-			currEE[1] += a[1],
-			currEE[2] += a[2]) {
+	for (currPixV = top,
+		currEELS[0] = topLeftPixC * eeqs[0],
+		currEELS[1] = topLeftPixC * eeqs[1],
+		currEELS[2] = topLeftPixC * eeqs[2];
+		currPixV <= bottom;
+		currPixV++,
+		currEELS[0] += eeqs[0][1] /*+=b[0]*/,
+		currEELS[1] += eeqs[1][1] /*+=b[1]*/,
+		currEELS[2] += eeqs[2][1] /*+=b[2]*/) {
+		for (currPixU = left,
+			currEE = currEELS;
+			currPixU <= right;
+			currPixU++,
+			currEE[0] += eeqs[0][0] /*+=a[0]*/,
+			currEE[1] += eeqs[1][0] /*+=a[1]*/,
+			currEE[2] += eeqs[2][0] /*+=a[2]*/) {
 
 			if (currEE[0] < 0 || currEE[1] < 0 || currEE[2] < 0) {
 				continue; // outside triangle
 			}
-			else {
-				// found pixel inside of triangle; set it to right color
-				set(currPixX, currPixY, color);
+			else { // found pixel inside of triangle; set it to right color
+
+				pixC = V3(.5f + (float)currPixU, .5f + (float)currPixV, 1.0f);
+				set((int)pixC[0], (int)pixC[1], color); // ignores depth test
 			}
 		}
 	}
