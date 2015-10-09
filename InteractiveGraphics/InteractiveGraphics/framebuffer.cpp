@@ -216,24 +216,16 @@ void FrameBuffer::setIfWCloser(const V3 & p, const V3 & c)
 void FrameBuffer::draw2DCircle(float cuf, float cvf, float radius, 
   unsigned int color)
 {
+	// compute screen axes-aligned bounding box for triangle 
+	// clipping against framebuffer
+	AABB aabb(V3(cuf - radius + 0.5f, cvf + radius - 0.5f));
+	aabb.AddPoint(V3(cuf + radius - 0.5f, cvf - radius + 0.5f));
 
-    // axis aligned bounding box (AABB) of circle (it's a square parallel to axes)
-    int top = (int) (cvf - radius + 0.5f);
-    int bottom = (int) (cvf + radius - 0.5f);
-    int left = (int) (cuf - radius + 0.5f);
-    int right = (int) (cuf + radius - 0.5f);
+	if (!aabb.clipWithFrame(0.0f, 0.0f, (float)w, (float)h))
+		return;
 
-    // clip AABB with frame
-    if (top > h-1 || bottom < 0 || right < 0 || left > w-1)
-      return;
-    if (left < 0)
-      left = 0;
-    if (right > w-1)
-      right = w-1;
-    if (top < 0)
-      top = 0;
-    if (bottom > h-1)
-      bottom = h-1;
+	int left, right, top, bottom;
+	aabb.setPixelRectangle(left, right, top, bottom);
 
     float radius2 = radius*radius;
     for (int v = top; v <= bottom; v++) {
@@ -251,24 +243,16 @@ void FrameBuffer::draw2DCircle(float cuf, float cvf, float radius,
 // draw 2D circle only where it wins the z-fight
 void FrameBuffer::draw2DCircleIfCloser(const V3 &p, float radius, const V3 &color)
 {
+	// compute screen axes-aligned bounding box for triangle 
+	// clipping against framebuffer
+	AABB aabb(V3(p.getX() - radius + 0.5f, p.getY() + radius - 0.5f));
+	aabb.AddPoint(V3(p.getX() + radius - 0.5f, p.getY() - radius + 0.5f));
 
-	// axis aligned bounding box (AABB) of circle (it's a square parallel to axes)
-	int top = (int)(p.getY() - radius + 0.5f);
-	int bottom = (int)(p.getY() + radius - 0.5f);
-	int left = (int)(p.getX() - radius + 0.5f);
-	int right = (int)(p.getX() + radius - 0.5f);
-
-	// clip AABB with frame
-	if (top > h - 1 || bottom < 0 || right < 0 || left > w - 1)
+	if (!aabb.clipWithFrame(0.0f, 0.0f, (float)w, (float)h))
 		return;
-	if (left < 0)
-		left = 0;
-	if (right > w - 1)
-		right = w - 1;
-	if (top < 0)
-		top = 0;
-	if (bottom > h - 1)
-		bottom = h - 1;
+
+	int left, right, top, bottom;
+	aabb.setPixelRectangle(left, right, top, bottom);
 
 	float radius2 = radius*radius;
 	for (int v = top; v <= bottom; v++) {
@@ -292,24 +276,16 @@ void FrameBuffer::draw2DRectangle(
 	float height,		
 	unsigned int color)
 {
+	// compute screen axes-aligned bounding box for triangle 
+	// clipping against framebuffer
+	AABB aabb(V3(llu + 0.5f, llv - 0.5f));
+	aabb.AddPoint(V3(llu + width - 0.5f, llv - height + 0.5f));
 
-	// axis aligned bounding box (AABB) of circle (it's a square parallel to axes)
-	int top = (int)(llv - height + 0.5f);
-	int bottom = (int)(llv - 0.5f);
-	int left = (int)(llu + 0.5f);
-	int right = (int)(llu + width - 0.5f);
-
-	// clip AABB with frame
-	if (top > (h - 1) || bottom < 0 || right < 0 || (left > w - 1) )
+	if (!aabb.clipWithFrame(0.0f, 0.0f, (float)w, (float)h))
 		return;
-	if (left < 0)
-		left = 0;
-	if (right > w - 1)
-		right = w - 1;
-	if (top < 0)
-		top = 0;
-	if (bottom > h - 1)
-		bottom = h - 1;
+
+	int left, right, top, bottom;
+	aabb.setPixelRectangle(left, right, top, bottom);
 
 	for (int v = top; v <= bottom; v++) {
 		for (int u = left; u <= right; u++) {
