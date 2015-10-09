@@ -42,12 +42,28 @@ V3 V3::operator+(const V3 &right) const {
          xyz[2] + right.xyz[2]); // z
 }
 
+const V3& V3::operator+=(const V3 & right)
+{
+	xyz[0] += right.xyz[0]; // x
+	xyz[1] += right.xyz[1]; // y
+	xyz[2] += right.xyz[2]; // z
+	return *this;
+}
+
 V3 V3::operator-(const V3 &right) const {
 
    return 
       V3(xyz[0] - right.xyz[0],  // x
          xyz[1] - right.xyz[1],  // y
          xyz[2] - right.xyz[2]); // z
+}
+
+const V3& V3::operator-=(const V3 & right)
+{
+	xyz[0] -= right.xyz[0]; // x
+	xyz[1] -= right.xyz[1]; // y
+	xyz[2] -= right.xyz[2]; // z
+	return *this;
 }
 
 float V3::operator*(const V3 &right) const {

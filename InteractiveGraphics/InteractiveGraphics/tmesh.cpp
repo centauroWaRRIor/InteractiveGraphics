@@ -373,8 +373,8 @@ void TMesh::drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color)
 				tProjVerts[0],
 				tProjVerts[1],
 				tProjVerts[2]);
-			if (projTriangleArea > epsilonMinArea) {
 
+			if (projTriangleArea > epsilonMinArea) {
 				fb.draw2DFlatTriangle(tProjVerts, color);
 			}
 			else
@@ -394,7 +394,7 @@ void TMesh::drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc) {
 	// Draw filled triangles with color and depth linearly 
 	// interpolated in screen space.
 	V3 currcols[3];
-	V3 projV1, projV2, projV3;
+	V3 tProjVerts[3];
 	bool isVisible;
 
 	// optimization: project each vertex only once
@@ -403,9 +403,9 @@ void TMesh::drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc) {
 	for (int tri = 0; tri < trisN; tri++) {
 
 		// grab current projected triangle vertices
-		projV1 = projVerts[tris[3 * tri + 0]];
-		projV2 = projVerts[tris[3 * tri + 1]];
-		projV3 = projVerts[tris[3 * tri + 2]];
+		tProjVerts[0] = projVerts[tris[3 * tri + 0]];
+		tProjVerts[1] = projVerts[tris[3 * tri + 1]];
+		tProjVerts[2] = projVerts[tris[3 * tri + 2]];
 		isVisible = isVertProjVis[tris[3 * tri + 0]];
 		isVisible &= isVertProjVis[tris[3 * tri + 1]];
 		isVisible &= isVertProjVis[tris[3 * tri + 2]];
@@ -422,22 +422,15 @@ void TMesh::drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc) {
 			// cannot be inverted, as one cannot compute the screen space variation
 			// for a triangle with collinear or coincident vertices.
 			// Therefore, rasterizer should reject triangles whose screen footprint is very small.
-			float projTriangleArea = compute2DTriangleArea(projV1, projV2, projV3);
+			float projTriangleArea = compute2DTriangleArea(
+				tProjVerts[0],
+				tProjVerts[1],
+				tProjVerts[2]);
 
 			if (projTriangleArea > epsilonMinArea) {
 
-				// build barycentric interpolation matrix
-				M33 baryMatrixInverse(
-				V3(projV1[0], projV1[1], 1),
-				V3(projV2[0], projV2[1], 1),
-				V3(projV3[0], projV3[1], 1));
-				baryMatrixInverse.setInverted();
-
-				fb.draw2DFlatBarycentricTriangle(
-					projV1, currcols[0],
-					projV2, currcols[1],
-					projV3, currcols[2],
-					baryMatrixInverse);
+				fb.draw2DFlatTriangleScreenSpace(
+					tProjVerts, currcols);
 			}
 			else 
 				cerr << "WARNING: Triangle screen footprint is stoo small, discarding..." << endl;
@@ -505,7 +498,7 @@ void TMesh::drawFilledFlatPerspCorrect(FrameBuffer & fb, const PPC & ppc)
 				VMinC.setInverted();
 				Q = VMinC * abc;
 
-				fb.draw2DFlatPerspCorrectTriangle(
+				fb.draw2DFlatTriangleModelSpace(
 					projV1, currcols[0],
 					projV2, currcols[1],
 					projV3, currcols[2],

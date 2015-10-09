@@ -62,9 +62,11 @@ public:
 
 	// addition of two vectors
 	V3 operator+(const V3 &right) const;
+	const V3& operator+=(const V3 &right);
    
 	// substraction of two vectors
 	V3 operator-(const V3 &right) const;
+	const V3& operator-=(const V3 &right);
    
 	// dot product
 	float operator*(const V3 &right) const;

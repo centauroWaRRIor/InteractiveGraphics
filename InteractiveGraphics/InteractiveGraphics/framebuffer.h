@@ -58,17 +58,15 @@ public:
 	// draw single color 2D triangle with no depth test
 	// Quick note on pointers vs references: int &x =  y is the same as const int * x = &y
 	void draw2DFlatTriangle(
-		const V3 *const pvs,
+		V3 *const pvs,
 		unsigned int color);
 	// draw 2D triangle using barycentric interpolation of colors (screen space interpolation)
 	// and depth test
-	void draw2DFlatBarycentricTriangle(
-		const V3 &v1, const V3 &c1,
-		const V3 &v2, const V3 &c2,
-		const V3 &v3, const V3 &c3,
-		M33 baryMatrixInverse);
+	void draw2DFlatTriangleScreenSpace(
+		V3 *const pvs,
+		V3 *const cols);
 	// draw 2D triangle using perspectively correct interpolation of colors and depth test
-	void draw2DFlatPerspCorrectTriangle(
+	void draw2DFlatTriangleModelSpace(
 		const V3 &v1, const V3 &c1,
 		const V3 &v2, const V3 &c2,
 		const V3 &v3, const V3 &c3,
