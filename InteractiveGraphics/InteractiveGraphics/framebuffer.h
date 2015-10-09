@@ -67,9 +67,8 @@ public:
 		V3 *const cols);
 	// draw 2D triangle using perspectively correct interpolation of colors and depth test
 	void draw2DFlatTriangleModelSpace(
-		const V3 &v1, const V3 &c1,
-		const V3 &v2, const V3 &c2,
-		const V3 &v3, const V3 &c3,
+		V3 *const pvs,
+		V3 *const cols,
 		M33 perspCorrectMatQ);
 	// draw 2D triangle using model space linear interpolation of s,t and 
 	// screen space linar interpolation of depth test. Reason being that 1/w

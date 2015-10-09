@@ -344,6 +344,7 @@ void FrameBuffer::draw2DFlatTriangle(V3 *const pvs, unsigned int color)
 	V3 currEELS; // edge expression values for the line start
 	V3 currEE; // edge expression value within a given line 
 
+	// rasterize triangle
 	for (currPixV = top,
 		currEELS[0] = topLeftPixC * eeqs[0],
 		currEELS[1] = topLeftPixC * eeqs[1],
@@ -427,6 +428,7 @@ void FrameBuffer::draw2DFlatTriangleScreenSpace(
 	V3 interpolatedColor; // final raster parameter interpolated result
 	float interpolatedDepth; // final raster parameter interpolated result
 
+	// rasterize triangle
 	for (currPixV = top,
 		currEELS[0] = topLeftPixC * eeqs[0],
 		currEELS[1] = topLeftPixC * eeqs[1],
@@ -452,8 +454,6 @@ void FrameBuffer::draw2DFlatTriangleScreenSpace(
 				pixC = V3(.5f + (float)currPixU, .5f + (float)currPixV, 1.0f);
 				interpolatedDepth = depthABC * pixC; // 1/w at current pixel interpolated lin. in s s
 				interpolatedColor = colsABC*pixC; // color at current pixel interp. l s s
-
-				//set(currPixX, currPixY, color); // ignores depth test
 				setIfOneOverWCloser(V3(pixC[0], pixC[1], interpolatedDepth), interpolatedColor);
 			}
 		}
@@ -461,69 +461,54 @@ void FrameBuffer::draw2DFlatTriangleScreenSpace(
 }
 
 void FrameBuffer::draw2DFlatTriangleModelSpace(
-	const V3 & v1, const V3 & c1,
-	const V3 & v2, const V3 & c2,
-	const V3 & v3, const V3 & c3,
+	V3 *const pvs,
+	V3 *const cols,
 	M33 Q)
 {
-	float xCoords[3], yCoords[3]; // this format is more triangle edge equation friendly 
-	xCoords[0] = v1.getX();
-	xCoords[1] = v2.getX();
-	xCoords[2] = v3.getX();
-	yCoords[0] = v1.getY();
-	yCoords[1] = v2.getY();
-	yCoords[2] = v3.getY();
+	// compute screen axes-aligned bounding box for triangle 
+	// clipping against framebuffer
+	AABB aabb(pvs[0]);
+	aabb.AddPoint(pvs[1]);
+	aabb.AddPoint(pvs[2]);
 
-	// compute screen axes-aligned bounding box for triangle
-	float bbox[2][2]; // for each x and y, store the min and max values
-	bbox[0][0] = FLT_MAX;
-	bbox[0][1] = FLT_MIN; // take into account that y is inverted in screen coordinates
-	bbox[1][0] = FLT_MIN;
-	bbox[1][1] = FLT_MAX; // take into account that y is inverted in screen coordinates
-	for (int i = 0; i < 3; i++) {
-		// find min x
-		if (xCoords[i] < bbox[0][0])
-			bbox[0][0] = xCoords[i];
-		// find min y
-		if (yCoords[i] > bbox[0][1])
-			bbox[0][1] = yCoords[i];
-		// find max x
-		if (xCoords[i] > bbox[1][0])
-			bbox[1][0] = xCoords[i];
-		// find max y
-		if (yCoords[i] < bbox[1][1])
-			bbox[1][1] = yCoords[i];
+	if (!aabb.clipWithFrame(0.0f, 0.0f, (float)w, (float)h))
+		return;
+
+	int left, right, top, bottom;
+	aabb.setPixelRectangle(left, right, top, bottom);
+
+	// set edge equations
+	V3 eeqs[3]; // eeqs[0] = (A, B, C), where Au + Bv + C
+	for (int ei = 0; ei < 3; ei++) {
+		int e1 = (ei + 1) % 3;
+		eeqs[ei][0] = pvs[e1][1] - pvs[ei][1];
+		eeqs[ei][1] = pvs[ei][0] - pvs[e1][0];
+		eeqs[ei][2] = -pvs[ei][1] * eeqs[ei][1] - pvs[ei][0] * eeqs[ei][0];
+		int e2 = (e1 + 1) % 3;
+		// plug third vertex into edge equation to establish
+		// correct sidedness
+		V3 pv3(pvs[e2][0], pvs[e2][1], 1.0f); // (u2, v2, 1)
+		if (eeqs[ei] * pv3 < 0.0f)
+			eeqs[ei] = eeqs[ei] * -1.0f;
 	}
 
-	// clip bounding box to screen boundaries
-	if (bbox[1][1] > (h - 1) || bbox[0][1] < 0 || bbox[1][0] < 0 || (bbox[0][0] > w - 1))
-		return; // discard this triangle
-	if (bbox[0][0] < 0)
-		bbox[0][0] = 0;
-	if (bbox[1][0] > w - 1)
-		bbox[1][0] = (float)w - 1;
-	if (bbox[1][1] < 0)
-		bbox[1][1] = 0;
-	if (bbox[0][1] > h - 1)
-		bbox[0][1] = (float)h - 1;
-
 	// build rasterization parameters to be lerped in screen space
-	V3 redParameters(c1.getX(), c2.getX(), c3.getX());
-	V3 greenParameters(c1.getY(), c2.getY(), c3.getY());
-	V3 blueParameters(c1.getZ(), c2.getZ(), c3.getZ());
+	V3 redParameters(cols[0].getX(), cols[1].getX(), cols[2].getX());
+	V3 greenParameters(cols[0].getY(), cols[1].getY(), cols[2].getY());
+	V3 blueParameters(cols[0].getZ(), cols[1].getZ(), cols[2].getZ());
 
 	// w is linear in model space and not linear in screen space.For 1 / w, it's the other way around.
 	// Hence we want to use w here. Projected z is coming out as 1/w by construction so we want to
 	// invert that z to get back to original w.
-	V3 wParameters(1/(v1.getZ()), 1/(v2.getZ()), 1/(v3.getZ()));
+	V3 wParameters(1 / (pvs[0].getZ()), 1 / (pvs[1].getZ()), 1 / (pvs[2].getZ()));
 
 	// refer to slide 7 of RastParInterp.pdf for the math 
 	// derivation of the persp correct coefficients
-	float ARed = 
-		Q[0][0] * redParameters[0] + 
-		Q[1][0] * redParameters[1] + 
+	float ARed =
+		Q[0][0] * redParameters[0] +
+		Q[1][0] * redParameters[1] +
 		Q[2][0] * redParameters[2];
-	float AGreen = 
+	float AGreen =
 		Q[0][0] * greenParameters[0] +
 		Q[1][0] * greenParameters[1] +
 		Q[2][0] * greenParameters[2];
@@ -553,7 +538,7 @@ void FrameBuffer::draw2DFlatTriangleModelSpace(
 		Q[1][1] * wParameters[1] +
 		Q[2][1] * wParameters[2];
 
-	float CRed = 
+	float CRed =
 		Q[0][2] * redParameters[0] +
 		Q[1][2] * redParameters[1] +
 		Q[2][2] * redParameters[2];
@@ -578,98 +563,55 @@ void FrameBuffer::draw2DFlatTriangleModelSpace(
 	V3 interpolatedColor;
 	float interpolatedZBufferDepth;
 
-	float a[3], b[3], c[3]; // a,b,c for the three triangle edge expressions
+	int currPixU, currPixV; // current pixel considered
+	V3 pixC; // current pixel center
+	V3 topLeftPixC(left + 0.5f, top + 0.5f, 1.0f); // top left pixel center
+	V3 currEELS; // edge expression values for the line start
+	V3 currEE; // edge expression value within a given line 
 
-	// establish the three edge equations 
-	// edge that goes through vertices 0 and 1
-	a[0] = yCoords[1] - yCoords[0];
-	b[0] = -xCoords[1] + xCoords[0];
-	c[0] = -xCoords[0] * yCoords[1] + yCoords[0] * xCoords[1];
-	// edge that goes through vertices 1 and 2
-	a[1] = yCoords[2] - yCoords[1];
-	b[1] = -xCoords[2] + xCoords[1];
-	c[1] = -xCoords[1] * yCoords[2] + yCoords[1] * xCoords[2];
-	// edge that goes through vertices 2 and 0
-	a[2] = yCoords[0] - yCoords[2];
-	b[2] = -xCoords[0] + xCoords[2];
-	c[2] = -xCoords[2] * yCoords[0] + yCoords[2] * xCoords[0];
-
-	// temporary used to establish correct sidedness
-	float sidedness;
-	sidedness = a[0] * xCoords[2] + b[0] * yCoords[2] + c[0];
-	// I need to investigate if this special case has to do with the
-	// order in which the vertices are specified (i.e., cw vs ccw)
-	if (sidedness < 0) { // special case, normally inside half space is positive
-						 // flip
-		a[0] = -a[0];
-		b[0] = -b[0];
-		c[0] = -c[0];
-	}
-	sidedness = a[1] * xCoords[0] + b[1] * yCoords[0] + c[1];
-	if (sidedness < 0) { // special case, normally inside half space is positive
-						 // flip
-		a[1] = -a[1];
-		b[1] = -b[1];
-		c[1] = -c[1];
-	}
-	sidedness = a[2] * xCoords[1] + b[2] * yCoords[1] + c[2];
-	if (sidedness < 0) { // special case, normally inside half space is positive
-						 // flip
-		a[2] = -a[2];
-		b[2] = -b[2];
-		c[2] = -c[2];
-	}
-
-	// use clipped AABB
-	int left = (int)(bbox[0][0] + 0.5);
-	int right = (int)(bbox[1][0] - 0.5);
-	int top = (int)(bbox[1][1] + 0.5);
-	int bottom = (int)(bbox[0][1] - 0.5);
-
-	int currPixX, currPixY; // current pixel considered
-	float currEELS[3], currEE[3]; // edge expression values for the line starts and within line
-	for (currPixY = top,
-		currEELS[0] = a[0] * (left + 0.5f) + b[0] * (top + 0.5f) + c[0],
-		currEELS[1] = a[1] * (left + 0.5f) + b[1] * (top + 0.5f) + c[1],
-		currEELS[2] = a[2] * (left + 0.5f) + b[2] * (top + 0.5f) + c[2];
-		currPixY <= bottom;
-		currPixY++,
-		currEELS[0] += b[0],
-		currEELS[1] += b[1],
-		currEELS[2] += b[2]) {
-		for (currPixX = left,
-			currEE[0] = currEELS[0],
-			currEE[1] = currEELS[1],
-			currEE[2] = currEELS[2];
-			currPixX <= right;
-			currPixX++,
-			currEE[0] += a[0],
-			currEE[1] += a[1],
-			currEE[2] += a[2]) {
+	// rasterize triangle
+	for (currPixV = top,
+		currEELS[0] = topLeftPixC * eeqs[0],
+		currEELS[1] = topLeftPixC * eeqs[1],
+		currEELS[2] = topLeftPixC * eeqs[2];
+		currPixV <= bottom;
+		currPixV++,
+		currEELS[0] += eeqs[0][1] /*+=b[0]*/,
+		currEELS[1] += eeqs[1][1] /*+=b[1]*/,
+		currEELS[2] += eeqs[2][1] /*+=b[2]*/) {
+		for (currPixU = left,
+			currEE = currEELS;
+			currPixU <= right;
+			currPixU++,
+			currEE[0] += eeqs[0][0] /*+=a[0]*/,
+			currEE[1] += eeqs[1][0] /*+=a[1]*/,
+			currEE[2] += eeqs[2][0] /*+=a[2]*/) {
 
 			if (currEE[0] < 0 || currEE[1] < 0 || currEE[2] < 0) {
 				continue; // outside triangle
 			}
-			else { // found pixel inside of triangle; set it to interpolated color
+			else { // found pixel inside of triangle; set it to right color
+
+				pixC = V3(.5f + (float)currPixU, .5f + (float)currPixV, 1.0f);
 
 				// find interpolated color by following the model space formula
 				// for rater parameter linear interpolation 
 				// r = ((A * u) + (B * v) + C) / ((D * u) + (E * v) + F)
-				interpolatedColor[0] = 
-					((ARed * currPixX) + (BRed * currPixY) + CRed) /
-					((D * currPixX) + (E * currPixY) + F);
-				interpolatedColor[1] = 
-					((AGreen * currPixX) + (BGreen * currPixY) + CGreen) /
-					((D * currPixX) + (E * currPixY) + F);
-				interpolatedColor[2] = 
-					((ABlue * currPixX) + (BBlue * currPixY) + CBlue) /
-					((D * currPixX) + (E * currPixY) + F);
+				interpolatedColor[0] =
+					((ARed * currPixU) + (BRed * currPixV) + CRed) /
+					((D * currPixU) + (E * currPixV) + F);
+				interpolatedColor[1] =
+					((AGreen * currPixU) + (BGreen * currPixV) + CGreen) /
+					((D * currPixU) + (E * currPixV) + F);
+				interpolatedColor[2] =
+					((ABlue * currPixU) + (BBlue * currPixV) + CBlue) /
+					((D * currPixU) + (E * currPixV) + F);
 
-				interpolatedZBufferDepth = 
-					((ADepth * currPixX) + (BDepth * currPixY) + CDepth) /
-					((D * currPixX) + (E * currPixY) + F);
+				interpolatedZBufferDepth =
+					((ADepth * currPixU) + (BDepth * currPixV) + CDepth) /
+					((D * currPixU) + (E * currPixV) + F);
 
-				setIfWCloser(V3((float)currPixX, (float)currPixY, interpolatedZBufferDepth), 
+				setIfWCloser(V3(pixC[0], pixC[1], interpolatedZBufferDepth),
 					interpolatedColor);
 			}
 		}
