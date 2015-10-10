@@ -492,82 +492,42 @@ void FrameBuffer::draw2DFlatTriangleModelSpace(
 			eeqs[ei] = eeqs[ei] * -1.0f;
 	}
 
+	// set model space interpolation
 	// build rasterization parameters to be lerped in screen space
 	V3 redParameters(cols[0].getX(), cols[1].getX(), cols[2].getX());
 	V3 greenParameters(cols[0].getY(), cols[1].getY(), cols[2].getY());
 	V3 blueParameters(cols[0].getZ(), cols[1].getZ(), cols[2].getZ());
-
 	// w is linear in model space and not linear in screen space.For 1 / w, it's the other way around.
 	// Hence we want to use w here. Projected z is coming out as 1/w by construction so we want to
 	// invert that z to get back to original w.
 	V3 wParameters(1 / (pvs[0].getZ()), 1 / (pvs[1].getZ()), 1 / (pvs[2].getZ()));
-
 	// refer to slide 7 of RastParInterp.pdf for the math 
 	// derivation of the persp correct coefficients
-	float ARed =
-		Q[0][0] * redParameters[0] +
-		Q[1][0] * redParameters[1] +
-		Q[2][0] * redParameters[2];
-	float AGreen =
-		Q[0][0] * greenParameters[0] +
-		Q[1][0] * greenParameters[1] +
-		Q[2][0] * greenParameters[2];
-	float ABlue =
-		Q[0][0] * blueParameters[0] +
-		Q[1][0] * blueParameters[1] +
-		Q[2][0] * blueParameters[2];
-	float ADepth =
-		Q[0][0] * wParameters[0] +
-		Q[1][0] * wParameters[1] +
-		Q[2][0] * wParameters[2];
-
-	float BRed =
-		Q[0][1] * redParameters[0] +
-		Q[1][1] * redParameters[1] +
-		Q[2][1] * redParameters[2];
-	float BGreen =
-		Q[0][1] * greenParameters[0] +
-		Q[1][1] * greenParameters[1] +
-		Q[2][1] * greenParameters[2];
-	float BBlue =
-		Q[0][1] * blueParameters[0] +
-		Q[1][1] * blueParameters[1] +
-		Q[2][1] * blueParameters[2];
-	float BDepth =
-		Q[0][1] * wParameters[0] +
-		Q[1][1] * wParameters[1] +
-		Q[2][1] * wParameters[2];
-
-	float CRed =
-		Q[0][2] * redParameters[0] +
-		Q[1][2] * redParameters[1] +
-		Q[2][2] * redParameters[2];
-	float CGreen =
-		Q[0][2] * greenParameters[0] +
-		Q[1][2] * greenParameters[1] +
-		Q[2][2] * greenParameters[2];
-	float CBlue =
-		Q[0][2] * blueParameters[0] +
-		Q[1][2] * blueParameters[1] +
-		Q[2][2] * blueParameters[2];
-	float CDepth =
-		Q[0][2] * wParameters[0] +
-		Q[1][2] * wParameters[1] +
-		Q[2][2] * wParameters[2];
-
-	float D = Q[0][0] + Q[1][0] + Q[2][0];
-	float E = Q[0][1] + Q[1][1] + Q[2][1];
-	float F = Q[0][2] + Q[1][2] + Q[2][2];
-
-	// final raster parameter interpolated result stored here
-	V3 interpolatedColor;
-	float interpolatedZBufferDepth;
+	V3 denDEF = Q[0] + Q[1] + Q[2];
+	V3 redNumABC = V3(
+		Q.getColumn(0) * redParameters,
+		Q.getColumn(1) * redParameters,
+		Q.getColumn(2) * redParameters);
+	V3 greenNumABC = V3(
+		Q.getColumn(0) * greenParameters,
+		Q.getColumn(1) * greenParameters,
+		Q.getColumn(2) * greenParameters);
+	V3 blueNumABC = V3(
+		Q.getColumn(0) * blueParameters,
+		Q.getColumn(1) * blueParameters,
+		Q.getColumn(2) * blueParameters);
+	V3 depthNumABC = V3(
+		Q.getColumn(0) * wParameters,
+		Q.getColumn(1) * wParameters,
+		Q.getColumn(2) * wParameters);
 
 	int currPixU, currPixV; // current pixel considered
 	V3 pixC; // current pixel center
 	V3 topLeftPixC(left + 0.5f, top + 0.5f, 1.0f); // top left pixel center
 	V3 currEELS; // edge expression values for the line start
 	V3 currEE; // edge expression value within a given line 
+	V3 interpolatedColor; // final raster parameter interpolated result
+	float interpolatedDepth; // final raster parameter interpolated result
 
 	// rasterize triangle
 	for (currPixV = top,
@@ -592,27 +552,16 @@ void FrameBuffer::draw2DFlatTriangleModelSpace(
 			}
 			else { // found pixel inside of triangle; set it to right color
 
-				pixC = V3(.5f + (float)currPixU, .5f + (float)currPixV, 1.0f);
-
-				// find interpolated color by following the model space formula
+				// find interpolated parameter t by following the model space formula
 				// for rater parameter linear interpolation 
-				// r = ((A * u) + (B * v) + C) / ((D * u) + (E * v) + F)
-				interpolatedColor[0] =
-					((ARed * currPixU) + (BRed * currPixV) + CRed) /
-					((D * currPixU) + (E * currPixV) + F);
-				interpolatedColor[1] =
-					((AGreen * currPixU) + (BGreen * currPixV) + CGreen) /
-					((D * currPixU) + (E * currPixV) + F);
-				interpolatedColor[2] =
-					((ABlue * currPixU) + (BBlue * currPixV) + CBlue) /
-					((D * currPixU) + (E * currPixV) + F);
-
-				interpolatedZBufferDepth =
-					((ADepth * currPixU) + (BDepth * currPixV) + CDepth) /
-					((D * currPixU) + (E * currPixV) + F);
-
-				setIfWCloser(V3(pixC[0], pixC[1], interpolatedZBufferDepth),
-					interpolatedColor);
+				// t = ((A * u) + (B * v) + C) / ((D * u) + (E * v) + F)
+				pixC = V3(.5f + (float)currPixU, .5f + (float)currPixV, 1.0f);
+				float denFactor = denDEF * pixC;
+				interpolatedColor[0] = (redNumABC * pixC) / denFactor;
+				interpolatedColor[1] = (greenNumABC * pixC) / denFactor;
+				interpolatedColor[2] = (blueNumABC * pixC) / denFactor;
+				interpolatedDepth = (depthNumABC * pixC) / denFactor;				
+				setIfWCloser(V3(pixC[0], pixC[1], interpolatedDepth), interpolatedColor);
 			}
 		}
 	}
