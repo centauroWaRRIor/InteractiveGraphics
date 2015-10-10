@@ -530,10 +530,10 @@ void TMesh::drawTextured(FrameBuffer & fb, const PPC & ppc, const Texture & text
 	// Draw textured triangles with s,t linearly
 	// interpolated in model space and depth linearly
 	// interpolated in screen space.
+	V3 tProjVerts[3];
 	V3 currvs[3];
 	V3 currcols[3];
 	V3 sParameters, tParameters;
-	V3 projV1, projV2, projV3;
 	bool isVisible;
 
 	// optimization: project each vertex only once
@@ -547,13 +547,13 @@ void TMesh::drawTextured(FrameBuffer & fb, const PPC & ppc, const Texture & text
 		currvs[2] = verts[tris[3 * tri + 2]];
 
 		// grab current projected triangle vertices
-		projV1 = projVerts[tris[3 * tri + 0]];
-		projV2 = projVerts[tris[3 * tri + 1]];
-		projV3 = projVerts[tris[3 * tri + 2]];
+		tProjVerts[0] = projVerts[tris[3 * tri + 0]];
+		tProjVerts[1] = projVerts[tris[3 * tri + 1]];
+		tProjVerts[2] = projVerts[tris[3 * tri + 2]];
 		isVisible = isVertProjVis[tris[3 * tri + 0]];
 		isVisible &= isVertProjVis[tris[3 * tri + 1]];
 		isVisible &= isVertProjVis[tris[3 * tri + 2]];
-		
+
 		// grab current triangle vertex colors
 		currcols[0] = cols[tris[3 * tri + 0]];
 		currcols[1] = cols[tris[3 * tri + 1]];
@@ -571,16 +571,12 @@ void TMesh::drawTextured(FrameBuffer & fb, const PPC & ppc, const Texture & text
 		if (isVisible) {
 
 			// Rasterizer should reject triangles whose screen footprint is very small.
-			float projTriangleArea = compute2DTriangleArea(projV1, projV2, projV3);
+			float projTriangleArea = compute2DTriangleArea(
+				tProjVerts[0],
+				tProjVerts[1],
+				tProjVerts[2]);
 
 			if (projTriangleArea > epsilonMinArea) {
-
-				// build screen space linear interpolation matrix for 1/w
-				M33 baryMatrixInverse(
-					V3(projV1[0], projV1[1], 1),
-					V3(projV2[0], projV2[1], 1),
-					V3(projV3[0], projV3[1], 1));
-				baryMatrixInverse.setInverted();
 
 				// build model space linear interpolation for s and t
 				VMinC.setColumn(currvs[0] - ppc.getEyePoint(), 0);
@@ -590,11 +586,8 @@ void TMesh::drawTextured(FrameBuffer & fb, const PPC & ppc, const Texture & text
 				perspCorrectMatQ = VMinC * abc;
 
 				fb.draw2DTexturedTriangle(
-					projV1, currcols[0],
-					projV2, currcols[1],
-					projV3, currcols[2],
+					tProjVerts, currcols,
 					sParameters, tParameters,
-					baryMatrixInverse,
 					perspCorrectMatQ,
 					texture);
 			}

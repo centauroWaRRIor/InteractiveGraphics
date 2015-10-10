@@ -75,11 +75,10 @@ public:
 	// gives us greater precision for near depth test as opposed to w which 
 	// givues us better precision for far depth test which we don't care as much
 	void draw2DTexturedTriangle(
-		const V3 &v1, const V3 &c1,
-		const V3 &v2, const V3 &c2,
-		const V3 &v3, const V3 &c3,
-		const V3 &sCoords, const V3 &tCoords,
-		M33 baryMatrixInverse,
+		V3 *const pvs,
+		V3 *const cols,
+		const V3 &sCoords, 
+		const V3 &tCoords,
 		M33 perspCorrectMatQ,
 		const Texture &texture);
 	// draw sprite using model space linear interpolation of s,t and 
