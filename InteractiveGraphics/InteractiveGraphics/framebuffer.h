@@ -84,11 +84,10 @@ public:
 	// draw sprite using model space linear interpolation of s,t and 
 	// screen space linar interpolation of depth test.
 	void draw2DSprite(
-		const V3 &v1, const V3 &c1,
-		const V3 &v2, const V3 &c2,
-		const V3 &v3, const V3 &c3,
-		const V3 &sCoords, const V3 &tCoords,
-		M33 baryMatrixInverse,
+		V3 *const pvs,
+		V3 *const cols,
+		const V3 &sCoords,
+		const V3 &tCoords,
 		M33 perspCorrectMatQ,
 		const Texture &texture);
 
