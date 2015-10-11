@@ -16,6 +16,7 @@ TMesh::TMesh():
 	isVertProjVis(nullptr),
 	cols(nullptr),
 	tcs(nullptr),
+	normals(nullptr),
 	tris(nullptr),
 	aabb(nullptr)
 {
@@ -45,6 +46,10 @@ void TMesh::cleanUp(void)
 	if (cols) {
 		delete[] cols;
 		cols = nullptr;
+	}
+	if (normals) {
+		delete[] normals;
+		normals = nullptr;
 	}
 	if (tcs) {
 		delete[] tcs;
@@ -228,10 +233,6 @@ void TMesh::loadBin(const char * fname)
 
 	// reads whether or not there is normal info in the file
 	ifs.read(&yn, 1); // normals 3 floats
-	V3 *normals = nullptr; // TMesh doesn't store normals for now
-	//if (normals)
-	//	delete [] normals;
-	//normals = nullptr;
 	if (yn == 'y') {
 		normals = new V3[vertsN];
 	}
@@ -266,8 +267,6 @@ void TMesh::loadBin(const char * fname)
 
 	// recompute AABB
 	aabb = new AABB(computeAABB());
-
-	delete[]normals;
 }
 
 
@@ -518,6 +517,12 @@ void TMesh::drawTextured(FrameBuffer & fb, const PPC & ppc, const Texture & text
 		return;
 	}
 
+	if (tcs == nullptr) {
+		cerr << "ERROR: Attempted to draw a mesh in texture mode without specifying s,t's. "
+			<< "drawTextured() command was aborted." << endl;
+		return;
+	}
+
 	// Matrix used for perspective correct linear 
 	// interpolation of raster parameters.
 	// (refer to slide 7 of RastParInterp.pdf for the math 
@@ -611,6 +616,12 @@ void TMesh::drawSprite(
 		return;
 	}
 
+	if (tcs == nullptr) {
+		cerr << "ERROR: Attempted to draw a mesh in texture mode without specifying s,t's. "
+			<< "drawSprite() command was aborted." << endl;
+		return;
+	}
+
 	// Matrix used for perspective correct linear 
 	// interpolation of raster parameters.
 	// (refer to slide 7 of RastParInterp.pdf for the math 
@@ -699,6 +710,112 @@ void TMesh::drawSprite(
 					tProjVerts, currcols,
 					sParameters, tParameters,
 					perspCorrectMatQ,
+					texture);
+			}
+			else
+				cerr << "WARNING: Triangle screen footprint is stoo small, discarding..." << endl;
+		}
+	}
+}
+
+void TMesh::drawLit(
+	FrameBuffer & fb, 
+	const PPC & ppc, 
+	const Light &light,
+	const Texture * const texture)
+{
+	if ((vertsN == 0) || (trisN < 1)) {
+		cerr << "ERROR: Attempted to draw an empty mesh. "
+			<< "drawTextured() command was aborted." << endl;
+		return;
+	}
+	else if (normals == nullptr) {
+		cerr << "ERROR: Attempted to draw a mesh in lit mode without specifying normals. "
+			<< "drawLit() command was aborted." << endl;
+		return;
+	}
+	else if (texture != nullptr && tcs == nullptr) {
+		cerr << "ERROR: Attempted to draw a mesh in lit texture mode without specifying s,t's. "
+			<< "drawLit() command was aborted." << endl;
+		return;
+	}
+
+	// Matrix used for perspective correct linear 
+	// interpolation of raster parameters.
+	// (refer to slide 7 of RastParInterp.pdf for the math 
+	// derivation of Q matrix)
+	M33 perspCorrectMatQ, VMinC, abc;
+	abc.setColumn(ppc.getLowerCaseA(), 0);
+	abc.setColumn(ppc.getLowerCaseB(), 1);
+	abc.setColumn(ppc.getLowerCaseC(), 2);
+
+	// Draw textured triangles with s,t linearly
+	// interpolated in model space and depth linearly
+	// interpolated in screen space.
+	V3 tProjVerts[3];
+	V3 currvs[3];
+	V3 currcols[3];
+	V3 currnormals[3];
+	V3 sParameters, tParameters;
+	bool isVisible;
+
+	// optimization: project each vertex only once
+	projectVertices(ppc);
+
+	for (int tri = 0; tri < trisN; tri++) {
+
+		// grab current triangle vertices
+		currvs[0] = verts[tris[3 * tri + 0]];
+		currvs[1] = verts[tris[3 * tri + 1]];
+		currvs[2] = verts[tris[3 * tri + 2]];
+
+		// grab current projected triangle vertices
+		tProjVerts[0] = projVerts[tris[3 * tri + 0]];
+		tProjVerts[1] = projVerts[tris[3 * tri + 1]];
+		tProjVerts[2] = projVerts[tris[3 * tri + 2]];
+		isVisible = isVertProjVis[tris[3 * tri + 0]];
+		isVisible &= isVertProjVis[tris[3 * tri + 1]];
+		isVisible &= isVertProjVis[tris[3 * tri + 2]];
+
+		// grab current triangle vertex colors
+		currcols[0] = cols[tris[3 * tri + 0]];
+		currcols[1] = cols[tris[3 * tri + 1]];
+		currcols[2] = cols[tris[3 * tri + 2]];
+
+		// grab current normals
+		currnormals[0] = normals[tris[3 * tri + 0]];
+		currnormals[1] = normals[tris[3 * tri + 1]];
+		currnormals[2] = normals[tris[3 * tri + 2]];
+
+		// grab current triangle texture coordinates
+		sParameters[0] = tcs[tris[3 * tri + 0] * 2 + 0];
+		sParameters[1] = tcs[tris[3 * tri + 1] * 2 + 0];
+		sParameters[2] = tcs[tris[3 * tri + 2] * 2 + 0];
+		tParameters[0] = tcs[tris[3 * tri + 0] * 2 + 1];
+		tParameters[1] = tcs[tris[3 * tri + 1] * 2 + 1];
+		tParameters[2] = tcs[tris[3 * tri + 2] * 2 + 1];
+
+		if (isVisible) {
+
+			// Rasterizer should reject triangles whose screen footprint is very small.
+			float projTriangleArea = compute2DTriangleArea(
+				tProjVerts[0],
+				tProjVerts[1],
+				tProjVerts[2]);
+
+			if (projTriangleArea > epsilonMinArea) {
+
+				// build model space linear interpolation for s and t
+				VMinC.setColumn(currvs[0] - ppc.getEyePoint(), 0);
+				VMinC.setColumn(currvs[1] - ppc.getEyePoint(), 1);
+				VMinC.setColumn(currvs[2] - ppc.getEyePoint(), 2);
+				VMinC.setInverted();
+				perspCorrectMatQ = VMinC * abc;
+
+				fb.draw2DLitTriangle(
+					currvs, tProjVerts, currcols, currnormals,
+					light, perspCorrectMatQ, 
+					sParameters, tParameters,
 					texture);
 			}
 			else

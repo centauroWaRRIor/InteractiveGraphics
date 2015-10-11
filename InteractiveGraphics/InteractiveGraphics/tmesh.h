@@ -15,6 +15,7 @@ private:
 	V3 *projVerts; // projected vertices
 	bool *isVertProjVis; // quickly look up vertex projection status 
 	V3 *cols; // colors arrays
+	V3 *normals;
 	float *tcs; // texture coorindates array (s,t)'s
 	int vertsN; // number of vertices
 	unsigned int *tris; // triangle indices array of size trisN*3
@@ -65,6 +66,13 @@ public:
 	void drawSprite(FrameBuffer &fb, const PPC &ppc, const Texture &texture,
 		unsigned int subSIndex = 0, unsigned int subTIndex = 0,
 		unsigned int subSTotal = 1, unsigned int subTTotal = 1);
+	// draws triangle mesh in lit mode using screen space interpolation for 1/w and model
+	// space interpolation for color and s,t parameters. Uses texture if available.
+	void drawLit(
+		FrameBuffer &fb, 
+		const PPC &ppc, 
+		const Light &light,
+		const Texture *const texture = nullptr);
 
 	// rotate about axis
 	void rotateAboutAxis(const V3 &aO, const V3 &adir, float theta);

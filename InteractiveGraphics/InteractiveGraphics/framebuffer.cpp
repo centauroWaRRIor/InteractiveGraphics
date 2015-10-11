@@ -841,6 +841,7 @@ void FrameBuffer::draw2DLitTriangle(
 	V3 * const vs, 
 	V3 * const pvs, 
 	V3 * const cols, 
+	const V3 * const normals,
 	const Light & light, 
 	M33 Q, 
 	const V3 & sCoords, 
@@ -874,11 +875,19 @@ void FrameBuffer::draw2DLitTriangle(
 			eeqs[ei] = eeqs[ei] * -1.0f;
 	}
 
+	// lighting
+	V3 litCols[3];
+	for (int vi = 0; vi < 3; vi++) {
+		litCols[vi] = light.computeDiffuseContribution(vs[vi], normals[vi]);
+	}
+	// TODO: Find a way to combine litCols with cols. For now litCols overtake 
+	// cols.
+
 	// set model space interpolation
 	// build rasterization parameters to be lerped in screen space
-	V3 redParameters(cols[0].getX(), cols[1].getX(), cols[2].getX());
-	V3 greenParameters(cols[0].getY(), cols[1].getY(), cols[2].getY());
-	V3 blueParameters(cols[0].getZ(), cols[1].getZ(), cols[2].getZ());
+	V3 redParameters(litCols[0].getX(), litCols[1].getX(), litCols[2].getX());
+	V3 greenParameters(litCols[0].getY(), litCols[1].getY(), litCols[2].getY());
+	V3 blueParameters(litCols[0].getZ(), litCols[1].getZ(), litCols[2].getZ());
 	// refer to slide 7 of RastParInterp.pdf for the math 
 	// derivation of the persp correct coefficients
 	V3 denDEF = Q[0] + Q[1] + Q[2];

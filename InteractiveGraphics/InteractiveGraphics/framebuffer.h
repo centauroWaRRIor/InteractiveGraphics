@@ -100,11 +100,12 @@ public:
 		V3 *const vs,
 		V3 *const pvs,
 		V3 *const cols,
+		const V3 *const normals,
 		const Light &light,
 		M33 perspCorrectMatQ,
 		const V3 &sCoords,
 		const V3 &tCoords,
-		const Texture *const texture = nullptr);
+		const Texture *const texture);
 
 	// draw 2D segment specified by 2 points, each with own color
 	void draw2DSegment(const V3 &v0, const V3 &c0, const V3 &v1, const V3 &c1);
