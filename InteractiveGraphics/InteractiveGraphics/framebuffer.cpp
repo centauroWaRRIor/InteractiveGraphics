@@ -880,7 +880,10 @@ void FrameBuffer::draw2DLitTriangle(
 	for (int vi = 0; vi < 3; vi++) {
 		litCols[vi] = light.computeDiffuseContribution(vs[vi], normals[vi]);
 	}
-	// TODO: Find a way to combine litCols with cols. For now litCols overtake 
+	//litCols[0] = cols[0];
+	//litCols[1] = cols[1];
+	//litCols[2] = cols[2];
+	// TODO: Find a way to combine litCols with cols. For now litCols override 
 	// cols.
 
 	// set model space interpolation

@@ -51,7 +51,7 @@ void Scene::drawTMesh(
 	else if (currentDrawMode == DrawModes::MODELSPACELERP)
 		tMesh.drawFilledFlatPerspCorrect(frameBuffer, planarPinholeCamera);
 	else if (currentDrawMode == DrawModes::LIT)
-		tMesh.drawFilledFlat(frameBuffer, planarPinholeCamera, 0xFFFF0000);
+		tMesh.drawLit(frameBuffer, planarPinholeCamera, *light);
 	// drawing of AABB is overruled (not to be done) when drawing
 	// in model space interpolation mode. Reason being that drawAABB
 	// uses drawWireframe which in turn assumes depth test logic of 1/w near.
@@ -91,6 +91,11 @@ void Scene::cleanForNewScene(void)
 	ppc = nullptr;
 	ppc = new PPC(hfov, w, h);
 
+	// reset main light
+	delete light;
+	light = nullptr;
+	light = new Light();
+
 	// reset init flags for the different scenes
 	this->isDGBInit = false;
 	this->isTestCamControlsInit = false;
@@ -106,6 +111,7 @@ Scene::Scene():
 	fb(nullptr), 
     gui(nullptr),
     ppc(nullptr),
+	light(nullptr),
 	tms(nullptr),
 	texObjects(nullptr)
 {
@@ -123,6 +129,9 @@ Scene::Scene():
   ppcLerp0 = nullptr;
   ppcLerp1 = nullptr;
 
+  // create scene's light
+  light = new Light();
+
   // allocate pointer of TMesh objects
   // and allocate pointer of Texture objects
   // tmsN is used as a bound for the maximum
@@ -134,7 +143,6 @@ Scene::Scene():
 	  tms[i] = nullptr;
 	  texObjects[i] = nullptr;
   }
-
   fb->show();
   
   // position UI window
@@ -158,6 +166,7 @@ Scene::~Scene()
 	delete fb;
 	delete gui;
 	delete ppc;
+	delete light;
 	// delete array of pointers
 	for (int i = 0; i < tmsN; i++) {
 		delete tms[i];
@@ -455,6 +464,11 @@ void Scene::testCameraControl(void)
 
 		// test teapot
 		ppc->moveForward(-200.0f);
+
+		// set up light
+		light->setAmbientK(0.4f);
+		light->setMatColor(V3(1.0f, 0.0f, 0.0f));
+		light->setPosition(ppc->getEyePoint());
 
 		tms[0]->loadBin("geometry/teapot1K.bin");
 

@@ -31,6 +31,7 @@ private:
 	FrameBuffer *fb; // SW framebuffer
 	GUI * gui; // graphical user interface
 	PPC *ppc; // camera used to render the scene from views chosen by user
+	Light *light; // light used to render models in lit mode
 	int tmsN; // how many TMeshes there are
 	TMesh **tms; // an array of pointers to TMesh objects
 	Texture **texObjects; // and array of pointers to Texture objects
