@@ -72,6 +72,13 @@ void GUI::cb_A3Demo(Fl_Menu_* o, void* v) {
   ((GUI*)(o->parent()->user_data()))->cb_A3Demo_i(o,v);
 }
 
+void GUI::cb_TestBilTexLookup_i(Fl_Menu_*, void*) {
+  TestBilTexLookup_cb();
+}
+void GUI::cb_TestBilTexLookup(Fl_Menu_* o, void* v) {
+  ((GUI*)(o->parent()->user_data()))->cb_TestBilTexLookup_i(o,v);
+}
+
 Fl_Menu_Item GUI::menu_Main[] = {
  {"Previous Assignments", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
  {"A1", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
@@ -88,6 +95,7 @@ Fl_Menu_Item GUI::menu_Main[] = {
  {"Test Texture", 0,  (Fl_Callback*)GUI::cb_TestTexture, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Test Sprite", 0,  (Fl_Callback*)GUI::cb_TestSprite, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"A3 Demo", 0,  (Fl_Callback*)GUI::cb_A3Demo, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Test Bil Tex Lookup", 0,  (Fl_Callback*)GUI::cb_TestBilTexLookup, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
  {0,0,0,0,0,0,0,0,0},
  {0,0,0,0,0,0,0,0,0}
@@ -104,6 +112,7 @@ Fl_Menu_Item* GUI::A3 = GUI::menu_Main + 11;
 Fl_Menu_Item* GUI::TestTexture = GUI::menu_Main + 12;
 Fl_Menu_Item* GUI::TestSprite = GUI::menu_Main + 13;
 Fl_Menu_Item* GUI::A3Demo = GUI::menu_Main + 14;
+Fl_Menu_Item* GUI::TestBilTexLookup = GUI::menu_Main + 15;
 
 void GUI::cb_SaveCameraButton_i(Fl_Button*, void*) {
   SaveCameraButton_cb();
@@ -1119,11 +1128,11 @@ void GUI::cb_TextureRadialButton(Fl_Round_Button* o, void* v) {
   ((GUI*)(o->parent()->parent()->user_data()))->cb_TextureRadialButton_i(o,v);
 }
 
-void GUI::cb_A3Button_i(Fl_Button*, void*) {
+void GUI::cb_A4Button_i(Fl_Button*, void*) {
   A3Demo_cb();
 }
-void GUI::cb_A3Button(Fl_Button* o, void* v) {
-  ((GUI*)(o->parent()->user_data()))->cb_A3Button_i(o,v);
+void GUI::cb_A4Button(Fl_Button* o, void* v) {
+  ((GUI*)(o->parent()->user_data()))->cb_A4Button_i(o,v);
 }
 #include "scene.h"
 
@@ -1177,17 +1186,17 @@ GUI::GUI() {
         ModelSpaceLerpRadialButton->down_box(FL_ROUND_DOWN_BOX);
         ModelSpaceLerpRadialButton->callback((Fl_Callback*)cb_ModelSpaceLerpRadialButton);
       } // Fl_Round_Button* ModelSpaceLerpRadialButton
-      { TextureRadialButton = new Fl_Round_Button(30, 289, 140, 15, "Texture");
+      { TextureRadialButton = new Fl_Round_Button(30, 289, 140, 15, "Lit");
         TextureRadialButton->type(102);
         TextureRadialButton->down_box(FL_ROUND_DOWN_BOX);
         TextureRadialButton->callback((Fl_Callback*)cb_TextureRadialButton);
       } // Fl_Round_Button* TextureRadialButton
       RenderingOptionsGroup->end();
     } // Fl_Group* RenderingOptionsGroup
-    { A3Button = new Fl_Button(15, 92, 225, 40, "A3");
-      A3Button->selection_color(FL_DARK_RED);
-      A3Button->callback((Fl_Callback*)cb_A3Button);
-    } // Fl_Button* A3Button
+    { A4Button = new Fl_Button(15, 92, 225, 40, "A4 Demo");
+      A4Button->selection_color(FL_DARK_RED);
+      A4Button->callback((Fl_Callback*)cb_A4Button);
+    } // Fl_Button* A4Button
     uiw->end();
   } // Fl_Double_Window* uiw
 }
@@ -1258,4 +1267,8 @@ scene->testSprites();
 void GUI::A3Demo_cb() {
   scene->regFuncForKbRedraw(Scenes::A3);
 scene->a3Demo();
+}
+
+void GUI::TestBilTexLookup_cb() {
+  scene->testBilTexLookup();
 }

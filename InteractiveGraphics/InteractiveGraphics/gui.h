@@ -67,6 +67,11 @@ private:
   void cb_A3Demo_i(Fl_Menu_*, void*);
   static void cb_A3Demo(Fl_Menu_*, void*);
 public:
+  static Fl_Menu_Item *TestBilTexLookup;
+private:
+  void cb_TestBilTexLookup_i(Fl_Menu_*, void*);
+  static void cb_TestBilTexLookup(Fl_Menu_*, void*);
+public:
   Fl_Group *CameraFBSaveGroup;
   Fl_Button *SaveCameraButton;
 private:
@@ -109,10 +114,10 @@ private:
   void cb_TextureRadialButton_i(Fl_Round_Button*, void*);
   static void cb_TextureRadialButton(Fl_Round_Button*, void*);
 public:
-  Fl_Button *A3Button;
+  Fl_Button *A4Button;
 private:
-  void cb_A3Button_i(Fl_Button*, void*);
-  static void cb_A3Button(Fl_Button*, void*);
+  void cb_A4Button_i(Fl_Button*, void*);
+  static void cb_A4Button(Fl_Button*, void*);
 public:
   void show();
   void DBG_cb();
@@ -128,5 +133,6 @@ public:
   void TestTexture_cb();
   void TestSprites_cb();
   void A3Demo_cb();
+  void TestBilTexLookup_cb();
 };
 #endif

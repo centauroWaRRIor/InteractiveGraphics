@@ -837,6 +837,139 @@ void FrameBuffer::draw2DSprite(
 	}
 }
 
+void FrameBuffer::draw2DLitTriangle(
+	V3 * const vs, 
+	V3 * const pvs, 
+	V3 * const cols, 
+	const Light & light, 
+	M33 Q, 
+	const V3 & sCoords, 
+	const V3 & tCoords, 
+	const Texture * const texture)
+{
+	// compute screen axes-aligned bounding box for triangle 
+	// clipping against framebuffer
+	AABB aabb(pvs[0]);
+	aabb.AddPoint(pvs[1]);
+	aabb.AddPoint(pvs[2]);
+
+	if (!aabb.clipWithFrame(0.0f, 0.0f, (float)w, (float)h))
+		return;
+
+	int left, right, top, bottom;
+	aabb.setPixelRectangle(left, right, top, bottom);
+
+	// set edge equations
+	V3 eeqs[3]; // eeqs[0] = (A, B, C), where Au + Bv + C
+	for (int ei = 0; ei < 3; ei++) {
+		int e1 = (ei + 1) % 3;
+		eeqs[ei][0] = pvs[e1][1] - pvs[ei][1];
+		eeqs[ei][1] = pvs[ei][0] - pvs[e1][0];
+		eeqs[ei][2] = -pvs[ei][1] * eeqs[ei][1] - pvs[ei][0] * eeqs[ei][0];
+		int e2 = (e1 + 1) % 3;
+		// plug third vertex into edge equation to establish
+		// correct sidedness
+		V3 pv3(pvs[e2][0], pvs[e2][1], 1.0f); // (u2, v2, 1)
+		if (eeqs[ei] * pv3 < 0.0f)
+			eeqs[ei] = eeqs[ei] * -1.0f;
+	}
+
+	// set model space interpolation
+	// build rasterization parameters to be lerped in screen space
+	V3 redParameters(cols[0].getX(), cols[1].getX(), cols[2].getX());
+	V3 greenParameters(cols[0].getY(), cols[1].getY(), cols[2].getY());
+	V3 blueParameters(cols[0].getZ(), cols[1].getZ(), cols[2].getZ());
+	// refer to slide 7 of RastParInterp.pdf for the math 
+	// derivation of the persp correct coefficients
+	V3 denDEF = Q[0] + Q[1] + Q[2];
+	V3 redNumABC = V3(
+		Q.getColumn(0) * redParameters,
+		Q.getColumn(1) * redParameters,
+		Q.getColumn(2) * redParameters);
+	V3 greenNumABC = V3(
+		Q.getColumn(0) * greenParameters,
+		Q.getColumn(1) * greenParameters,
+		Q.getColumn(2) * greenParameters);
+	V3 blueNumABC = V3(
+		Q.getColumn(0) * blueParameters,
+		Q.getColumn(1) * blueParameters,
+		Q.getColumn(2) * blueParameters);
+	V3 sNumABC = V3(
+		Q.getColumn(0) * sCoords,
+		Q.getColumn(1) * sCoords,
+		Q.getColumn(2) * sCoords);
+	V3 tNumABC = V3(
+		Q.getColumn(0) * tCoords,
+		Q.getColumn(1) * tCoords,
+		Q.getColumn(2) * tCoords);
+
+	// set screen space interpolation
+	M33 baryMatrixInverse;
+	baryMatrixInverse[0] = pvs[0];
+	baryMatrixInverse[1] = pvs[1];
+	baryMatrixInverse[2] = pvs[2];
+	baryMatrixInverse.setColumn(V3(1.0f, 1.0f, 1.0f), 2);
+	baryMatrixInverse.setInverted();
+	// linear expression for screen space interpolation of 1/w
+	V3 depthABC = baryMatrixInverse*V3(pvs[0][2], pvs[1][2], pvs[2][2]);
+
+	int currPixU, currPixV; // current pixel considered
+	V3 pixC; // current pixel center
+	V3 topLeftPixC(left + 0.5f, top + 0.5f, 1.0f); // top left pixel center
+	V3 currEELS; // edge expression values for the line start
+	V3 currEE; // edge expression value within a given line 
+	V3 interpolatedColor; // final raster parameter interpolated result
+	float interpolatedDepth; // final raster parameter interpolated result
+	float interpolatedS, interpolatedT; // final raster parameter interpolated result
+	unsigned int texelColor;
+
+	// rasterize triangle
+	for (currPixV = top,
+		currEELS[0] = topLeftPixC * eeqs[0],
+		currEELS[1] = topLeftPixC * eeqs[1],
+		currEELS[2] = topLeftPixC * eeqs[2];
+		currPixV <= bottom;
+		currPixV++,
+		currEELS[0] += eeqs[0][1] /*+=b[0]*/,
+		currEELS[1] += eeqs[1][1] /*+=b[1]*/,
+		currEELS[2] += eeqs[2][1] /*+=b[2]*/) {
+		for (currPixU = left,
+			currEE = currEELS;
+			currPixU <= right;
+			currPixU++,
+			currEE[0] += eeqs[0][0] /*+=a[0]*/,
+			currEE[1] += eeqs[1][0] /*+=a[1]*/,
+			currEE[2] += eeqs[2][0] /*+=a[2]*/) {
+
+			if (currEE[0] < 0 || currEE[1] < 0 || currEE[2] < 0) {
+				continue; // outside triangle
+			}
+			else { // found pixel inside of triangle; set it to right color
+
+				pixC = V3(.5f + (float)currPixU, .5f + (float)currPixV, 1.0f);
+				// r,g,b, s, and t are interpolated in model space
+				float denFactor = denDEF * pixC;
+				interpolatedColor[0] = (redNumABC * pixC) / denFactor;
+				interpolatedColor[1] = (greenNumABC * pixC) / denFactor;
+				interpolatedColor[2] = (blueNumABC * pixC) / denFactor;
+				interpolatedS = (sNumABC * pixC) / denFactor;
+				interpolatedT = (tNumABC * pixC) / denFactor;
+				// 1/w is interpoalted in screen space
+				interpolatedDepth = depthABC * pixC; // 1/w at current pixel interpolated lin. in s s
+
+				if (texture != nullptr) {
+					// sample texture using lerped result of s,t raster parameters (in model space)
+					texelColor = texture->sampleTexBilinearTile(interpolatedS, interpolatedT);
+					// override interpolated color for now. In the future texel can be modulated by color
+					interpolatedColor.setFromColor(texelColor);
+				}
+
+				setIfOneOverWCloser(V3(pixC[0], pixC[1], interpolatedDepth), interpolatedColor);
+			}
+		}
+	}
+}
+
 void FrameBuffer::draw2DSegment(const V3 &v0, const V3 &c0, const V3 &v1, const V3 &c1) {
 
 	int stepsN;

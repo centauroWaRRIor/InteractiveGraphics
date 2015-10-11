@@ -23,7 +23,8 @@ enum class DrawModes {
 	FLAT, 
 	SCREENSCAPELERP, 
 	MODELSPACELERP, 
-	TEXTURE };
+	TEXTURE,
+	LIT};
 
 class Scene {
 private:
@@ -39,7 +40,8 @@ private:
 	// helps initializnig the different demo functions
 
 	bool isA2Init, isDGBInit, isTestCamControlsInit,
-		isTextureInit, isA3Init, isSpriteTestInit; 
+		isTextureInit, isA3Init, isSpriteTestInit, 
+		isTestBilTexLookupInit; 
 	
 	static const float hfov; // field of view
 	static const int u0, v0; // initial window coordinates
@@ -74,6 +76,7 @@ public:
 	void a2Demo(void);
 	void a3Demo(void);
 	void testTexture(void);
+	void testBilTexLookup(void);
 	void testSprites(void);
 
 	void saveCamera(void) const;

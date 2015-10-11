@@ -83,6 +83,11 @@ class GUI {open
               callback {A3Demo_cb()}
               xywh {0 0 30 20}
             }
+            MenuItem TestBilTexLookup {
+              label {Test Bil Tex Lookup}
+              callback {TestBilTexLookup_cb()}
+              xywh {0 0 30 20}
+            }
           }
         }
       }
@@ -127,13 +132,13 @@ class GUI {open
           xywh {30 262 140 15} type Radio down_box ROUND_DOWN_BOX
         }
         Fl_Round_Button TextureRadialButton {
-          label Texture
-          callback {DrawMode_cb(6)} selected
+          label Lit
+          callback {DrawMode_cb(6)}
           xywh {30 289 140 15} type Radio down_box ROUND_DOWN_BOX
         }
       }
-      Fl_Button A3Button {
-        label A3
+      Fl_Button A4Button {
+        label {A4 Demo}
         callback {A3Demo_cb()}
         xywh {15 92 225 40} selection_color 72
       }
@@ -203,5 +208,9 @@ scene->testSprites();} {}
   } {
     code {scene->regFuncForKbRedraw(Scenes::A3);
 scene->a3Demo();} {}
+  }
+  Function {TestBilTexLookup_cb()} {open selected
+  } {
+    code {scene->testBilTexLookup();} {}
   }
 } 

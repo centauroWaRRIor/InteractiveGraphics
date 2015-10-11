@@ -8,6 +8,7 @@ using std::string;
 #include "v3.h"
 #include "m33.h"
 #include "texture.h"
+#include "light.h"
 
 // framebuffer + window class
 
@@ -90,6 +91,20 @@ public:
 		const V3 &tCoords,
 		M33 perspCorrectMatQ,
 		const Texture &texture);
+	// draws 2D textured triangle with lighting and depth test
+	// colors and texture uvs are interpolated in model space
+	// while 1/w is interpolated in screen coordinates.
+	// texture is optional and off by default unless a texture object
+	// is passed.
+	void draw2DLitTriangle(
+		V3 *const vs,
+		V3 *const pvs,
+		V3 *const cols,
+		const Light &light,
+		M33 perspCorrectMatQ,
+		const V3 &sCoords,
+		const V3 &tCoords,
+		const Texture *const texture = nullptr);
 
 	// draw 2D segment specified by 2 points, each with own color
 	void draw2DSegment(const V3 &v0, const V3 &c0, const V3 &v1, const V3 &c1);

@@ -50,7 +50,7 @@ void Scene::drawTMesh(
 		tMesh.drawFilledFlatBarycentric(frameBuffer, planarPinholeCamera);
 	else if (currentDrawMode == DrawModes::MODELSPACELERP)
 		tMesh.drawFilledFlatPerspCorrect(frameBuffer, planarPinholeCamera);
-	else if (currentDrawMode == DrawModes::TEXTURE)
+	else if (currentDrawMode == DrawModes::LIT)
 		tMesh.drawFilledFlat(frameBuffer, planarPinholeCamera, 0xFFFF0000);
 	// drawing of AABB is overruled (not to be done) when drawing
 	// in model space interpolation mode. Reason being that drawAABB
@@ -99,6 +99,7 @@ void Scene::cleanForNewScene(void)
 	this->isTextureInit = false;
 	this->isSpriteTestInit = false;
 	this->isA3Init = false;
+	this->isTestBilTexLookupInit = false;
 }
 
 Scene::Scene():
@@ -142,12 +143,14 @@ Scene::Scene():
   // set default draw mode wireframe
   currentDrawMode = DrawModes::WIREFRAME;
 
-  isA2Init = false;
-  isDGBInit = false;
-  isTestCamControlsInit = false;
-  isTextureInit = false;
-  isA3Init = false;
-  isSpriteTestInit = false;
+  this->isDGBInit = false;
+  this->isTestCamControlsInit = false;
+  this->isA2Init = false;
+  this->isTestCamControlsInit = false;
+  this->isTextureInit = false;
+  this->isSpriteTestInit = false;
+  this->isA3Init = false;
+  this->isTestBilTexLookupInit = false;
 }
 
 Scene::~Scene()
@@ -738,6 +741,102 @@ void Scene::testTexture(void)
 	return;
 }
 
+void Scene::testBilTexLookup(void)
+{
+	if (!isTestBilTexLookupInit) {
+
+		cleanForNewScene();
+		// prepare 6 meshes
+		tms[0] = new TMesh();
+		tms[1] = new TMesh();
+		tms[2] = new TMesh();
+		tms[3] = new TMesh();
+		tms[4] = new TMesh();
+		tms[5] = new TMesh();
+
+		// look at quads full frontal
+		ppc->moveForward(-180.0f);
+		ppc->moveUp(100.0f);
+		ppc->moveRight(20.0f);
+		ppc->tilt(-25);
+		// save initial camera settings into ppcLerp0
+		ppcLerp0 = new PPC(*ppc);
+
+		// enable tiling for all the quads
+		tms[0]->createQuadTestTMesh(false);
+		tms[1]->createQuadTestTMesh(false);
+		tms[2]->createQuadTestTMesh(false);
+		tms[3]->createQuadTestTMesh(false);
+		tms[4]->createQuadTestTMesh(false);
+		tms[5]->createQuadTestTMesh(true);
+
+		// load five different textures for demoing
+		texObjects[0] = new Texture("pngs\\Woven_flower_pxr128.png");
+		texObjects[1] = new Texture("pngs\\Macbeth_color_checker_pxr128.png");
+
+		// use 5 quads to cover five faces of a 3D cube
+		// tms[0] is the front face
+		// tms[1] is the left face
+		tms[1]->rotateAboutAxis(V3(0.0f, 0.0f, 0.0f), V3(0.0f, 1.0f, 0.0f), -90.0f);
+		// push in place
+		tms[1]->translate(V3(0.0f, 0.0f, -40.0f));
+		// tms[2] is the right face
+		tms[2]->rotateAboutAxis(V3(0.0f, 0.0f, 0.0f), V3(0.0f, 1.0f, 0.0f), 90.0f);
+		// push in place
+		tms[2]->translate(V3(40.0f, 0.0f, 0.0f));
+		// tms[3] is the back face
+		tms[3]->rotateAboutAxis(V3(0.0f, 0.0f, 0.0f), V3(0.0f, 1.0f, 0.0f), 180.0f);
+		// push in place
+		tms[3]->translate(V3(40.0f, 0.0f, -40.0f));
+		// tms[4] is the top face
+		tms[4]->rotateAboutAxis(V3(0.0f, 0.0f, 0.0f), V3(1.0f, 0.0f, 0.0f), -90.0f);
+		// push in place
+		tms[4]->translate(V3(0.0f, 40.0f, 0.0f));
+
+		// use 6th quad as the floor
+		// make bigger
+		tms[5]->scale(6.0f);
+		// put in floor position
+		tms[5]->rotateAboutAxis(V3(0.0f, 0.0f, 0.0f), V3(1.0f, 0.0f, 0.0f), -90.0f);
+		// center
+		tms[5]->translate(V3(-100.0f, 0.0f, 80.0f));
+
+		isTestBilTexLookupInit = true;
+	}
+
+	const static V3 lookAtPoint(20.0f, 20.0f, -20.0f); // cube centroid
+	const static V3 up(0.0f, 1.0f, 0.0f);
+	V3 viewDirection = ppcLerp0->getViewDir();
+
+	// 10 second video at 30 fps
+	for (float steps = 0.0f; steps < 360.0f; steps += 1.2f) {
+
+		// rotate view direction
+		V3 rotVD = viewDirection;
+		rotVD.rotateThisVectorAboutDirection(V3(0.0f, 1.0f, 0.0f), steps);
+
+		// set up the look at cube camera (dolly camera setup)
+		ppc->positionRelativeToPoint(lookAtPoint, rotVD, up, 180.0f);
+		//ppc->positionAndOrient((lookAtPoint - (rotVD * 180.0f)), lookAtPoint, up); // also works
+
+		// clear screen
+		fb->set(0xFFFFFFFF);
+		fb->clearZB(0.0f);
+
+		// draw floor
+		tms[5]->drawTextured(*fb, *ppc, *texObjects[1]);
+
+		// draw textured cube
+		for (int i = 0; i < 5; i++) {
+			tms[i]->drawTextured(*fb, *ppc, *texObjects[1]);
+		}
+
+		fb->redraw();
+		Fl::check();
+	}
+	return;
+}
+
 void Scene::testSprites(void)
 {
 	if (!(this->isSpriteTestInit)) {
@@ -898,7 +997,7 @@ void Scene::setDrawMode(int mode)
 		currentDrawMode = DrawModes::MODELSPACELERP;
 		break;
 	case 6:
-		currentDrawMode = DrawModes::TEXTURE;
+		currentDrawMode = DrawModes::LIT;
 		break;
 	default:
 		currentDrawMode = DrawModes::WIREFRAME;
