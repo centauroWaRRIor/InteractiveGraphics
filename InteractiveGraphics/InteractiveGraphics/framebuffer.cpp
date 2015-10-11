@@ -4,7 +4,7 @@
 #include "scene.h"
 #include <iostream>
 #include <math.h>
-#include <cfloat> // delete me when no longer using FLT_MAX
+#include <cfloat> // using FLT_MAX
 #include <vector>
 using std::vector;
 
@@ -35,6 +35,22 @@ void FrameBuffer::draw() {
 
 }
 
+
+unsigned int FrameBuffer::getPixAt(unsigned int index) const
+{
+	if (pix)
+		return pix[index];
+	else
+		return 0;
+}
+
+float FrameBuffer::getZbAt(unsigned int index) const
+{
+	if (zb)
+		return zb[index];
+	else
+		return 0.0f;
+}
 
 // function called automatically on event within window (callback)
 int FrameBuffer::handle(int event)  {  
@@ -883,7 +899,7 @@ void FrameBuffer::draw2DLitTriangle(
 	//litCols[0] = cols[0];
 	//litCols[1] = cols[1];
 	//litCols[2] = cols[2];
-	// TODO: Find a way to combine litCols with cols. For now litCols override 
+	// TODO: Find a way to combine litCols with cols. For now litCols overrides 
 	// cols.
 
 	// set model space interpolation

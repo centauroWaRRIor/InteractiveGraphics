@@ -96,6 +96,12 @@ void Scene::cleanForNewScene(void)
 	light = nullptr;
 	light = new Light();
 
+	// destroy fbAux if present
+	if (fbAux) {
+		delete fbAux;
+		fbAux = nullptr;
+	}
+
 	// reset init flags for the different scenes
 	this->isDGBInit = false;
 	this->isTestCamControlsInit = false;
@@ -109,6 +115,7 @@ void Scene::cleanForNewScene(void)
 
 Scene::Scene():
 	fb(nullptr), 
+	fbAux(nullptr),
     gui(nullptr),
     ppc(nullptr),
 	light(nullptr),
@@ -164,6 +171,8 @@ Scene::Scene():
 Scene::~Scene()
 {
 	delete fb;
+	if (fbAux)
+		delete fbAux;
 	delete gui;
 	delete ppc;
 	delete light;
@@ -935,6 +944,53 @@ void Scene::testSprites(void)
 		}
 	}
 	return;
+}
+
+void Scene::renderFBAs3DPointCloud(void)
+{
+	// fbToRender and fbPPC could by parameters passed in 
+	const FrameBuffer *const fbToRender = this->fb;
+	const PPC *const fbPPC = this->ppc;
+
+	// 3D point cloud is rendered using this camera and
+	// an auxiliary frame buffer
+	PPC currPPC(*fbPPC);
+	currPPC.moveForward(80.0f);
+	currPPC.moveUp(50.0f);
+	currPPC.tilt(-20.0f);
+	if (fbAux) {
+		delete fbAux;
+		fbAux = nullptr;
+	}
+	fbAux = new FrameBuffer(u0 + 200, v0 + 200, w, h);
+	fbAux->label("Third person FB");
+	fbAux->show();
+	fbAux->clearZB(0.0f);
+	fbAux->set(0xFFFFFFFF);
+
+	for (int v = 0; v < fbToRender->getHeight(); v++) {
+		for (int u = 0; u < fbToRender->getWidth(); u++) {
+			int uv = (fbToRender->getHeight() - v - 1) * fbToRender->getWidth() + u;
+
+			if (fbToRender->getZbAt(uv) == 0.0f)
+				continue;
+
+			// get projected point from fbToRender and unproject to get 3D point back
+			V3 projP = V3(.5f + (float)u, .5f + (float)v, fbToRender->getZbAt(uv));
+			V3 P = fbPPC->unproject(projP);
+
+			// project gotten 3D point into currFB for visualization
+			// using same color as original point
+			V3 projP2;
+			if (!currPPC.project(P, projP2))
+				continue;
+			V3 currCol;
+			currCol.setFromColor(fbToRender->getPixAt(uv));
+			fbAux->setIfOneOverWCloser(projP2, currCol);
+		}
+	}
+
+	fbAux->redraw();
 }
 
 void Scene::saveCamera(void) const

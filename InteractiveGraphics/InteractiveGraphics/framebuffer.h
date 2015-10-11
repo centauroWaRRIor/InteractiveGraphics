@@ -29,6 +29,8 @@ public:
 	// simple getters
 	int getWidth(void) const { return w; }
 	int getHeight(void) const { return h; }
+	unsigned int getPixAt(unsigned int index) const;
+	float getZbAt(unsigned int index) const;
 
 	// function called back when event occurs (mouse, keyboard, etc)
 	int handle(int event);

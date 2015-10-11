@@ -29,6 +29,7 @@ enum class DrawModes {
 class Scene {
 private:
 	FrameBuffer *fb; // SW framebuffer
+	FrameBuffer *fbAux; // currently used for rendering a FB as a 3D point cloud
 	GUI * gui; // graphical user interface
 	PPC *ppc; // camera used to render the scene from views chosen by user
 	Light *light; // light used to render models in lit mode
@@ -79,6 +80,9 @@ public:
 	void testTexture(void);
 	void testBilTexLookup(void);
 	void testSprites(void);
+	// renders current FB as 3D point cloud in
+	// an aux framebuffer.
+	void renderFBAs3DPointCloud(void);
 
 	void saveCamera(void) const;
 	void saveThisFramebuffer(void) const;

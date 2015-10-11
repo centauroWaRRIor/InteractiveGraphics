@@ -64,7 +64,7 @@ class GUI {open
               xywh {0 0 30 20}
             }
           }
-          Submenu A3 {
+          Submenu A3SubMenu {
             label A3 open
             xywh {0 0 62 20}
           } {
@@ -86,6 +86,16 @@ class GUI {open
             MenuItem TestBilTexLookup {
               label {Test Bil Tex Lookup}
               callback {TestBilTexLookup_cb()}
+              xywh {0 0 30 20}
+            }
+          }
+          Submenu A4SubMenu {
+            label A4 open
+            xywh {0 0 62 20}
+          } {
+            MenuItem TestFBAs3DCloud {
+              label {FB To 3D Cloud}
+              callback {TestFBAs3DCloud_cb()}
               xywh {0 0 30 20}
             }
           }
@@ -209,8 +219,13 @@ scene->testSprites();} {}
     code {scene->regFuncForKbRedraw(Scenes::A3);
 scene->a3Demo();} {}
   }
-  Function {TestBilTexLookup_cb()} {open selected
+  Function {TestBilTexLookup_cb()} {open
   } {
     code {scene->testBilTexLookup();} {}
+  }
+  Function {TestFBAs3DCloud_cb()} {open
+  } {
+    code {scene->renderFBAs3DPointCloud();} {selected
+    }
   }
 } 

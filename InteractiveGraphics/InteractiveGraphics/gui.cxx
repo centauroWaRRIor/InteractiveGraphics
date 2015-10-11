@@ -79,6 +79,13 @@ void GUI::cb_TestBilTexLookup(Fl_Menu_* o, void* v) {
   ((GUI*)(o->parent()->user_data()))->cb_TestBilTexLookup_i(o,v);
 }
 
+void GUI::cb_TestFBAs3DCloud_i(Fl_Menu_*, void*) {
+  TestFBAs3DCloud_cb();
+}
+void GUI::cb_TestFBAs3DCloud(Fl_Menu_* o, void* v) {
+  ((GUI*)(o->parent()->user_data()))->cb_TestFBAs3DCloud_i(o,v);
+}
+
 Fl_Menu_Item GUI::menu_Main[] = {
  {"Previous Assignments", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
  {"A1", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
@@ -97,6 +104,9 @@ Fl_Menu_Item GUI::menu_Main[] = {
  {"A3 Demo", 0,  (Fl_Callback*)GUI::cb_A3Demo, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Test Bil Tex Lookup", 0,  (Fl_Callback*)GUI::cb_TestBilTexLookup, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
+ {"A4", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"FB To 3D Cloud", 0,  (Fl_Callback*)GUI::cb_TestFBAs3DCloud, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {0,0,0,0,0,0,0,0,0},
  {0,0,0,0,0,0,0,0,0},
  {0,0,0,0,0,0,0,0,0}
 };
@@ -108,11 +118,13 @@ Fl_Menu_Item* GUI::A2TestCamLerp = GUI::menu_Main + 6;
 Fl_Menu_Item* GUI::TestCamControls = GUI::menu_Main + 7;
 Fl_Menu_Item* GUI::A2Demo = GUI::menu_Main + 8;
 Fl_Menu_Item* GUI::TestCamVis = GUI::menu_Main + 9;
-Fl_Menu_Item* GUI::A3 = GUI::menu_Main + 11;
+Fl_Menu_Item* GUI::A3SubMenu = GUI::menu_Main + 11;
 Fl_Menu_Item* GUI::TestTexture = GUI::menu_Main + 12;
 Fl_Menu_Item* GUI::TestSprite = GUI::menu_Main + 13;
 Fl_Menu_Item* GUI::A3Demo = GUI::menu_Main + 14;
 Fl_Menu_Item* GUI::TestBilTexLookup = GUI::menu_Main + 15;
+Fl_Menu_Item* GUI::A4SubMenu = GUI::menu_Main + 17;
+Fl_Menu_Item* GUI::TestFBAs3DCloud = GUI::menu_Main + 18;
 
 void GUI::cb_SaveCameraButton_i(Fl_Button*, void*) {
   SaveCameraButton_cb();
@@ -1271,4 +1283,8 @@ scene->a3Demo();
 
 void GUI::TestBilTexLookup_cb() {
   scene->testBilTexLookup();
+}
+
+void GUI::TestFBAs3DCloud_cb() {
+  scene->renderFBAs3DPointCloud();
 }

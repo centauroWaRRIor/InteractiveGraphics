@@ -347,6 +347,17 @@ bool PPC::project(const V3 &P, V3& projP) const {
 	return true;
 }
 
+V3 PPC::unproject(const V3 & projP) const
+{
+	// From projection of point formula we know
+	// P = C + (au + bv + c) * w
+	// but since our project function above returns 1/w
+	// P = C + (au + bv + c) * (1/w)
+	V3 ret = C + (a*projP.getX() + b*projP.getY() + c) / projP.getZ();
+
+	return ret;
+}
+
 void PPC::loadCameraFromFile(string fName)
 {
 	// ifstream constructor opens the file
