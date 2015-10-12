@@ -228,6 +228,22 @@ void FrameBuffer::setIfWCloser(const V3 & p, const V3 & c)
 	set(u, v, c.getColor());
 }
 
+bool FrameBuffer::isOneOverWCloser(const V3 & p)
+{
+	if ((p.getX() < 0.0f) || (p.getX() >= w) ||
+		(p.getY() < 0.0f) || (p.getY() >= h))
+		return false;
+
+	int u = (int)p.getX();
+	int v = (int)p.getY();
+
+	// remember that the z component of the projected point is 1/z or 1/w
+	if (zb[(h - 1 - v)*w + u] >= p.getZ())
+		return false; // already saw a surface closer at that pixel
+	else
+		return true;
+}
+
 // draw circle
 void FrameBuffer::draw2DCircle(float cuf, float cvf, float radius, 
   unsigned int color)

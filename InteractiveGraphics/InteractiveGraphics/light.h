@@ -1,5 +1,9 @@
 #pragma once
 #include "v3.h"
+// Forward delcarations
+class FrameBuffer;
+class PPC;
+
 class Light
 {
 private:
@@ -7,6 +11,13 @@ private:
 	V3 color;
 	V3 matColor;
 	float ambientK;
+	FrameBuffer **shadowMapCube;
+	PPC *shadowMapAuxCam;
+	unsigned int shadowMapsN;
+	unsigned int shadowMapResWidth;
+	unsigned int shadowMapResHeight;
+	float shadowMapResHfov;
+	void cleanShadowMaps(void);
 public:
 	Light();
 	Light(const V3 &position, const V3 &color);

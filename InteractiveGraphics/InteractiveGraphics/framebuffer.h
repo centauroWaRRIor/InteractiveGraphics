@@ -51,6 +51,8 @@ public:
 	void setIfOneOverWCloser(const V3 &p, const V3 &c);
 	// sets pixel to color c if wins z test
 	void setIfWCloser(const V3 &p, const V3 &c);
+	// query if current point is closer in the zb
+	bool isOneOverWCloser(const V3 &p);
 
 	// draw 2D circle with no depth test
 	void draw2DCircle(float cuf, float cvf, float radius, unsigned int color);
