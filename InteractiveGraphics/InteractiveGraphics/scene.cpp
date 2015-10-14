@@ -38,7 +38,8 @@ void Scene::drawTMesh(
 	TMesh & tMesh, 
 	FrameBuffer & frameBuffer, 
 	const PPC & planarPinholeCamera,
-	bool isAABBDrawn)
+	bool isAABBDrawn,
+	bool isShadowsEnabled)
 {
 	if (currentDrawMode == DrawModes::DOTS)
 		tMesh.drawVertexDots(frameBuffer, planarPinholeCamera, 2.0f);
@@ -51,7 +52,12 @@ void Scene::drawTMesh(
 	else if (currentDrawMode == DrawModes::MODELSPACELERP)
 		tMesh.drawFilledFlatPerspCorrect(frameBuffer, planarPinholeCamera);
 	else if (currentDrawMode == DrawModes::LIT)
-		tMesh.drawLit(frameBuffer, planarPinholeCamera, *light);
+		tMesh.drawLit(
+			frameBuffer, 
+			planarPinholeCamera, 
+			*light,
+			nullptr,
+			isShadowsEnabled);
 	// drawing of AABB is overruled (not to be done) when drawing
 	// in model space interpolation mode. Reason being that drawAABB
 	// uses drawWireframe which in turn assumes depth test logic of 1/w near.
@@ -195,94 +201,50 @@ void Scene::dbgDraw() {
 	if (!isDGBInit) {
 		
 		cleanForNewScene();
-		// prepare 6 meshes
+		// prepare 2 meshes
 		tms[0] = new TMesh();
 		tms[1] = new TMesh();
-		tms[2] = new TMesh();
-		tms[3] = new TMesh();
-		tms[4] = new TMesh();
-		tms[5] = new TMesh();
 
 		// look at quads full frontal
-		ppc->moveForward(-180.0f);
-		ppc->moveUp(100.0f);
-		ppc->moveRight(20.0f);
-		ppc->tilt(-25);
-		// save initial camera settings into ppcLerp0
-		ppcLerp0 = new PPC(*ppc);
+		ppc->moveForward(-400.0f);
+		ppc->moveUp(120.0f);
+		ppc->moveRight(100.0f);
 
-		// enable tiling for all the quads
+		// set up light
+		light->setAmbientK(0.4f);
+		light->setMatColor(V3(1.0f, 0.0f, 0.0f));
+		light->setPosition(ppc->getEyePoint());
+
+		// Create a plane TMesh and a teapot TMesh
 		tms[0]->createQuadTestTMesh(false);
-		tms[1]->createQuadTestTMesh(false);
-		tms[2]->createQuadTestTMesh(false);
-		tms[3]->createQuadTestTMesh(false);
-		tms[4]->createQuadTestTMesh(false);
-		tms[5]->createQuadTestTMesh(true);
+		tms[0]->scale(6.0f);
+		tms[1]->loadBin("geometry/teapot1K.bin");
+		tms[1]->translate(V3(130.0f, 100.0f, 50.0f));
 
-		// load five different textures for demoing
-		texObjects[0] = new Texture("pngs\\Woven_flower_pxr128.png");
-		texObjects[1] = new Texture("pngs\\Macbeth_color_checker_pxr128.png");
+		// load texture
+		//texObjects[0] = new Texture("pngs\\Woven_flower_pxr128.png");
 
-		// use 5 quads to cover five faces of a 3D cube
-		// tms[0] is the front face
-		// tms[1] is the left face
-		tms[1]->rotateAboutAxis(V3(0.0f, 0.0f, 0.0f), V3(0.0f, 1.0f, 0.0f), -90.0f);
-		// push in place
-		tms[1]->translate(V3(0.0f, 0.0f, -40.0f));
-		// tms[2] is the right face
-		tms[2]->rotateAboutAxis(V3(0.0f, 0.0f, 0.0f), V3(0.0f, 1.0f, 0.0f), 90.0f);
-		// push in place
-		tms[2]->translate(V3(40.0f, 0.0f, 0.0f));
-		// tms[3] is the back face
-		tms[3]->rotateAboutAxis(V3(0.0f, 0.0f, 0.0f), V3(0.0f, 1.0f, 0.0f), 180.0f);
-		// push in place
-		tms[3]->translate(V3(40.0f, 0.0f, -40.0f));
-		// tms[4] is the top face
-		tms[4]->rotateAboutAxis(V3(0.0f, 0.0f, 0.0f), V3(1.0f, 0.0f, 0.0f), -90.0f);
-		// push in place
-		tms[4]->translate(V3(0.0f, 40.0f, 0.0f));
-		
-		// use 6th quad as the floor
-		// make bigger
-		tms[5]->scale(6.0f);
-		// put in floor position
-		tms[5]->rotateAboutAxis(V3(0.0f, 0.0f, 0.0f), V3(1.0f, 0.0f, 0.0f), -90.0f);
-		// center
-		tms[5]->translate(V3(-100.0f, 0.0f, 80.0f));
+		// create shadow maps
+		vector<TMesh *> tMeshArray;
+		for (int j = 0; j < tmsN; j++) {
+			tMeshArray.push_back(tms[j]);
+		}
+		light->buildShadowMaps(tMeshArray);
 
 		isDGBInit = true;
 	}
 
-	const static V3 lookAtPoint(20.0f, 20.0f, -20.0f); // cube centroid
-	const static V3 up(0.0f, 1.0f, 0.0f);
-	V3 viewDirection = ppcLerp0->getViewDir();
-
-	// 10 second video at 30 fps
-	for (float steps = 0.0f; steps < 360.0f; steps += 1.2f) {
-
-		// rotate view direction
-		V3 rotVD = viewDirection;
-		rotVD.rotateThisVectorAboutDirection(V3(0.0f, 1.0f, 0.0f), steps);
-
-		// set up the look at cube camera (dolly camera setup)
-		ppc->positionRelativeToPoint(lookAtPoint, rotVD, up, 180.0f);
-		//ppc->positionAndOrient((lookAtPoint - (rotVD * 180.0f)), lookAtPoint, up); // also works
-
-		// clear screen
-		fb->set(0xFFFFFFFF);
+	// clear screen
+	fb->set(0xFFFFFFFF);
+	// clear zBuffer
+	if (currentDrawMode == DrawModes::MODELSPACELERP)
+		fb->clearZB(FLT_MAX);
+	else
 		fb->clearZB(0.0f);
-
-		// draw floor
-		tms[5]->drawTextured(*fb, *ppc, *texObjects[1]);
-
-		// draw textured cube
-		for (int i = 0; i < 5; i++) {
-			tms[i]->drawTextured(*fb, *ppc, *texObjects[1]);
-		}
-
-		fb->redraw();
-		Fl::check();
-	}
+	// enable shadow mapping for the quad
+	drawTMesh(*tms[0], *fb, *ppc, false, true); 
+	drawTMesh(*tms[1], *fb, *ppc, false);
+	fb->redraw();
 	return;
 }
 

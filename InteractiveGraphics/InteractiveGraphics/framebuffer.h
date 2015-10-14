@@ -10,6 +10,8 @@ using std::string;
 #include "texture.h"
 #include "light.h"
 
+class FrameBuffer; // Forward declaration
+
 // framebuffer + window class
 
 class FrameBuffer : public Fl_Gl_Window {
@@ -51,7 +53,8 @@ public:
 	void setIfOneOverWCloser(const V3 &p, const V3 &c);
 	// sets pixel to color c if wins z test
 	void setIfWCloser(const V3 &p, const V3 &c);
-	// query if current point is closer in the zb
+	// query if given 2D point (u,v,1/w) is closer that what is
+	// is stored in the zb
 	bool isOneOverWCloser(const V3 &p);
 
 	// draw 2D circle with no depth test
@@ -98,8 +101,9 @@ public:
 	// draws 2D textured triangle with lighting and depth test
 	// colors and texture uvs are interpolated in model space
 	// while 1/w is interpolated in screen coordinates.
-	// texture is optional and off by default unless a texture object
-	// is passed.
+	// texturing is optional off by default unless a texture object
+	// is passed. Simmilarly support for shadow mapping can be requested
+	// optionally thorugh interface
 	void draw2DLitTriangle(
 		V3 *const vs,
 		V3 *const pvs,
@@ -109,7 +113,9 @@ public:
 		M33 perspCorrectMatQ,
 		const V3 &sCoords,
 		const V3 &tCoords,
-		const Texture *const texture);
+		const Texture *const texture,
+		bool isShadowMapOn,
+		const PPC &cam);
 
 	// draw 2D segment specified by 2 points, each with own color
 	void draw2DSegment(const V3 &v0, const V3 &c0, const V3 &v1, const V3 &c1);

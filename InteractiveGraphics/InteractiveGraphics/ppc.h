@@ -75,7 +75,7 @@ public:
 
 	// projection of 3D point
 	bool project(const V3 &P, V3& projP) const;
-	// unproject a 3D point
+	// unproject a 2D point (u,v,1/w) previously projected by this camera
 	V3 unproject(const V3 &projP) const;
 
 	// interpolation between two given cameras

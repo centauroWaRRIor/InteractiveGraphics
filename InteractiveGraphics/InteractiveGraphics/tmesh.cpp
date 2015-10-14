@@ -162,22 +162,28 @@ void TMesh::createQuadTestTMesh(bool isTiling)
 	cols = new V3[vertsN];
 	// allocate tex coords array
 	tcs = new float[vertsN * 2];
+	// allocate normals array
+	normals = new V3[vertsN];
 
 	// following vertices define a sample tetrahedron
 	verts[0] = V3(0.0f, 0.0f, 0.0f);
 	cols[0] = V3(0.0f, 0.0f, 0.0f);
+	normals[0] = V3(0.0f, 0.0f, 1.0f);
 	tcs[0] = 0.0;
 	tcs[1] = 0.0;
 	verts[1] = V3(40.0f, 0.0f, 0.0f);
 	cols[1] = V3(1.0f, 0.0f, 0.0f);
+	normals[1] = V3(0.0f, 0.0f, 1.0f);
 	tcs[2] = isTiling ? 2.0f : 1.0f;
 	tcs[3] = 0.0;
 	verts[2] = V3(40.0f, 40.0f, 0.0f);
 	cols[2] = V3(0.0f, 1.0f, 0.0f);
+	normals[2] = V3(0.0f, 0.0f, 1.0f);
 	tcs[4] = isTiling ? 2.0f : 1.0f;
 	tcs[5] = isTiling ? 2.0f : 1.0f;
 	verts[3] = V3(0.0f, 40.0f, 0.0f);
 	cols[3] = V3(0.0f, 0.0f, 1.0f);
+	normals[3] = V3(0.0f, 0.0f, 1.0f);
 	tcs[6] = 0.0;
 	tcs[7] = isTiling ? 2.0f : 1.0f;
 
@@ -722,7 +728,8 @@ void TMesh::drawLit(
 	FrameBuffer & fb, 
 	const PPC & ppc, 
 	const Light &light,
-	const Texture * const texture)
+	const Texture * const texture,
+	bool isShadowMapOn)
 {
 	if ((vertsN == 0) || (trisN < 1)) {
 		cerr << "ERROR: Attempted to draw an empty mesh. "
@@ -816,7 +823,9 @@ void TMesh::drawLit(
 					currvs, tProjVerts, currcols, currnormals,
 					light, perspCorrectMatQ, 
 					sParameters, tParameters,
-					texture);
+					texture,
+					isShadowMapOn,
+					ppc);
 			}
 			else
 				cerr << "WARNING: Triangle screen footprint is stoo small, discarding..." << endl;

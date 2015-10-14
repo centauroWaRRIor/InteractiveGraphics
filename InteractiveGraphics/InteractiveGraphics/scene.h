@@ -60,7 +60,8 @@ private:
 		TMesh &tMesh, 
 		FrameBuffer &fB, 
 		const PPC &ppc,
-		bool isAABBDrawn);
+		bool isAABBDrawn,
+		bool isShadowsEnabled = false);
 	// utility function to clean in between different scene demos
 	// and avoid memory leaks every time I click on the gui
 	// buttons

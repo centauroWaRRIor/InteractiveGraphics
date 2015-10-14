@@ -67,12 +67,14 @@ public:
 		unsigned int subSIndex = 0, unsigned int subTIndex = 0,
 		unsigned int subSTotal = 1, unsigned int subTTotal = 1);
 	// draws triangle mesh in lit mode using screen space interpolation for 1/w and model
-	// space interpolation for color and s,t parameters. Uses texture if available.
+	// space interpolation for color and s,t parameters. Uses texture if available and uses
+	// texture maps if requested.
 	void drawLit(
 		FrameBuffer &fb, 
 		const PPC &ppc, 
 		const Light &light,
-		const Texture *const texture = nullptr);
+		const Texture *const texture = nullptr,
+		bool isShadowMapOn = false);
 
 	// rotate about axis
 	void rotateAboutAxis(const V3 &aO, const V3 &adir, float theta);

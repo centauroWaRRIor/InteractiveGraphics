@@ -1,7 +1,8 @@
 #include "framebuffer.h"
-#include "scene.h"
 #include "lodepng.h"
 #include "scene.h"
+#include "scene.h"
+#include "ppc.h"
 #include <iostream>
 #include <math.h>
 #include <cfloat> // using FLT_MAX
@@ -878,7 +879,9 @@ void FrameBuffer::draw2DLitTriangle(
 	M33 Q, 
 	const V3 & sCoords, 
 	const V3 & tCoords, 
-	const Texture * const texture)
+	const Texture * const texture,
+	bool isShadowMapOn,
+	const PPC &cam)
 {
 	// compute screen axes-aligned bounding box for triangle 
 	// clipping against framebuffer
@@ -1001,11 +1004,20 @@ void FrameBuffer::draw2DLitTriangle(
 				// 1/w is interpoalted in screen space
 				interpolatedDepth = depthABC * pixC; // 1/w at current pixel interpolated lin. in s s
 
+				// TODO: Combine texture color with lit color instead of overriding each other
 				if (texture != nullptr) {
 					// sample texture using lerped result of s,t raster parameters (in model space)
 					texelColor = texture->sampleTexBilinearTile(interpolatedS, interpolatedT);
 					// override interpolated color for now. In the future texel can be modulated by color
 					interpolatedColor.setFromColor(texelColor);
+				}
+
+				if (isShadowMapOn) {
+					// get 3d point corresponding to this pixel
+					V3 pixel3dPoint = cam.unproject(V3(pixC[0], pixC[1], interpolatedDepth));
+					if (light.isPointInShadow(pixel3dPoint)) {
+						interpolatedColor = light.getMatColor() * light.getAmbientK();
+					}
 				}
 
 				setIfOneOverWCloser(V3(pixC[0], pixC[1], interpolatedDepth), interpolatedColor);
