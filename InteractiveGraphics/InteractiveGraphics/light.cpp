@@ -2,6 +2,7 @@
 #include "framebuffer.h"
 #include "tmesh.h"
 #include "ppc.h"
+#include "scene.h"
 
 Light::Light(const V3 &pos, const V3 &col)
 	: position(pos), color(col)
@@ -10,9 +11,11 @@ Light::Light(const V3 &pos, const V3 &col)
 	ambientK = 0.0f;
 
 	shadowMapsN = 6;
-	shadowMapResWidth = 512;
-	shadowMapResHeight = 512;
-	shadowMapResHfov = 50.0f;
+	// because the pixel will be unprojected to 3D using the rendering camera,
+	// these shadow map cameras have to match its view frustrum.
+	shadowMapResWidth = Scene::K_W;
+	shadowMapResHeight = Scene::K_H;
+	shadowMapResHfov = Scene::K_HFOV;
 
 	shadowMapCube = new FrameBuffer*[shadowMapsN];
 	shadowMapCams = new PPC*[shadowMapsN];
@@ -39,9 +42,11 @@ Light::Light()
 	ambientK = 0.0f;
 
 	shadowMapsN = 6;
-	shadowMapResWidth = 512;
-	shadowMapResHeight = 512;
-	shadowMapResHfov = 50.0f;
+	// because the pixel will be unprojected to 3D using the rendering camera,
+	// these shadow map cameras have to match its view frustrum.
+	shadowMapResWidth = Scene::K_W;
+	shadowMapResHeight = Scene::K_H;
+	shadowMapResHfov = Scene::K_HFOV;
 
 	shadowMapCube = new FrameBuffer*[shadowMapsN];
 	shadowMapCams = new PPC*[shadowMapsN];
@@ -92,7 +97,15 @@ bool Light::isPointInShadow(const V3 & point) const
 	for (unsigned int i = 0; i < shadowMapsN; i++) {
 		// project 3d point into shadow map for query
 		isProjValid = shadowMapCams[i]->project(point, projP);
-		if (isProjValid) {
+		// be very strict with the projection:
+		// no projection if:
+		// point is left of view frustrum or is right of view frustrum
+		// or is above view frustrum or is below of view frustrum
+		//if (()
+		//	return false;
+		if (isProjValid &&
+			(projP[0] > 0.0f) && (projP[0] < shadowMapCams[i]->getWidth()) &&
+			(projP[1] > 0.0f) && (projP[1] < shadowMapCams[i]->getHeight())) {
 			// if projection was valid query shadow map
 			return shadowMapCube[i]->isOneOverWCloser(projP);
 		}
@@ -129,9 +142,15 @@ void Light::buildShadowMaps(
 	
 	// For debug, visualize this shadowMaps
 	for (unsigned int i = 0; i < shadowMapsN; i++) {
+		if(i==2)
 		shadowMapCube[i]->show();
 	}
 
+}
+
+void Light::setPosition(const V3 & pos)
+{
+	position = pos;
 }
 
 void Light::cleanShadowMaps(void)

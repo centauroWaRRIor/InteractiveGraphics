@@ -45,9 +45,7 @@ private:
 		isTextureInit, isA3Init, isSpriteTestInit, 
 		isTestBilTexLookupInit; 
 	
-	static const float hfov; // field of view
 	static const int u0, v0; // initial window coordinates
-	static const int w, h; // window height and width
 
 	// these two cameras are used as interpolation helpers
 	PPC *ppcLerp0;
@@ -91,6 +89,10 @@ public:
 	void currentSceneRedraw(void);
 	void setDrawMode(int mode);
 	PPC* getCamera(void) { return ppc; }
+
+	static const float K_HFOV; // field of view
+	static const int K_W; // window height and width
+	static const int K_H;
 };
 
 extern Scene *scene;

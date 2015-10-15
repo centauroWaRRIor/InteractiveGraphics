@@ -13,11 +13,11 @@ using namespace std;
 
 Scene *scene;
 
-const float Scene::hfov = 55.0f;
 const int Scene::u0 = 20;
 const int Scene::v0 = 50;
-const int Scene::w = 1280;
-const int Scene::h = 720;
+const float Scene::K_HFOV = 55.0f;
+const int Scene::K_W = 1280;
+const int Scene::K_H = 720;
 
 string Scene::retrieveTimeDate(void) const
 {
@@ -95,7 +95,7 @@ void Scene::cleanForNewScene(void)
 	// reset main camera
 	delete ppc;
 	ppc = nullptr;
-	ppc = new PPC(hfov, w, h);
+	ppc = new PPC(K_HFOV, K_W, K_H);
 
 	// reset main light
 	delete light;
@@ -134,11 +134,11 @@ Scene::Scene():
   gui->show();
 
   // create SW framebuffer
-  fb = new FrameBuffer(u0, v0, w, h);
+  fb = new FrameBuffer(u0, v0, K_W, K_H);
   fb->label("SW Framebuffer");
 
   // create camera
-  ppc = new PPC(hfov, w, h);
+  ppc = new PPC(K_HFOV, K_W, K_H);
   ppcLerp0 = nullptr;
   ppcLerp1 = nullptr;
 
@@ -226,7 +226,7 @@ void Scene::dbgDraw() {
 
 		// create shadow maps
 		vector<TMesh *> tMeshArray;
-		for (int j = 0; j < tmsN; j++) {
+		for (int j = 0; j < 2; j++) {
 			tMeshArray.push_back(tms[j]);
 		}
 		light->buildShadowMaps(tMeshArray);
@@ -243,7 +243,7 @@ void Scene::dbgDraw() {
 		fb->clearZB(0.0f);
 	// enable shadow mapping for the quad
 	drawTMesh(*tms[0], *fb, *ppc, false, true); 
-	drawTMesh(*tms[1], *fb, *ppc, false);
+	//drawTMesh(*tms[1], *fb, *ppc, false);
 	fb->redraw();
 	return;
 }
@@ -924,7 +924,7 @@ void Scene::renderFBAs3DPointCloud(void)
 		delete fbAux;
 		fbAux = nullptr;
 	}
-	fbAux = new FrameBuffer(u0 + 200, v0 + 200, w, h);
+	fbAux = new FrameBuffer(u0 + 200, v0 + 200, K_W, K_H);
 	fbAux->label("Third person FB");
 	fbAux->show();
 	fbAux->clearZB(0.0f);

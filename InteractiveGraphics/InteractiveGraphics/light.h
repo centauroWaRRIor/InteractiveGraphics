@@ -46,10 +46,9 @@ public:
 	float getAmbientK(void) const { return ambientK; }
 
 	// setters
-	void setPosition(const V3 &pos) { position = pos; }
 	void setColor(const V3 &col) { color = col; }
 	void setMatColor(const V3 &matCol) { matColor = matCol; }
 	void setAmbientK(float ka) { ambientK = ka; }
-
+	void setPosition(const V3 &pos);
 };
 

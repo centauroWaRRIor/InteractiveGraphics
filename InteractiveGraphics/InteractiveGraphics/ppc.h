@@ -24,6 +24,10 @@ public:
 	// constructor from saved camera file
 	PPC(string cameraFilename);
 
+	// get w
+	int getWidth(void) const { return w; }
+	// get h
+	int getHeight(void) const { return h; }
 	// get a
 	V3 getLowerCaseA(void) const { return a; }
 	// get b
