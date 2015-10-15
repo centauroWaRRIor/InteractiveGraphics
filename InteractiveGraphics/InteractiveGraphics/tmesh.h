@@ -75,6 +75,10 @@ public:
 		const Light &light,
 		const Texture *const texture = nullptr,
 		bool isShadowMapOn = false);
+	// draws triangle mesh in filled mode using a single color and depth 1/w in screen
+	// coordinates mainly for shadow mapping purposes
+	void drawFilledFlatWithDepth(FrameBuffer &fb, const PPC &ppc, unsigned int color);
+
 
 	// rotate about axis
 	void rotateAboutAxis(const V3 &aO, const V3 &adir, float theta);

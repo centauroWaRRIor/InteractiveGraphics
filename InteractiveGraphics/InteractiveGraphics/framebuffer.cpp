@@ -229,7 +229,7 @@ void FrameBuffer::setIfWCloser(const V3 & p, const V3 & c)
 	set(u, v, c.getColor());
 }
 
-bool FrameBuffer::isOneOverWCloser(const V3 & p)
+bool FrameBuffer::isDepthTestPass(const V3 & p)
 {
 	if ((p.getX() < 0.0f) || (p.getX() >= w) ||
 		(p.getY() < 0.0f) || (p.getY() >= h))
@@ -240,9 +240,9 @@ bool FrameBuffer::isOneOverWCloser(const V3 & p)
 
 	// remember that the z component of the projected point is 1/z or 1/w
 	if (zb[(h - 1 - v)*w + u] >= p.getZ())
-		return true; // already saw a surface closer at that pixel
-	else
 		return false;
+	else
+		return true;
 }
 
 // draw circle
@@ -329,7 +329,9 @@ void FrameBuffer::draw2DRectangle(
 	}
 }
 
-void FrameBuffer::draw2DFlatTriangle(V3 *const pvs, unsigned int color)
+void FrameBuffer::draw2DFlatTriangle(
+	V3 *const pvs, 
+	unsigned int color)
 {
 	// compute screen axes-aligned bounding box for triangle 
 	// clipping against framebuffer
@@ -1022,6 +1024,86 @@ void FrameBuffer::draw2DLitTriangle(
 				}
 
 				setIfOneOverWCloser(V3(pixC[0], pixC[1], interpolatedDepth), interpolatedColor);
+			}
+		}
+	}
+}
+
+void FrameBuffer::draw2DFlatTriangleWithDepth(V3 * const pvs, unsigned int color)
+{
+	// compute screen axes-aligned bounding box for triangle 
+	// clipping against framebuffer
+	AABB aabb(pvs[0]);
+	aabb.AddPoint(pvs[1]);
+	aabb.AddPoint(pvs[2]);
+
+	if (!aabb.clipWithFrame(0.0f, 0.0f, (float)w, (float)h))
+		return;
+
+	int left, right, top, bottom;
+	aabb.setPixelRectangle(left, right, top, bottom);
+
+	// set edge equations
+	V3 eeqs[3]; // eeqs[0] = (A, B, C), where Au + Bv + C
+	for (int ei = 0; ei < 3; ei++) {
+		int e1 = (ei + 1) % 3;
+		eeqs[ei][0] = pvs[e1][1] - pvs[ei][1];
+		eeqs[ei][1] = pvs[ei][0] - pvs[e1][0];
+		eeqs[ei][2] = -pvs[ei][1] * eeqs[ei][1] - pvs[ei][0] * eeqs[ei][0];
+		int e2 = (e1 + 1) % 3;
+		// plug third vertex into edge equation to establish
+		// correct sidedness
+		V3 pv3(pvs[e2][0], pvs[e2][1], 1.0f); // (u2, v2, 1)
+		if (eeqs[ei] * pv3 < 0.0f)
+			eeqs[ei] = eeqs[ei] * -1.0f;
+	}
+
+	// set screen space interpolation
+	M33 baryMatrixInverse;
+	baryMatrixInverse[0] = pvs[0];
+	baryMatrixInverse[1] = pvs[1];
+	baryMatrixInverse[2] = pvs[2];
+	baryMatrixInverse.setColumn(V3(1.0f, 1.0f, 1.0f), 2);
+	baryMatrixInverse.setInverted();
+	// linear expression for screen space interpolation of 1/w
+	V3 depthABC = baryMatrixInverse*V3(pvs[0][2], pvs[1][2], pvs[2][2]);
+	// linear expressions for screen space interpolation of colors
+
+	int currPixU, currPixV; // current pixel considered
+	V3 pixC; // current pixel center
+	V3 topLeftPixC(left + 0.5f, top + 0.5f, 1.0f); // top left pixel center
+	V3 currEELS; // edge expression values for the line start
+	V3 currEE; // edge expression value within a given line 
+	V3 vColor; // final raster parameter interpolated result
+	vColor.setFromColor(color);
+	float interpolatedDepth; // final raster parameter interpolated result
+
+	// rasterize triangle
+	for (currPixV = top,
+		currEELS[0] = topLeftPixC * eeqs[0],
+		currEELS[1] = topLeftPixC * eeqs[1],
+		currEELS[2] = topLeftPixC * eeqs[2];
+		currPixV <= bottom;
+		currPixV++,
+		currEELS[0] += eeqs[0][1] /*+=b[0]*/,
+		currEELS[1] += eeqs[1][1] /*+=b[1]*/,
+		currEELS[2] += eeqs[2][1] /*+=b[2]*/) {
+		for (currPixU = left,
+			currEE = currEELS;
+			currPixU <= right;
+			currPixU++,
+			currEE[0] += eeqs[0][0] /*+=a[0]*/,
+			currEE[1] += eeqs[1][0] /*+=a[1]*/,
+			currEE[2] += eeqs[2][0] /*+=a[2]*/) {
+
+			if (currEE[0] < 0 || currEE[1] < 0 || currEE[2] < 0) {
+				continue; // outside triangle
+			}
+			else { // found pixel inside of triangle; set it to right color
+
+				pixC = V3(.5f + (float)currPixU, .5f + (float)currPixV, 1.0f);
+				interpolatedDepth = depthABC * pixC; // 1/w at current pixel interpolated lin. in s s
+				setIfOneOverWCloser(V3(pixC[0], pixC[1], interpolatedDepth), vColor);
 			}
 		}
 	}

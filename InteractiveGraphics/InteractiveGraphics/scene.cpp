@@ -226,9 +226,14 @@ void Scene::dbgDraw() {
 
 		// create shadow maps
 		vector<TMesh *> tMeshArray;
-		for (int j = 0; j < 2; j++) {
-			tMeshArray.push_back(tms[j]);
-		}
+		//for (int j = 0; j < 2; j++) {
+			//tMeshArray.push_back(tms[j]);
+		//}
+		
+		// manually add what you know will cast shadows for now.
+		// Later on will need a way to indentify meshes in the framebuffer
+		// to prevent doing the isPixelInShadow with itself.
+		tMeshArray.push_back(tms[1]);
 		light->buildShadowMaps(tMeshArray);
 
 		isDGBInit = true;
@@ -243,7 +248,7 @@ void Scene::dbgDraw() {
 		fb->clearZB(0.0f);
 	// enable shadow mapping for the quad
 	drawTMesh(*tms[0], *fb, *ppc, false, true); 
-	//drawTMesh(*tms[1], *fb, *ppc, false);
+	drawTMesh(*tms[1], *fb, *ppc, false);
 	fb->redraw();
 	return;
 }

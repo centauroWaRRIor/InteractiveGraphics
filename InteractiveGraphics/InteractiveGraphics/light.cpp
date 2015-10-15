@@ -101,13 +101,11 @@ bool Light::isPointInShadow(const V3 & point) const
 		// no projection if:
 		// point is left of view frustrum or is right of view frustrum
 		// or is above view frustrum or is below of view frustrum
-		//if (()
-		//	return false;
 		if (isProjValid &&
 			(projP[0] > 0.0f) && (projP[0] < shadowMapCams[i]->getWidth()) &&
 			(projP[1] > 0.0f) && (projP[1] < shadowMapCams[i]->getHeight())) {
 			// if projection was valid query shadow map
-			return shadowMapCube[i]->isOneOverWCloser(projP);
+			return !(shadowMapCube[i]->isDepthTestPass(projP));
 		}
 	}
 	// couldn't find a clear answer from shadow map cube so assume no
@@ -132,7 +130,7 @@ void Light::buildShadowMaps(
 			 it != tMeshArray.end(); 
 			 ++it, j++)
 		{
-				(*it)->drawFilledFlat(
+				(*it)->drawFilledFlatWithDepth(
 					*shadowMapCube[i],
 					*shadowMapCams[i],
 					filColors[j % 3].getColor());

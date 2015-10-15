@@ -55,7 +55,7 @@ public:
 	void setIfWCloser(const V3 &p, const V3 &c);
 	// query if given 2D point (u,v,1/w) is closer that what is
 	// is stored in the zb
-	bool isOneOverWCloser(const V3 &p);
+	bool isDepthTestPass(const V3 &p);
 
 	// draw 2D circle with no depth test
 	void draw2DCircle(float cuf, float cvf, float radius, unsigned int color);
@@ -116,6 +116,11 @@ public:
 		const Texture *const texture,
 		bool isShadowMapOn,
 		const PPC &cam);
+	// draw single color 2D triangle with depth test for shadow mapping 
+	void draw2DFlatTriangleWithDepth(
+		V3 *const pvs,
+		unsigned int color);
+
 
 	// draw 2D segment specified by 2 points, each with own color
 	void draw2DSegment(const V3 &v0, const V3 &c0, const V3 &v1, const V3 &c1);

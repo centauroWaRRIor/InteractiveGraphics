@@ -349,7 +349,6 @@ void TMesh::drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color)
 	}
 
 	// draw filled triangles with single color (provided)
-	V3 currcols[3];
 	V3 tProjVerts[3];
 	bool isVisible;
 	
@@ -366,11 +365,6 @@ void TMesh::drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color)
 		isVisible &= isVertProjVis[tris[3 * tri + 1]];
 		isVisible &= isVertProjVis[tris[3 * tri + 2]];
 		
-		// grab current triangle vertex colors
-		currcols[0] = cols[tris[3 * tri + 0]];
-		currcols[1] = cols[tris[3 * tri + 1]];
-		currcols[2] = cols[tris[3 * tri + 2]];
-
 		if (isVisible) {
 
 			// Rasterizer should reject triangles whose screen footprint is very small.
@@ -826,6 +820,54 @@ void TMesh::drawLit(
 					texture,
 					isShadowMapOn,
 					ppc);
+			}
+			else
+				cerr << "WARNING: Triangle screen footprint is stoo small, discarding..." << endl;
+		}
+	}
+}
+
+void TMesh::drawFilledFlatWithDepth(FrameBuffer & fb, const PPC & ppc, unsigned int color)
+{
+	if ((vertsN == 0) || (trisN < 1)) {
+		cerr << "ERROR: Attempted to draw an empty mesh. "
+			<< "drawFilledFlatWithDepth() command was aborted." << endl;
+		return;
+	}
+
+	// draw filled triangles with single color (provided)
+	V3 currcols[3];
+	V3 tProjVerts[3];
+	bool isVisible;
+
+	// optimization: project each vertex only once
+	projectVertices(ppc);
+
+	for (int tri = 0; tri < trisN; tri++) {
+
+		// grab current projected triangle vertices
+		tProjVerts[0] = projVerts[tris[3 * tri + 0]];
+		tProjVerts[1] = projVerts[tris[3 * tri + 1]];
+		tProjVerts[2] = projVerts[tris[3 * tri + 2]];
+		isVisible = isVertProjVis[tris[3 * tri + 0]];
+		isVisible &= isVertProjVis[tris[3 * tri + 1]];
+		isVisible &= isVertProjVis[tris[3 * tri + 2]];
+
+		// grab current triangle vertex colors
+		currcols[0] = cols[tris[3 * tri + 0]];
+		currcols[1] = cols[tris[3 * tri + 1]];
+		currcols[2] = cols[tris[3 * tri + 2]];
+
+		if (isVisible) {
+
+			// Rasterizer should reject triangles whose screen footprint is very small.
+			float projTriangleArea = compute2DTriangleArea(
+				tProjVerts[0],
+				tProjVerts[1],
+				tProjVerts[2]);
+
+			if (projTriangleArea > epsilonMinArea) {
+				fb.draw2DFlatTriangleWithDepth(tProjVerts, color);
 			}
 			else
 				cerr << "WARNING: Triangle screen footprint is stoo small, discarding..." << endl;
