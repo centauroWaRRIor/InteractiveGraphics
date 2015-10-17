@@ -159,7 +159,7 @@ void V3::rotateThisPointAboutAxis(const V3 &axisOrigin, const V3 &axisDirection,
 	// axisDirection is interpreted to be a vector representing axis direction
 
 	// quit early if axisDirection is not unit length
-	if (!((fabs(axisDirection.length()) - 1.0f) < epsilonNormalizedError)) {
+	if ( !(fabs(axisDirection.length() - 1.0f) < epsilonNormalizedError) ) {
 		cerr << "ERROR: Attempting to rotate about a non-normalized vector. Zero vector produced..." << endl;
 		*this = V3();
 		return;

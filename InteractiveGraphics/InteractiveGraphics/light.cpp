@@ -7,7 +7,7 @@
 Light::Light(bool isPointLight) :
 	isPointLgiht(isPointLight),
 	position(V3()),
-	direction(V3()),
+	direction(V3(0.0f, 0.0f, -1.0f)), // this can't be zero by default or it will affect positioning
 	color(V3()),
 	matColor(V3()),
 	ambientK(0.0f),
@@ -52,6 +52,8 @@ Light::~Light()
 		delete shadowMapCube[i];
 		delete shadowMapCams[i];
 	}
+	delete[] shadowMapCams;
+	delete[] shadowMapCube;
 }
 
 V3 Light::computeDiffuseContribution(const V3 & triangleVertex, const V3 & normal) const

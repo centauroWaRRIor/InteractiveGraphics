@@ -35,6 +35,7 @@ private:
 	GUI * gui; // graphical user interface
 	PPC *ppc; // camera used to render the scene from views chosen by user
 	Light *light; // light used to render models in lit mode
+	LightProjector *lightProjector; // light used to project textures
 	int tmsN; // how many TMeshes there are
 	TMesh **tms; // an array of pointers to TMesh objects
 	Texture **texObjects; // and array of pointers to Texture objects
@@ -62,7 +63,8 @@ private:
 		FrameBuffer &fB, 
 		const PPC &ppc,
 		bool isAABBDrawn,
-		bool isShadowsEnabled = false);
+		bool isShadowsEnabled = false,
+		bool isLightProjEnabled = false);
 	// utility function to clean in between different scene demos
 	// and avoid memory leaks every time I click on the gui
 	// buttons

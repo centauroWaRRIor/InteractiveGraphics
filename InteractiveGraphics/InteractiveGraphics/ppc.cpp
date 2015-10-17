@@ -182,10 +182,9 @@ void PPC::positionRelativeToPoint(
 	float distance)
 {
 	// assumes: up and vd are normalized
-
 	// quit early if assumptions are not met
-	if (!((fabs(vd.length()) - 1.0f) < epsilonNormalizedError) ||
-		!((fabs(up.length()) - 1.0f) < epsilonNormalizedError)) {
+	if (!((fabs(vd.length() - 1.0f)) < epsilonNormalizedError) ||
+		!((fabs(up.length() - 1.0f)) < epsilonNormalizedError)) {
 		cerr << "ERROR: Up or vd vectors are not normal vectors. Camera positioning aborted..." << endl;
 		return;
 	}

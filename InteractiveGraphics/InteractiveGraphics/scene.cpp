@@ -39,7 +39,8 @@ void Scene::drawTMesh(
 	FrameBuffer & frameBuffer, 
 	const PPC & planarPinholeCamera,
 	bool isAABBDrawn,
-	bool isShadowsEnabled)
+	bool isShadowsEnabled,
+	bool isLightProjEnabled)
 {
 	if (currentDrawMode == DrawModes::DOTS)
 		tMesh.drawVertexDots(frameBuffer, planarPinholeCamera, 2.0f);
@@ -51,7 +52,7 @@ void Scene::drawTMesh(
 		tMesh.drawFilledFlatBarycentric(frameBuffer, planarPinholeCamera);
 	else if (currentDrawMode == DrawModes::MODELSPACELERP)
 		tMesh.drawFilledFlatPerspCorrect(frameBuffer, planarPinholeCamera);
-	else if (currentDrawMode == DrawModes::LIT)
+	else if (currentDrawMode == DrawModes::LIT && !isLightProjEnabled)
 		tMesh.drawLit(
 			frameBuffer, 
 			planarPinholeCamera, 
@@ -59,6 +60,15 @@ void Scene::drawTMesh(
 			nullptr,
 			nullptr,
 			isShadowsEnabled);
+	else if(currentDrawMode == DrawModes::LIT)
+		tMesh.drawLit(
+			frameBuffer,
+			planarPinholeCamera,
+			*light,
+			lightProjector,
+			nullptr,
+			isShadowsEnabled,
+			true);
 
 	// drawing of AABB is overruled (not to be done) when drawing
 	// in model space interpolation mode. Reason being that drawAABB
@@ -104,6 +114,12 @@ void Scene::cleanForNewScene(void)
 	light = nullptr;
 	light = new Light();
 
+	// clean light projector
+	if (lightProjector) {
+		delete lightProjector;
+		lightProjector = nullptr;
+	}
+
 	// destroy fbAux if present
 	if (fbAux) {
 		delete fbAux;
@@ -129,6 +145,7 @@ Scene::Scene():
     gui(nullptr),
     ppc(nullptr),
 	light(nullptr),
+	lightProjector(nullptr),
 	tms(nullptr),
 	texObjects(nullptr)
 {
@@ -193,6 +210,9 @@ Scene::~Scene()
 		delete tms[i];
 		delete texObjects[i];
 	}
+	if (lightProjector) {
+		delete lightProjector;
+	}
 	delete[] tms;
 	delete[] texObjects;
 	if (ppcLerp0)
@@ -230,12 +250,18 @@ void Scene::dbgDraw() {
 		// load texture
 		//texObjects[0] = new Texture("pngs\\Woven_flower_pxr128.png");
 
+		// create a light projector and set it up
+		lightProjector = new LightProjector("pngs\\Woven_flower_pxr128.png");
+		lightProjector->setPosition(ppc->getEyePoint());
+		lightProjector->setDirection(ppc->getViewDir());
+
 		// create shadow maps
 		vector<TMesh *> tMeshArray;
 		for (int j = 0; j < 2; j++) {
 			tMeshArray.push_back(tms[j]);
 		}
 		light->buildShadowMaps(tMeshArray);
+		lightProjector->buildShadowMaps(tMeshArray,true);
 
 		isDGBInit = true;
 	}
@@ -248,8 +274,8 @@ void Scene::dbgDraw() {
 	else
 		fb->clearZB(0.0f);
 	// enable shadow mapping for the quad
-	drawTMesh(*tms[0], *fb, *ppc, false, true); 
-	drawTMesh(*tms[1], *fb, *ppc, false, true);
+	drawTMesh(*tms[0], *fb, *ppc, false, false, true); 
+	drawTMesh(*tms[1], *fb, *ppc, false, false, true);
 	fb->redraw();
 	return;
 }
