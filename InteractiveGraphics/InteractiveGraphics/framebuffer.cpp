@@ -1026,8 +1026,7 @@ void FrameBuffer::draw2DLitTriangle(
 					// get 3d point corresponding to this pixel
 					V3 pixel3dPoint = cam.unproject(V3(pixC[0], pixC[1], interpolatedDepth));
 					if (light.isPointInShadow(pixel3dPoint)) {
-						//interpolatedColor = light.getMatColor() * light.getAmbientK();
-						interpolatedColor = V3(0.0f, 0.0f, 0.0f);
+						interpolatedColor = light.getMatColor() * light.getAmbientK();
 					}
 				}
 

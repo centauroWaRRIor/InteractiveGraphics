@@ -90,7 +90,7 @@ V3 Light::computeDiffuseContribution(const V3 & triangleVertex, const V3 & norma
 
 bool Light::isPointInShadow(const V3 & point) const
 {
-	static float const epsilon = 0.01f;
+	static float const epsilon = 0.15f;
 	V3 projP;
 	bool isProjValid;
 	// assumes the shadow map cube is up to date at this point

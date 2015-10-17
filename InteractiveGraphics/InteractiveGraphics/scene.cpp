@@ -243,7 +243,7 @@ void Scene::dbgDraw() {
 		fb->clearZB(0.0f);
 	// enable shadow mapping for the quad
 	drawTMesh(*tms[0], *fb, *ppc, false, true); 
-	drawTMesh(*tms[1], *fb, *ppc, false);
+	drawTMesh(*tms[1], *fb, *ppc, false, true);
 	fb->redraw();
 	return;
 }
