@@ -78,6 +78,16 @@ private:
   void cb_TestFBAs3DCloud_i(Fl_Menu_*, void*);
   static void cb_TestFBAs3DCloud(Fl_Menu_*, void*);
 public:
+  static Fl_Menu_Item *TestShadowMap;
+private:
+  void cb_TestShadowMap_i(Fl_Menu_*, void*);
+  static void cb_TestShadowMap(Fl_Menu_*, void*);
+public:
+  static Fl_Menu_Item *TestTexProj;
+private:
+  void cb_TestTexProj_i(Fl_Menu_*, void*);
+  static void cb_TestTexProj(Fl_Menu_*, void*);
+public:
   Fl_Group *CameraFBSaveGroup;
   Fl_Button *SaveCameraButton;
 private:
@@ -141,5 +151,7 @@ public:
   void A3Demo_cb();
   void TestBilTexLookup_cb();
   void TestFBAs3DCloud_cb();
+  void TestShadowMap_cb();
+  void TestTexProj_cb();
 };
 #endif

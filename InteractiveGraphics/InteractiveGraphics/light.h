@@ -10,10 +10,13 @@ class TMesh;
 class Light
 {
 private:
-	V3 position;
+	bool isPointLgiht; // is point light vs directional light
+	V3 position; // used for point lights
+	V3 direction; // used for directional lights (normalized)
 	V3 color;
 	V3 matColor;
 	float ambientK;
+
 	FrameBuffer **shadowMapCube;
 	PPC **shadowMapCams;
 	unsigned int shadowMapsN;
@@ -23,9 +26,9 @@ private:
 
 	void cleanShadowMaps(void);
 	void setUpShadowMapCams(void);
+
 public:
-	Light();
-	Light(const V3 &position, const V3 &color);
+	Light(bool isPointLight = true);
 	~Light();
 
 	// return lit color for triangle vertex
@@ -37,18 +40,23 @@ public:
 	// TMesh TMeshArray[] because the TMesh array is not generated at once
 	// but rather sporadically and therefore the memory for the array is not 
 	// allocated contiguosly. Vector allows us to pass a list of pointers. 
-	void buildShadowMaps(vector<TMesh *> &tMeshArray);
+	void buildShadowMaps(
+		vector<TMesh *> &tMeshArray,
+		bool isDbgShowShadowMaps = false);
 
 	// getters
-	V3 getPosition(void) const{ return position; }
+	bool getIsPointLight(void) const { return isPointLgiht; }
+	V3 getPosition(void) const { return position; }
+	V3 getDirection(void) const { return direction; }
 	V3 getColor(void) const { return color; }
 	V3 getMatColor(void) const { return matColor; }
 	float getAmbientK(void) const { return ambientK; }
 
 	// setters
+	void setPosition(const V3 &pos) { position = pos; };
+	void setDirection(const V3 &dir) { direction = dir; };
 	void setColor(const V3 &col) { color = col; }
 	void setMatColor(const V3 &matCol) { matColor = matCol; }
 	void setAmbientK(float ka) { ambientK = ka; }
-	void setPosition(const V3 &pos);
 };
 

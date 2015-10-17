@@ -117,6 +117,8 @@ void Scene::cleanForNewScene(void)
 	this->isSpriteTestInit = false;
 	this->isA3Init = false;
 	this->isTestBilTexLookupInit = false;
+	this->isShadowMapTestInit = false;
+	this->isTexProjectTestInit = false;
 }
 
 Scene::Scene():
@@ -172,6 +174,8 @@ Scene::Scene():
   this->isSpriteTestInit = false;
   this->isA3Init = false;
   this->isTestBilTexLookupInit = false;
+  this->isShadowMapTestInit = false;
+  this->isTexProjectTestInit = false;
 }
 
 Scene::~Scene()
@@ -955,6 +959,65 @@ void Scene::renderFBAs3DPointCloud(void)
 	fbAux->redraw();
 }
 
+void Scene::testShadowMap(void)
+{
+	if (!isShadowMapTestInit) {
+
+		cleanForNewScene();
+		// prepare 2 meshes
+		tms[0] = new TMesh();
+		tms[1] = new TMesh();
+
+		// look at quads full frontal
+		ppc->moveForward(-400.0f);
+		ppc->moveUp(120.0f);
+		ppc->moveRight(100.0f);
+
+		// set up light
+		light->setAmbientK(0.4f);
+		light->setMatColor(V3(1.0f, 0.0f, 0.0f));
+		light->setPosition(ppc->getEyePoint());
+
+		// Create a plane TMesh and a teapot TMesh
+		tms[0]->createQuadTestTMesh(false);
+		tms[0]->scale(6.0f);
+		tms[1]->loadBin("geometry/teapot1K.bin");
+		tms[1]->translate(V3(130.0f, 100.0f, 50.0f));
+
+		// load texture
+		//texObjects[0] = new Texture("pngs\\Woven_flower_pxr128.png");
+
+		// create shadow maps
+		vector<TMesh *> tMeshArray;
+		for (int j = 0; j < 2; j++) {
+			tMeshArray.push_back(tms[j]);
+		}
+		light->buildShadowMaps(tMeshArray, true);
+
+		isShadowMapTestInit = true;
+	}
+
+	// clear screen
+	fb->set(0xFFFFFFFF);
+	// clear zBuffer
+	if (currentDrawMode == DrawModes::MODELSPACELERP)
+		fb->clearZB(FLT_MAX);
+	else
+		fb->clearZB(0.0f);
+	// enable shadow mapping
+	drawTMesh(*tms[0], *fb, *ppc, false, true);
+	drawTMesh(*tms[1], *fb, *ppc, false, true);
+	fb->redraw();
+	return;
+}
+
+void Scene::testTexProj(void)
+{
+	if (!isTexProjectTestInit) {
+		isTexProjectTestInit = true;
+	}
+}
+
 void Scene::saveCamera(void) const
 {
 	string filename = retrieveTimeDate();
@@ -1003,6 +1066,12 @@ void Scene::currentSceneRedraw(void)
 	case Scenes::SPRITETEST:
 		this->testSprites();
 		break;
+	case Scenes::SHADOWTEST:
+		this->testShadowMap();
+		break;
+	case Scenes::TEXPROJTEST:
+		this->testTexProj();
+		break;
 	default:
 		dbgDraw();
 		break; // this statement is optional for default
@@ -1037,7 +1106,9 @@ void Scene::setDrawMode(int mode)
 	}
 	if (currentScene == Scenes::DBG ||
 		currentScene == Scenes::CAMLERP ||
-		currentScene == Scenes::CAMCONTROL) {
+		currentScene == Scenes::CAMCONTROL || 
+		currentScene == Scenes::SHADOWTEST || 
+		currentScene == Scenes::TEXPROJTEST) {
 		currentSceneRedraw();
 	}
 }

@@ -16,7 +16,9 @@ enum class Scenes {
 	CAMCONTROL,
 	TEXTURE,
 	A3,
-	SPRITETEST};
+	SPRITETEST,
+	SHADOWTEST,
+	TEXPROJTEST};
 enum class DrawModes { 
 	DOTS, 
 	WIREFRAME, 
@@ -43,7 +45,8 @@ private:
 
 	bool isA2Init, isDGBInit, isTestCamControlsInit,
 		isTextureInit, isA3Init, isSpriteTestInit, 
-		isTestBilTexLookupInit; 
+		isTestBilTexLookupInit, isShadowMapTestInit,
+		isTexProjectTestInit; 
 	
 	static const int u0, v0; // initial window coordinates
 
@@ -82,6 +85,8 @@ public:
 	// renders current FB as 3D point cloud in
 	// an aux framebuffer.
 	void renderFBAs3DPointCloud(void);
+	void testShadowMap(void);
+	void testTexProj(void);
 
 	void saveCamera(void) const;
 	void saveThisFramebuffer(void) const;

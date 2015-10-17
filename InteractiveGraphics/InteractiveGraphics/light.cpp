@@ -4,49 +4,29 @@
 #include "ppc.h"
 #include "scene.h"
 
-Light::Light(const V3 &pos, const V3 &col)
-	: position(pos), color(col)
-{
-	// default material color is black
-	ambientK = 0.0f;
-
-	shadowMapsN = 6;
+Light::Light(bool isPointLight) :
+	isPointLgiht(isPointLight),
+	position(V3()),
+	direction(V3()),
+	color(V3()),
+	matColor(V3()),
+	ambientK(0.0f),
+	shadowMapCube(nullptr),
+	shadowMapCams(nullptr),
+	shadowMapsN(0),
 	// because the pixel will be unprojected to 3D using the rendering camera,
 	// these shadow map cameras have to match its view frustrum.
-	shadowMapResWidth = Scene::K_W;
-	shadowMapResHeight = Scene::K_H;
-	shadowMapResHfov = Scene::K_HFOV;
+	shadowMapResWidth(Scene::K_W),
+	shadowMapResHeight(Scene::K_H),
+	shadowMapResHfov(Scene::K_HFOV)
 
-	shadowMapCube = new FrameBuffer*[shadowMapsN];
-	shadowMapCams = new PPC*[shadowMapsN];
-
-	for (unsigned int i = 0; i < shadowMapsN; i++) {
-		// set up shadow maps
-		shadowMapCube[i] = new FrameBuffer(0, 0, 
-			shadowMapResWidth, shadowMapResHeight);
-		// set up shadow maps aux cameras
-		shadowMapCams[i] = new PPC(
-			shadowMapResHfov,
-			shadowMapResWidth,
-			shadowMapResHeight);
+{
+	if (isPointLight) {
+		shadowMapsN = 6;
 	}
-	// position and orient shadow maps aux cameras
-	setUpShadowMapCams();
-}
-
-Light::Light()
-{
-	// default position is at (0.0f,0.0f,0.0f)
-	// default color is black
-	// default material color is black
-	ambientK = 0.0f;
-
-	shadowMapsN = 6;
-	// because the pixel will be unprojected to 3D using the rendering camera,
-	// these shadow map cameras have to match its view frustrum.
-	shadowMapResWidth = Scene::K_W;
-	shadowMapResHeight = Scene::K_H;
-	shadowMapResHfov = Scene::K_HFOV;
+	else { // directional light 
+		shadowMapsN = 1;
+	}
 
 	shadowMapCube = new FrameBuffer*[shadowMapsN];
 	shadowMapCams = new PPC*[shadowMapsN];
@@ -76,8 +56,14 @@ Light::~Light()
 
 V3 Light::computeDiffuseContribution(const V3 & triangleVertex, const V3 & normal) const
 {
-	V3 lightVector = position - triangleVertex;
+	V3 lightVector;
+	if (isPointLgiht) {
+		lightVector = position - triangleVertex;
+	}
+	else
+		lightVector = direction * (-1.0f);
 	lightVector.normalize();
+
 	float kd = lightVector * normal;
 	if (kd < 0.0f)
 		kd = 0.0f;
@@ -114,16 +100,19 @@ bool Light::isPointInShadow(const V3 & point) const
 }
 
 void Light::buildShadowMaps(
-	vector<TMesh *> &tMeshArray)
+	vector<TMesh *> &tMeshArray,
+	bool isDbgShowShadowMaps)
 {
-	V3 filColors[3] = { 
+	V3 filColors[3] = { // for visual debug (isDbgShowShadowMaps)
 		V3(1.0f, 0.0f, 0.0f),
 		V3(0.0f, 1.0f, 0.0f),
 		V3(0.0f, 0.0f, 1.0f),
 	};
 	cleanShadowMaps();
 	setUpShadowMapCams();
-	// For all the shadow maps (6 sides of shadow map cube)
+	// For all the shadow maps 
+	// (6 sides of shadow map cube for point lights or 
+	// just one shadow map for directional lights)
 	for (unsigned int i = 0; i < shadowMapsN; i ++ ) {
 		// Render all geometry into this shadow map
 		unsigned int j = 0;
@@ -139,17 +128,12 @@ void Light::buildShadowMaps(
 
 	}
 	
-	// For debug, visualize this shadowMaps
-	for (unsigned int i = 0; i < shadowMapsN; i++) {
-		if(i==2)
-		shadowMapCube[i]->show();
+	// For debug, visualize these shadowMaps as framebuffers
+	if (isDbgShowShadowMaps) {
+		for (unsigned int i = 0; i < shadowMapsN; i++) {
+			shadowMapCube[i]->show();
+		}
 	}
-
-}
-
-void Light::setPosition(const V3 & pos)
-{
-	position = pos;
 }
 
 void Light::cleanShadowMaps(void)
@@ -163,34 +147,43 @@ void Light::cleanShadowMaps(void)
 void Light::setUpShadowMapCams(void)
 {
 	// assumes the camera objects have been built at this point
-	shadowMapCams[0]->positionRelativeToPoint(
-		position,
-		V3(1.0f, 0.0f, 0.0f), // look at pos x direction
-		V3(0.0f, 1.0f, 0.0f),
-		0.0f);
-	shadowMapCams[1]->positionRelativeToPoint(
-		position,
-		V3(-1.0f, 0.0f, 0.0f), // look at neg x direction
-		V3(0.0f, 1.0f, 0.0f),
-		0.0f);
-	shadowMapCams[2]->positionRelativeToPoint(
-		position,
-		V3(0.0f, 0.0f, -1.0f), // look at pos z direction
-		V3(0.0f, 1.0f, 0.0f),
-		0.0f);
-	shadowMapCams[3]->positionRelativeToPoint(
-		position,
-		V3(0.0f, 0.0f, 1.0f), // look at neg z direction
-		V3(0.0f, 1.0f, 0.0f),
-		0.0f);
-	shadowMapCams[4]->positionRelativeToPoint(
-		position,
-		V3(0.0f, 1.0f, 0.0f), // look at pos y direction
-		V3(0.0f, 0.0f, 1.0f),
-		0.0f);
-	shadowMapCams[5]->positionRelativeToPoint(
-		position,
-		V3(0.0f, -1.0f, 0.0f), // look at neg y direction
-		V3(0.0f, 0.0f, 1.0f),
-		0.0f);
+	if (isPointLgiht) {
+		shadowMapCams[0]->positionRelativeToPoint(
+			position,
+			V3(1.0f, 0.0f, 0.0f), // look at pos x direction
+			V3(0.0f, 1.0f, 0.0f),
+			0.0f);
+		shadowMapCams[1]->positionRelativeToPoint(
+			position,
+			V3(-1.0f, 0.0f, 0.0f), // look at neg x direction
+			V3(0.0f, 1.0f, 0.0f),
+			0.0f);
+		shadowMapCams[2]->positionRelativeToPoint(
+			position,
+			V3(0.0f, 0.0f, -1.0f), // look at pos z direction
+			V3(0.0f, 1.0f, 0.0f),
+			0.0f);
+		shadowMapCams[3]->positionRelativeToPoint(
+			position,
+			V3(0.0f, 0.0f, 1.0f), // look at neg z direction
+			V3(0.0f, 1.0f, 0.0f),
+			0.0f);
+		shadowMapCams[4]->positionRelativeToPoint(
+			position,
+			V3(0.0f, 1.0f, 0.0f), // look at pos y direction
+			V3(0.0f, 0.0f, 1.0f),
+			0.0f);
+		shadowMapCams[5]->positionRelativeToPoint(
+			position,
+			V3(0.0f, -1.0f, 0.0f), // look at neg y direction
+			V3(0.0f, 0.0f, 1.0f),
+			0.0f);
+	}
+	else {
+		shadowMapCams[0]->positionRelativeToPoint(
+			position,
+			direction,
+			V3(0.0f, 1.0f, 0.0f),
+			0.0f);
+	}
 }

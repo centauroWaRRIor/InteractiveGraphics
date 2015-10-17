@@ -98,6 +98,16 @@ class GUI {open
               callback {TestFBAs3DCloud_cb()}
               xywh {0 0 30 20}
             }
+            MenuItem TestShadowMap {
+              label {Test Shadow Mapping}
+              callback {TestShadowMap_cb()}
+              xywh {0 0 30 20}
+            }
+            MenuItem TestTexProj {
+              label {Test Texture Proj}
+              callback {TestTexProj_cb()} selected
+              xywh {0 0 30 20}
+            }
           }
         }
       }
@@ -225,7 +235,16 @@ scene->a3Demo();} {}
   }
   Function {TestFBAs3DCloud_cb()} {open
   } {
-    code {scene->renderFBAs3DPointCloud();} {selected
-    }
+    code {scene->renderFBAs3DPointCloud();} {}
+  }
+  Function {TestShadowMap_cb()} {open
+  } {
+    code {scene->regFuncForKbRedraw(Scenes::SHADOWTEST);
+scene->testShadowMap();} {}
+  }
+  Function {TestTexProj_cb()} {open
+  } {
+    code {scene->regFuncForKbRedraw(Scenes::TEXPROJTEST);
+scene->testTexProj();} {}
   }
 } 
