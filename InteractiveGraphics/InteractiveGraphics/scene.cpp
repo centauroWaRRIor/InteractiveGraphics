@@ -57,7 +57,9 @@ void Scene::drawTMesh(
 			planarPinholeCamera, 
 			*light,
 			nullptr,
+			nullptr,
 			isShadowsEnabled);
+
 	// drawing of AABB is overruled (not to be done) when drawing
 	// in model space interpolation mode. Reason being that drawAABB
 	// uses drawWireframe which in turn assumes depth test logic of 1/w near.

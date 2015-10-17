@@ -73,8 +73,10 @@ public:
 		FrameBuffer &fb, 
 		const PPC &ppc, 
 		const Light &light,
+		const LightProjector *const lightProj = nullptr,
 		const Texture *const texture = nullptr,
-		bool isShadowMapOn = false);
+		bool isShadowMapOn = false,
+		bool isLightProjOn = false);
 	// draws triangle mesh in filled mode using a single color and depth 1/w in screen
 	// coordinates mainly for shadow mapping purposes
 	void drawFilledFlatWithDepth(FrameBuffer &fb, const PPC &ppc, unsigned int color);

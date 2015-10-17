@@ -9,7 +9,7 @@ class TMesh;
 
 class Light
 {
-private:
+protected:
 	bool isPointLgiht; // is point light vs directional light
 	V3 position; // used for point lights
 	V3 direction; // used for directional lights (normalized)
@@ -33,7 +33,7 @@ public:
 
 	// return lit color for triangle vertex
 	V3 computeDiffuseContribution(const V3 &triangleVertex, const V3 &normal) const;
-	// return whether or not 3D poitn is in shadow casted by this light
+	// return whether or not 3D point is in shadow casted by this light
 	bool isPointInShadow(const V3 &point) const;
 	// renders array of triangle meshes into shadow maps
 	// Note: Using vector as opposed to TMesh *TMeshArray or

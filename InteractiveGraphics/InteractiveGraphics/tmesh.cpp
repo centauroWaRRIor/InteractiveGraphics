@@ -719,11 +719,13 @@ void TMesh::drawSprite(
 }
 
 void TMesh::drawLit(
-	FrameBuffer & fb, 
-	const PPC & ppc, 
+	FrameBuffer &fb,
+	const PPC &ppc,
 	const Light &light,
-	const Texture * const texture,
-	bool isShadowMapOn)
+	const LightProjector *const lightProj,
+	const Texture *const texture,
+	bool isShadowMapOn,
+	bool isLightProjOn)
 {
 	if ((vertsN == 0) || (trisN < 1)) {
 		cerr << "ERROR: Attempted to draw an empty mesh. "
@@ -819,7 +821,9 @@ void TMesh::drawLit(
 					sParameters, tParameters,
 					texture,
 					isShadowMapOn,
-					ppc);
+					ppc,
+					isLightProjOn,
+					lightProj);
 			}
 			else
 				cerr << "WARNING: Triangle screen footprint is stoo small, discarding..." << endl;

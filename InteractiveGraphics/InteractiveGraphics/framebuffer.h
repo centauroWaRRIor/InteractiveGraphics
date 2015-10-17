@@ -9,6 +9,7 @@ using std::string;
 #include "m33.h"
 #include "texture.h"
 #include "light.h"
+#include "lightprojector.h"
 
 class FrameBuffer; // Forward declaration
 
@@ -115,8 +116,11 @@ public:
 		const V3 &tCoords,
 		const Texture *const texture,
 		bool isShadowMapOn,
-		const PPC &cam);
-	// draw single color 2D triangle with depth test for shadow mapping 
+		const PPC &cam,
+		bool isLightProjOn,
+		const LightProjector *const lightProj);
+	// draw single color 2D triangle with depth test. Used for 
+	// building the shadow maps
 	void draw2DFlatTriangleWithDepth(
 		V3 *const pvs,
 		unsigned int color);

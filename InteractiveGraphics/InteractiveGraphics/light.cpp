@@ -91,7 +91,7 @@ bool Light::isPointInShadow(const V3 & point) const
 		if (isProjValid &&
 			(projP[0] > 0.0f) && (projP[0] < shadowMapCams[i]->getWidth()) &&
 			(projP[1] > 0.0f) && (projP[1] < shadowMapCams[i]->getHeight())) {
-			// if projection was valid query shadow map
+			// if projection was valid, query shadow map
 			return !(shadowMapCube[i]->isDepthTestPass(projP, epsilon));
 		}
 	}

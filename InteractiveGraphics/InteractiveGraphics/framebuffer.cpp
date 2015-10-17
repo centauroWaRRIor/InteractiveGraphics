@@ -891,7 +891,9 @@ void FrameBuffer::draw2DLitTriangle(
 	const V3 & tCoords, 
 	const Texture * const texture,
 	bool isShadowMapOn,
-	const PPC &cam)
+	const PPC &cam,
+	bool isLightProjOn,
+	const LightProjector *const lightProj)
 {
 	// compute screen axes-aligned bounding box for triangle 
 	// clipping against framebuffer
@@ -1022,12 +1024,17 @@ void FrameBuffer::draw2DLitTriangle(
 					interpolatedColor.setFromColor(texelColor);
 				}
 
-				if (isShadowMapOn) {
-					// get 3d point corresponding to this pixel
-					V3 pixel3dPoint = cam.unproject(V3(pixC[0], pixC[1], interpolatedDepth));
-					if (light.isPointInShadow(pixel3dPoint)) {
-						interpolatedColor = light.getMatColor() * light.getAmbientK();
-					}
+				// get 3d point corresponding to this pixel
+				V3 pixel3dPoint = cam.unproject(V3(pixC[0], pixC[1], interpolatedDepth));
+				if (isShadowMapOn && light.isPointInShadow(pixel3dPoint)) {
+					interpolatedColor = light.getMatColor() * light.getAmbientK();					
+				}
+
+				// TODO: Find a way to combine all these colors: interpolated, texture, lit and projLight color
+				// instead of overriding each other
+				V3 lightProjectorColor;
+				if (isLightProjOn && lightProj->getProjectedColor(pixel3dPoint, lightProjectorColor)) {
+					interpolatedColor = lightProjectorColor;
 				}
 
 				setIfOneOverWCloser(V3(pixC[0], pixC[1], interpolatedDepth), interpolatedColor);

@@ -135,6 +135,7 @@
     <ClCompile Include="framebuffer.cpp" />
     <ClCompile Include="gui.cxx" />
     <ClCompile Include="light.cpp" />
+    <ClCompile Include="lightprojector.cpp" />
     <ClCompile Include="lodepng.cpp" />
     <ClCompile Include="m33.cpp" />
     <ClCompile Include="ppc.cpp" />
@@ -149,6 +150,7 @@
     <ClInclude Include="glext.h" />
     <ClInclude Include="gui.h" />
     <ClInclude Include="light.h" />
+    <ClInclude Include="lightprojector.h" />
     <ClInclude Include="lodepng.h" />
     <ClInclude Include="m33.h" />
     <ClInclude Include="ppc.h" />
