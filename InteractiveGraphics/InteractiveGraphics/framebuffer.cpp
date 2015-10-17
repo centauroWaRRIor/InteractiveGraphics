@@ -229,7 +229,7 @@ void FrameBuffer::setIfWCloser(const V3 & p, const V3 & c)
 	set(u, v, c.getColor());
 }
 
-bool FrameBuffer::isDepthTestPass(const V3 & p)
+bool FrameBuffer::isDepthTestPass(const V3 & p, float epsilon)
 {
 	if ((p.getX() < 0.0f) || (p.getX() >= w) ||
 		(p.getY() < 0.0f) || (p.getY() >= h))
@@ -239,7 +239,15 @@ bool FrameBuffer::isDepthTestPass(const V3 & p)
 	int v = (int)p.getY();
 
 	// remember that the z component of the projected point is 1/z or 1/w
-	if (zb[(h - 1 - v)*w + u] >= p.getZ())
+	float zBufferValue = zb[(h - 1 - v)*w + u];
+	// compute epsilon difference to make sure we are not talking about the
+	// same 3D point. In other words, prevent a 3D point from occluding itself
+	// in shadow by looking at itself in the shadowmap 'mirror' sort of speak.
+	float difference = abs(zBufferValue - p.getZ());
+	if (difference < epsilon) {
+		return true;
+	}
+	else if (zBufferValue >= p.getZ())
 		return false;
 	else
 		return true;

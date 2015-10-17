@@ -90,6 +90,7 @@ V3 Light::computeDiffuseContribution(const V3 & triangleVertex, const V3 & norma
 
 bool Light::isPointInShadow(const V3 & point) const
 {
+	static float const epsilon = 0.01f;
 	V3 projP;
 	bool isProjValid;
 	// assumes the shadow map cube is up to date at this point
@@ -105,7 +106,7 @@ bool Light::isPointInShadow(const V3 & point) const
 			(projP[0] > 0.0f) && (projP[0] < shadowMapCams[i]->getWidth()) &&
 			(projP[1] > 0.0f) && (projP[1] < shadowMapCams[i]->getHeight())) {
 			// if projection was valid query shadow map
-			return !(shadowMapCube[i]->isDepthTestPass(projP));
+			return !(shadowMapCube[i]->isDepthTestPass(projP, epsilon));
 		}
 	}
 	// couldn't find a clear answer from shadow map cube so assume no

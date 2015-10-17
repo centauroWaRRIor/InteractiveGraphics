@@ -55,7 +55,7 @@ public:
 	void setIfWCloser(const V3 &p, const V3 &c);
 	// query if given 2D point (u,v,1/w) is closer that what is
 	// is stored in the zb
-	bool isDepthTestPass(const V3 &p);
+	bool isDepthTestPass(const V3 &p, float epsilon);
 
 	// draw 2D circle with no depth test
 	void draw2DCircle(float cuf, float cvf, float radius, unsigned int color);
