@@ -1026,17 +1026,35 @@ void FrameBuffer::draw2DLitTriangle(
 
 				// get 3d point corresponding to this pixel
 				V3 pixel3dPoint = cam.unproject(V3(pixC[0], pixC[1], interpolatedDepth));
+				// do shadow mapping
 				if (isShadowMapOn && light.isPointInShadow(pixel3dPoint)) {
 					interpolatedColor = light.getMatColor() * light.getAmbientK();					
 				}
 
-				// TODO: Find a way to combine all these colors: interpolated, texture, lit and projLight color
-				// instead of overriding each other
-				V3 lightProjectorColor;
-				if (isLightProjOn && lightProj->getProjectedColor(pixel3dPoint, lightProjectorColor)) {
-					interpolatedColor = lightProjectorColor;
+				// TODO: Find a way to combine the colors: interpolated, texture, lit and projLight color
+				// instead of overriding each other (projLight and lit color no longer override each other)
+				// do projective texture mapping
+				if (isLightProjOn && lightProj->getProjectedColor(pixel3dPoint, texelColor)) {
+					
+					V3 lightProjColor;
+					lightProjColor.setFromColor(texelColor);
+					unsigned char alpha = ((unsigned char*)(&texelColor))[3];
+					float alphaModulation = (float)(alpha) / 255.0f;
+					// make use of projective texture with alpha mask included (very useful for text)
+					if (alpha > 0)
+					{
+						if (isShadowMapOn) { // combine shadow and projected texture
+							
+							interpolatedColor[0] += (lightProjColor[0] * alphaModulation);
+							interpolatedColor[1] += (lightProjColor[1] * alphaModulation);
+							interpolatedColor[2] += (lightProjColor[2] * alphaModulation);
+						}
+						else { // just projected texture
+							interpolatedColor = lightProjColor * alphaModulation;
+						}
+					}
 				}
-
+				// set pixel in color framebuffer as well as depth buffer if depth test passes
 				setIfOneOverWCloser(V3(pixC[0], pixC[1], interpolatedDepth), interpolatedColor);
 			}
 		}

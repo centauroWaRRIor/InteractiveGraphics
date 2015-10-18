@@ -251,7 +251,14 @@ void Scene::dbgDraw() {
 		//texObjects[0] = new Texture("pngs\\Woven_flower_pxr128.png");
 
 		// create a light projector and set it up
-		lightProjector = new LightProjector("pngs\\Woven_flower_pxr128.png");
+		//lightProjector = new LightProjector("pngs\\Woven_flower_pxr128.png");
+		//lightProjector = new LightProjector("pngs\\Macbeth_color_checker_pxr128.png");
+		//lightProjector = new LightProjector("pngs\\White_brick_block_pxr128.png");
+		//lightProjector = new LightProjector("pngs\\Decal_12.png"); // test aplha
+		//lightProjector = new LightProjector("pngs\\T_Explosion_SubUV_alpha.png"); // test aplha
+		lightProjector = new LightProjector("pngs\\banskyGreen.png"); // test aplha best tone so far
+		
+		
 		lightProjector->setPosition(ppc->getEyePoint());
 		lightProjector->setDirection(ppc->getViewDir());
 
@@ -268,14 +275,15 @@ void Scene::dbgDraw() {
 
 	// clear screen
 	fb->set(0xFFFFFFFF);
+	//fb->set(0x00000000);
 	// clear zBuffer
 	if (currentDrawMode == DrawModes::MODELSPACELERP)
 		fb->clearZB(FLT_MAX);
 	else
 		fb->clearZB(0.0f);
 	// enable shadow mapping for the quad
-	drawTMesh(*tms[0], *fb, *ppc, false, false, true); 
-	drawTMesh(*tms[1], *fb, *ppc, false, false, true);
+	drawTMesh(*tms[0], *fb, *ppc, false, true , true);
+	drawTMesh(*tms[1], *fb, *ppc, false, true, true);
 	fb->redraw();
 	return;
 }

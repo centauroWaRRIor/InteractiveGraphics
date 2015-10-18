@@ -16,7 +16,7 @@ LightProjector::~LightProjector()
 	// no need to explicitly call it here
 }
 
-bool LightProjector::getProjectedColor(const V3 & point, V3 & outColor) const
+bool LightProjector::getProjectedColor(const V3 & point, unsigned int &outColor) const
 {
 	// determine if point projects to shadow region or not
 	static float const epsilon = 0.15f;
@@ -40,12 +40,16 @@ bool LightProjector::getProjectedColor(const V3 & point, V3 & outColor) const
 
 		// derive s,t [0-1] assuming texture is applied to shadowmap framebuffer
 		projP[0] = projP[0] / shadowMapCams[0]->getWidth();
-		projP[1] = projP[1] / shadowMapCams[0]->getHeight();
+		projP[1] = (shadowMapCams[0]->getHeight() - projP[1]) / 
+			shadowMapCams[0]->getHeight(); // v is inverted
 		// sample texture using s,t of the projected pixel coordinates
-		texelColor = texObject->sampleTexBilinearTile(projP[0], projP[1]);
-		outColor.setFromColor(texelColor);
+		// using near clamp for two reasons: No need for tiling since uvs come
+		// from screen coordinates and second reason is that bilinear does not
+		// support alpha at the time.
+		texelColor = texObject->sampleTexNearClamp(projP[0], projP[1]);
+		outColor = texelColor;
 		return true;
 	}
-	outColor = V3(0.0f, 0.0f, 0.0f);
+	outColor = 0x00000000;
 	return false;
 }
