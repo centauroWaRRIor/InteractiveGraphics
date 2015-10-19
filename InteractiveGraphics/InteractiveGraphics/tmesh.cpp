@@ -889,8 +889,12 @@ void TMesh::projectVertices(const PPC & ppc)
 void TMesh::rotateAboutAxis(const V3 &aO, const V3 &adir, float theta)
 {
 	for (int vi = 0; vi < vertsN; vi++) {
-		
+		// rotate TMesh's vertices
 		verts[vi].rotateThisPointAboutAxis(aO, adir, theta);
+		// rotate TMesh's normals if available
+		if (normals) {
+			normals[vi].rotateThisVectorAboutDirection(adir, theta);
+		}
 	}
 	// recompute AABB
 	delete aabb;

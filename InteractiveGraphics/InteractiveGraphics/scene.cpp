@@ -227,48 +227,53 @@ void Scene::dbgDraw() {
 	if (!isDGBInit) {
 		
 		cleanForNewScene();
-		// prepare 2 meshes
+		// prepare 3 meshes
 		tms[0] = new TMesh();
-		tms[1] = new TMesh();
+		//tms[1] = new TMesh();
+		//tms[2] = new TMesh();
 
-		// look at quads full frontal
-		ppc->moveForward(-400.0f);
-		ppc->moveUp(120.0f);
-		ppc->moveRight(100.0f);
+		// set up initial camera view
+		ppc->moveForward(-180.0f);
+		ppc->moveUp(100.0f);
+		ppc->moveRight(120.0f);
+		ppc->tilt(-25);
+
+		// enable tiling for floor quad
+		tms[0]->createQuadTestTMesh(true);
+
+		// load floor texture
+		texObjects[0] = new Texture("pngs\\American_walnut_pxr128.png");
+
+		// use quad mesh as the floor
+		// make bigger
+		tms[0]->scale(6.0f);
+		// put in floor position
+		tms[0]->rotateAboutAxis(V3(0.0f, 0.0f, 0.0f), V3(1.0f, 0.0f, 0.0f), -90.0f);
+		// center
+		//tms[0]->translate(V3(-100.0f, 0.0f, 80.0f));
+		//tms[0]->translate(V3(0.0f, 0.0f, 80.0f));
 
 		// set up light
 		light->setAmbientK(0.4f);
 		light->setMatColor(V3(1.0f, 0.0f, 0.0f));
-		light->setPosition(ppc->getEyePoint());
+		// put right above floor center to test normal transformation
+		light->setPosition(V3(120.0f, 100.0f, -120.0f));
 
 		// Create a plane TMesh and a teapot TMesh
-		tms[0]->createQuadTestTMesh(false);
-		tms[0]->scale(6.0f);
-		tms[1]->loadBin("geometry/teapot1K.bin");
-		tms[1]->translate(V3(130.0f, 100.0f, 50.0f));
-
-		// load texture
-		//texObjects[0] = new Texture("pngs\\Woven_flower_pxr128.png");
+		//tms[1]->loadBin("geometry/teapot1K.bin");
+		//tms[1]->translate(V3(130.0f, 100.0f, 50.0f));
 
 		// create a light projector and set it up
-		//lightProjector = new LightProjector("pngs\\Woven_flower_pxr128.png");
-		//lightProjector = new LightProjector("pngs\\Macbeth_color_checker_pxr128.png");
-		//lightProjector = new LightProjector("pngs\\White_brick_block_pxr128.png");
-		//lightProjector = new LightProjector("pngs\\Decal_12.png"); // test aplha
-		//lightProjector = new LightProjector("pngs\\T_Explosion_SubUV_alpha.png"); // test aplha
-		lightProjector = new LightProjector("pngs\\banskyGreen.png"); // test aplha best tone so far
-		
-		
-		lightProjector->setPosition(ppc->getEyePoint());
-		lightProjector->setDirection(ppc->getViewDir());
-
+		//lightProjector = new LightProjector("pngs\\banskyGreen.png"); // test aplha best tone so far
+		//lightProjector->setPosition(ppc->getEyePoint());
+		//lightProjector->setDirection(ppc->getViewDir());
 		// create shadow maps
-		vector<TMesh *> tMeshArray;
-		for (int j = 0; j < 2; j++) {
-			tMeshArray.push_back(tms[j]);
-		}
-		light->buildShadowMaps(tMeshArray);
-		lightProjector->buildShadowMaps(tMeshArray,true);
+		//vector<TMesh *> tMeshArray;
+		//for (int j = 0; j < 2; j++) {
+		//	tMeshArray.push_back(tms[j]);
+		//}
+		//light->buildShadowMaps(tMeshArray);
+		//lightProjector->buildShadowMaps(tMeshArray,true);
 
 		isDGBInit = true;
 	}
@@ -282,8 +287,8 @@ void Scene::dbgDraw() {
 	else
 		fb->clearZB(0.0f);
 	// enable shadow mapping for the quad
-	drawTMesh(*tms[0], *fb, *ppc, false, true , true);
-	drawTMesh(*tms[1], *fb, *ppc, false, true, true);
+	drawTMesh(*tms[0], *fb, *ppc, false, true , false);
+	//drawTMesh(*tms[1], *fb, *ppc, false, true, true);
 	fb->redraw();
 	return;
 }
@@ -1050,8 +1055,65 @@ void Scene::testShadowMap(void)
 void Scene::testTexProj(void)
 {
 	if (!isTexProjectTestInit) {
+
+		cleanForNewScene();
+		// prepare 2 meshes
+		tms[0] = new TMesh();
+		tms[1] = new TMesh();
+
+		// look at quads full frontal
+		ppc->moveForward(-400.0f);
+		ppc->moveUp(120.0f);
+		ppc->moveRight(100.0f);
+
+		// set up light
+		light->setAmbientK(0.4f);
+		light->setMatColor(V3(1.0f, 0.0f, 0.0f));
+		light->setPosition(ppc->getEyePoint());
+
+		// Create a plane TMesh and a teapot TMesh
+		tms[0]->createQuadTestTMesh(false);
+		tms[0]->scale(6.0f);
+		tms[1]->loadBin("geometry/teapot1K.bin");
+		tms[1]->translate(V3(130.0f, 100.0f, 50.0f));
+
+		// load texture
+		//texObjects[0] = new Texture("pngs\\Woven_flower_pxr128.png");
+
+		// create a light projector and set it up
+		//lightProjector = new LightProjector("pngs\\Woven_flower_pxr128.png");
+		//lightProjector = new LightProjector("pngs\\Macbeth_color_checker_pxr128.png");
+		//lightProjector = new LightProjector("pngs\\White_brick_block_pxr128.png");
+		//lightProjector = new LightProjector("pngs\\Decal_12.png"); // test aplha
+		//lightProjector = new LightProjector("pngs\\T_Explosion_SubUV_alpha.png"); // test aplha
+		lightProjector = new LightProjector("pngs\\banskyGreen.png"); // test aplha best tone so far
+		lightProjector->setPosition(ppc->getEyePoint());
+		lightProjector->setDirection(ppc->getViewDir());
+
+		// create shadow maps
+		vector<TMesh *> tMeshArray;
+		for (int j = 0; j < 2; j++) {
+			tMeshArray.push_back(tms[j]);
+		}
+		light->buildShadowMaps(tMeshArray);
+		lightProjector->buildShadowMaps(tMeshArray, true);
+
 		isTexProjectTestInit = true;
 	}
+
+	// clear screen
+	fb->set(0xFFFFFFFF);
+	//fb->set(0x00000000);
+	// clear zBuffer
+	if (currentDrawMode == DrawModes::MODELSPACELERP)
+		fb->clearZB(FLT_MAX);
+	else
+		fb->clearZB(0.0f);
+	// enable shadow mapping for the quad
+	drawTMesh(*tms[0], *fb, *ppc, false, true, true);
+	drawTMesh(*tms[1], *fb, *ppc, false, true, true);
+	fb->redraw();
+	return;
 }
 
 void Scene::saveCamera(void) const
