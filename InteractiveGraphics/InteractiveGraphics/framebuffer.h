@@ -112,6 +112,7 @@ public:
 		const V3 *const normals,
 		const Light &light,
 		M33 perspCorrectMatQ,
+		bool isTexturedOn,
 		const V3 &sCoords,
 		const V3 &tCoords,
 		const Texture *const texture,

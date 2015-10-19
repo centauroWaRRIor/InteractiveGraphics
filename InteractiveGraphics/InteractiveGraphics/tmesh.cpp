@@ -724,6 +724,7 @@ void TMesh::drawLit(
 	const Light &light,
 	const LightProjector *const lightProj,
 	const Texture *const texture,
+	bool isTexturedOn,
 	bool isShadowMapOn,
 	bool isLightProjOn)
 {
@@ -790,13 +791,20 @@ void TMesh::drawLit(
 		currnormals[1] = normals[tris[3 * tri + 1]];
 		currnormals[2] = normals[tris[3 * tri + 2]];
 
-		// grab current triangle texture coordinates
-		sParameters[0] = tcs[tris[3 * tri + 0] * 2 + 0];
-		sParameters[1] = tcs[tris[3 * tri + 1] * 2 + 0];
-		sParameters[2] = tcs[tris[3 * tri + 2] * 2 + 0];
-		tParameters[0] = tcs[tris[3 * tri + 0] * 2 + 1];
-		tParameters[1] = tcs[tris[3 * tri + 1] * 2 + 1];
-		tParameters[2] = tcs[tris[3 * tri + 2] * 2 + 1];
+		if (isTexturedOn) {
+			// grab current triangle texture coordinates
+			sParameters[0] = tcs[tris[3 * tri + 0] * 2 + 0];
+			sParameters[1] = tcs[tris[3 * tri + 1] * 2 + 0];
+			sParameters[2] = tcs[tris[3 * tri + 2] * 2 + 0];
+			tParameters[0] = tcs[tris[3 * tri + 0] * 2 + 1];
+			tParameters[1] = tcs[tris[3 * tri + 1] * 2 + 1];
+			tParameters[2] = tcs[tris[3 * tri + 2] * 2 + 1];
+		}
+		else {
+			// make something up, they won't be used anyways
+			sParameters = V3(0.0f, 1.0f, 0.0f);
+			tParameters = V3(0.0f, 1.0f, 1.0f);
+		}
 
 		if (isVisible) {
 
@@ -817,7 +825,8 @@ void TMesh::drawLit(
 
 				fb.draw2DLitTriangle(
 					currvs, tProjVerts, currcols, currnormals,
-					light, perspCorrectMatQ, 
+					light, perspCorrectMatQ,
+					isTexturedOn,
 					sParameters, tParameters,
 					texture,
 					isShadowMapOn,

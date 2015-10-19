@@ -887,6 +887,7 @@ void FrameBuffer::draw2DLitTriangle(
 	const V3 * const normals,
 	const Light & light, 
 	M33 Q, 
+	bool isTexturedOn,
 	const V3 & sCoords, 
 	const V3 & tCoords, 
 	const Texture * const texture,
@@ -1017,7 +1018,7 @@ void FrameBuffer::draw2DLitTriangle(
 				interpolatedDepth = depthABC * pixC; // 1/w at current pixel interpolated lin. in s s
 
 				// TODO: Combine texture color with lit color instead of overriding each other
-				if (texture != nullptr) {
+				if (isTexturedOn && texture != nullptr) {
 					// sample texture using lerped result of s,t raster parameters (in model space)
 					texelColor = texture->sampleTexBilinearTile(interpolatedS, interpolatedT);
 					// override interpolated color for now. In the future texel can be modulated by color

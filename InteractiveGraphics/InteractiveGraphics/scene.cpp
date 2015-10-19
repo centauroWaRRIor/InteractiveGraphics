@@ -52,23 +52,16 @@ void Scene::drawTMesh(
 		tMesh.drawFilledFlatBarycentric(frameBuffer, planarPinholeCamera);
 	else if (currentDrawMode == DrawModes::MODELSPACELERP)
 		tMesh.drawFilledFlatPerspCorrect(frameBuffer, planarPinholeCamera);
-	else if (currentDrawMode == DrawModes::LIT && !isLightProjEnabled)
-		tMesh.drawLit(
-			frameBuffer, 
-			planarPinholeCamera, 
-			*light,
-			nullptr,
-			nullptr,
-			isShadowsEnabled);
-	else if(currentDrawMode == DrawModes::LIT)
+	else if (currentDrawMode == DrawModes::LIT)
 		tMesh.drawLit(
 			frameBuffer,
 			planarPinholeCamera,
 			*light,
 			lightProjector,
 			nullptr,
+			false, // not texturing at this point
 			isShadowsEnabled,
-			true);
+			isLightProjEnabled);
 
 	// drawing of AABB is overruled (not to be done) when drawing
 	// in model space interpolation mode. Reason being that drawAABB
@@ -229,35 +222,42 @@ void Scene::dbgDraw() {
 		cleanForNewScene();
 		// prepare 3 meshes
 		tms[0] = new TMesh();
-		//tms[1] = new TMesh();
-		//tms[2] = new TMesh();
+		tms[1] = new TMesh();
+		tms[2] = new TMesh();
 
 		// set up initial camera view
 		ppc->moveForward(-180.0f);
 		ppc->moveUp(100.0f);
-		ppc->moveRight(120.0f);
+		ppc->moveRight(140.0f);
 		ppc->tilt(-25);
 
 		// enable tiling for floor quad
 		tms[0]->createQuadTestTMesh(true);
+		tms[1]->loadBin("geometry/happy4.bin");
+		tms[2]->loadBin("geometry/teapot1K.bin");
+
+		// scale happy mesh to be same scale as teapots
+		AABB teapotAABB = tms[2]->getAABB();
+		tms[1]->setToFitAABB(teapotAABB);
 
 		// load floor texture
 		texObjects[0] = new Texture("pngs\\American_walnut_pxr128.png");
 
 		// use quad mesh as the floor
 		// make bigger
-		tms[0]->scale(6.0f);
+		tms[0]->scale(7.0f);
 		// put in floor position
 		tms[0]->rotateAboutAxis(V3(0.0f, 0.0f, 0.0f), V3(1.0f, 0.0f, 0.0f), -90.0f);
-		// center
-		//tms[0]->translate(V3(-100.0f, 0.0f, 80.0f));
-		//tms[0]->translate(V3(0.0f, 0.0f, 80.0f));
+		// position happy tmesh at the center of floor
+		tms[1]->translate(V3(200.0f, 0.0f, -140.0f));
+		// position happy tmesh at the center of floor
+		tms[2]->translate(V3(120.0f, 0.0f, -200.0f));
 
 		// set up light
 		light->setAmbientK(0.4f);
 		light->setMatColor(V3(1.0f, 0.0f, 0.0f));
 		// put right above floor center to test normal transformation
-		light->setPosition(V3(120.0f, 100.0f, -120.0f));
+		light->setPosition(V3(140.0f, 100.0f, -140.0f));
 
 		// Create a plane TMesh and a teapot TMesh
 		//tms[1]->loadBin("geometry/teapot1K.bin");
@@ -287,8 +287,9 @@ void Scene::dbgDraw() {
 	else
 		fb->clearZB(0.0f);
 	// enable shadow mapping for the quad
-	drawTMesh(*tms[0], *fb, *ppc, false, true , false);
-	//drawTMesh(*tms[1], *fb, *ppc, false, true, true);
+	drawTMesh(*tms[0], *fb, *ppc, false, true, false);
+	drawTMesh(*tms[1], *fb, *ppc, false, true, false);
+	drawTMesh(*tms[2], *fb, *ppc, false, true, false);
 	fb->redraw();
 	return;
 }
