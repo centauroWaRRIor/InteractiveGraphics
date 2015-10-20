@@ -138,6 +138,16 @@ void Light::buildShadowMaps(
 	}
 }
 
+void Light::draw(FrameBuffer & fb, const PPC & ppc, V3 & color) const
+{
+	const float lightDotSize = 10.0f;
+	V3 projLightPos;
+	if (ppc.project(this->position, projLightPos)) {
+		// Draw light as camera aligned circle
+		fb.draw2DCircleIfCloser(projLightPos, lightDotSize, color);
+	}
+}
+
 void Light::cleanShadowMaps(void)
 {
 	for (unsigned int i = 0; i < shadowMapsN; i++) {

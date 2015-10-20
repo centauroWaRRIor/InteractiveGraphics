@@ -226,10 +226,11 @@ void Scene::dbgDraw() {
 		tms[2] = new TMesh();
 
 		// set up initial camera view
-		ppc->moveForward(-180.0f);
+		//ppc->moveForward(-200.0f);
+		ppc->moveForward(-240.0f);
 		ppc->moveUp(100.0f);
-		ppc->moveRight(140.0f);
-		ppc->tilt(-25);
+		ppc->moveRight(150.0f);
+		ppc->tilt(-15);
 
 		// enable tiling for floor quad
 		tms[0]->createQuadTestTMesh(true);
@@ -249,15 +250,13 @@ void Scene::dbgDraw() {
 		// put in floor position
 		tms[0]->rotateAboutAxis(V3(0.0f, 0.0f, 0.0f), V3(1.0f, 0.0f, 0.0f), -90.0f);
 		// position happy tmesh at the center of floor
-		tms[1]->translate(V3(200.0f, 0.0f, -140.0f));
-		// position happy tmesh at the center of floor
+		tms[1]->translate(V3(200.0f, 23.0f, -140.0f));
+		// position teapot tmesh at the center of floor
 		tms[2]->translate(V3(120.0f, 0.0f, -200.0f));
 
 		// set up light
 		light->setAmbientK(0.4f);
 		light->setMatColor(V3(1.0f, 0.0f, 0.0f));
-		// put right above floor center to test normal transformation
-		light->setPosition(V3(140.0f, 100.0f, -140.0f));
 
 		// Create a plane TMesh and a teapot TMesh
 		//tms[1]->loadBin("geometry/teapot1K.bin");
@@ -278,19 +277,35 @@ void Scene::dbgDraw() {
 		isDGBInit = true;
 	}
 
-	// clear screen
-	fb->set(0xFFFFFFFF);
-	//fb->set(0x00000000);
-	// clear zBuffer
-	if (currentDrawMode == DrawModes::MODELSPACELERP)
-		fb->clearZB(FLT_MAX);
-	else
-		fb->clearZB(0.0f);
-	// enable shadow mapping for the quad
-	drawTMesh(*tms[0], *fb, *ppc, false, true, false);
-	drawTMesh(*tms[1], *fb, *ppc, false, true, false);
-	drawTMesh(*tms[2], *fb, *ppc, false, true, false);
-	fb->redraw();
+	// initial light position
+	light->setPosition(V3(280.0f, 0.0f, 0.0f));
+	// set up axis to rotate light about
+	V3 lightAxisRot = V3(280.0f, 0.0f, -280.0f) - V3(0.0f, 0.0f, 0.0f);
+	lightAxisRot.normalize();
+	V3 lightPos = light->getPosition();
+	V3 lightPosRot;
+	for (float steps = 0.0f; steps < 180.0f; steps += 1.0f) {
+		// clear screen
+		fb->set(0xFFFFFFFF);
+		//fb->set(0x00000000);
+		// clear zBuffer
+		if (currentDrawMode == DrawModes::MODELSPACELERP)
+			fb->clearZB(FLT_MAX);
+		else
+			fb->clearZB(0.0f);
+		// rotate light position
+		lightPosRot = lightPos;
+		lightPosRot.rotateThisPointAboutAxis(V3(0.0f, 0.0f, 0.0f), lightAxisRot, -steps);
+		light->setPosition(lightPosRot);
+		// draw light for light position debug
+		light->draw(*fb, *ppc, V3(0.5f, 0.3f, 0.0f));
+		// draw meshes
+		drawTMesh(*tms[0], *fb, *ppc, false, true, false);
+		drawTMesh(*tms[1], *fb, *ppc, false, true, false);
+		drawTMesh(*tms[2], *fb, *ppc, false, true, false);
+		fb->redraw();
+		Fl::check();
+	}
 	return;
 }
 

@@ -43,6 +43,8 @@ public:
 	void buildShadowMaps(
 		vector<TMesh *> &tMeshArray,
 		bool isDbgShowShadowMaps = false);
+	// draws itself for visual debug
+	void draw(FrameBuffer &fb, const PPC &ppc, V3 &color) const;
 
 	// getters
 	bool getIsPointLight(void) const { return isPointLgiht; }
