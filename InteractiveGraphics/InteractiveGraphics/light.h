@@ -29,7 +29,7 @@ protected:
 	void setUpShadowMapCams(void);
 
 public:
-	Light(bool isPointLight = true);
+	Light(bool isPointLight = true, float hfov = 0.0f);
 	~Light();
 
 	// return lit color for triangle vertex

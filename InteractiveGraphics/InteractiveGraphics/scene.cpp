@@ -259,7 +259,10 @@ void Scene::dbgDraw() {
 		// position teapot tmesh at the center of floor
 		tms[2]->translate(V3(120.0f, 0.0f, -200.0f));
 
-		// set up light
+		// set up light, build this light with a special HFOV for shadow maps
+		delete light;
+		light = nullptr;
+		light = new Light(true, 90.0f);
 		light->setAmbientK(0.4f);
 		light->setMatColor(V3(1.0f, 0.0f, 0.0f));
 

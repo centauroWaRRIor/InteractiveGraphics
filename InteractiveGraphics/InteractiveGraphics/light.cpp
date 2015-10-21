@@ -4,7 +4,7 @@
 #include "ppc.h"
 #include "scene.h"
 
-Light::Light(bool isPointLight) :
+Light::Light(bool isPointLight, float hfov) :
 	isPointLgiht(isPointLight),
 	position(V3()),
 	direction(V3(0.0f, 0.0f, -1.0f)), // this can't be zero by default or it will affect positioning
@@ -18,9 +18,12 @@ Light::Light(bool isPointLight) :
 	// these shadow map cameras have to match its view frustrum.
 	shadowMapResWidth(Scene::K_W),
 	shadowMapResHeight(Scene::K_H),
-	shadowMapResHfov(Scene::K_HFOV)
+	shadowMapResHfov(hfov)
 
 {
+	if (hfov == 0.0f) // default, no hfov was provided
+		shadowMapResHfov = Scene::K_HFOV;
+
 	if (isPointLight) {
 		// a point light supports a shadow cubemap however 
 		// current implementation of cubemap construction has
