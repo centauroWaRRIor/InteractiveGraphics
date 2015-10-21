@@ -217,6 +217,11 @@ Scene::~Scene()
 // function linked to the DBG GUI button for testing new features
 void Scene::dbgDraw() {
 
+	vector<TMesh *> tMeshArray;
+	V3 sceneCentroid;
+	V3 shadowmapDirection;
+	V3 lightPosRot, lightAxisRot, lightPos;
+
 	if (!isDGBInit) {
 		
 		cleanForNewScene();
@@ -262,24 +267,29 @@ void Scene::dbgDraw() {
 		//lightProjector = new LightProjector("pngs\\banskyGreen.png"); // test aplha best tone so far
 		//lightProjector->setPosition(ppc->getEyePoint());
 		//lightProjector->setDirection(ppc->getViewDir());
+		
+		// create tMesh array to buiild shadow map later
+		for (int j = 0; j < 3; j++) {
+			tMeshArray.push_back(tms[j]);
+		}
 
+		// calculate scene's centroid
+		for (int j = 0; j < 3; j++) {
+			sceneCentroid += tms[j]->getCenter();
+		}
+		sceneCentroid = sceneCentroid / 3.0f;
+		
 		isDGBInit = true;
-	}
-
-	// create shadow maps
-	vector<TMesh *> tMeshArray;
-	for (int j = 0; j < 3; j++) {
-		tMeshArray.push_back(tms[j]);
 	}
 	
 	// initial light position
-	//light->setPosition(V3(280.0f, 0.0f, 0.0f));
-	light->setPosition(V3(450.0f, 20.0f, -140.0f));
+	light->setPosition(V3(280.0f, 0.0f, 0.0f));
+	//light->setPosition(V3(450.0f, 20.0f, -140.0f));
 	// set up axis to rotate light about
-	V3 lightAxisRot = V3(280.0f, 0.0f, -280.0f) - V3(0.0f, 0.0f, 0.0f);
+	lightAxisRot = V3(280.0f, 0.0f, -280.0f) - V3(0.0f, 0.0f, 0.0f);
 	lightAxisRot.normalize();
-	V3 lightPos = light->getPosition();
-	V3 lightPosRot;
+	lightPos = light->getPosition();
+	
 	//for (float steps = 0.0f; steps < 180.0f; steps += 1.0f) {
 		// clear screen
 		fb->set(0xFFFFFFFF);
@@ -292,10 +302,14 @@ void Scene::dbgDraw() {
 		// rotate light position
 		lightPosRot = lightPos;
 		//lightPosRot.rotateThisPointAboutAxis(V3(0.0f, 0.0f, 0.0f), lightAxisRot, -steps);
-		lightPosRot.rotateThisPointAboutAxis(V3(0.0f, 0.0f, 0.0f), lightAxisRot, -30.0f);
-		//light->setPosition(lightPosRot);
+		lightPosRot.rotateThisPointAboutAxis(V3(0.0f, 0.0f, 0.0f), lightAxisRot, -90.0f);
+		light->setPosition(lightPosRot);
+		// figure out shadow map direction so it captures most of the scene
+		shadowmapDirection = sceneCentroid - light->getPosition();
+		shadowmapDirection.normalize();
+		light->setDirection(shadowmapDirection);
 		// since light position changed, update shadow maps
-		light->buildShadowMaps(tMeshArray, true);
+		light->buildShadowMaps(tMeshArray, false);
 		//lightProjector->buildShadowMaps(tMeshArray, false);
 		// draw light for light position debug
 		light->draw(*fb, *ppc, V3(0.5f, 0.3f, 0.0f));
