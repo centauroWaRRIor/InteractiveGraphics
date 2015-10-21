@@ -217,8 +217,6 @@ Scene::~Scene()
 // function linked to the DBG GUI button for testing new features
 void Scene::dbgDraw() {
 
-	vector<TMesh *> tMeshArray;
-	V3 sceneCentroid;
 	V3 shadowmapDirection;
 	V3 lightPosRot, lightAxisRot, lightPos;
 
@@ -271,20 +269,22 @@ void Scene::dbgDraw() {
 		//lightProjector->setPosition(ppc->getEyePoint());
 		//lightProjector->setDirection(ppc->getViewDir());
 		
-		// create tMesh array to buiild shadow map later
-		for (int j = 0; j < 3; j++) {
-			tMeshArray.push_back(tms[j]);
-		}
-
-		// calculate scene's centroid
-		for (int j = 0; j < 3; j++) {
-			sceneCentroid += tms[j]->getCenter();
-		}
-		sceneCentroid = sceneCentroid / 3.0f;
-		
 		isDGBInit = true;
 	}
-	
+
+	vector<TMesh *> tMeshArray;
+	// create tMesh array to buiild shadow map later
+	for (int j = 0; j < 3; j++) {
+		tMeshArray.push_back(tms[j]);
+	}
+
+	// calculate scene's centroid
+	V3 sceneCentroid;
+	for (int j = 0; j < 3; j++) {
+		sceneCentroid += tms[j]->getCenter();
+	}
+	sceneCentroid = sceneCentroid / 3.0f;
+
 	// initial light position
 	light->setPosition(V3(280.0f, 0.0f, 0.0f));
 	//light->setPosition(V3(450.0f, 20.0f, -140.0f));
@@ -293,7 +293,7 @@ void Scene::dbgDraw() {
 	lightAxisRot.normalize();
 	lightPos = light->getPosition();
 	
-	//for (float steps = 0.0f; steps < 180.0f; steps += 1.0f) {
+	for (float steps = 0.0f; steps < 180.0f; steps += 1.6f) {
 		// clear screen
 		fb->set(0xFFFFFFFF);
 		//fb->set(0x00000000);
@@ -304,26 +304,23 @@ void Scene::dbgDraw() {
 			fb->clearZB(0.0f);
 		// rotate light position
 		lightPosRot = lightPos;
-		//lightPosRot.rotateThisPointAboutAxis(V3(0.0f, 0.0f, 0.0f), lightAxisRot, -steps);
-		lightPosRot.rotateThisPointAboutAxis(V3(0.0f, 0.0f, 0.0f), lightAxisRot, -90.0f);
+		lightPosRot.rotateThisPointAboutAxis(V3(0.0f, 0.0f, 0.0f), lightAxisRot, -steps);
 		light->setPosition(lightPosRot);
 		// figure out shadow map direction so it captures most of the scene
 		shadowmapDirection = sceneCentroid - light->getPosition();
 		shadowmapDirection.normalize();
 		light->setDirection(shadowmapDirection);
 		// since light position changed, update shadow maps
-		light->buildShadowMaps(tMeshArray, false);
-		//lightProjector->buildShadowMaps(tMeshArray, false);
+		light->buildShadowMaps(tMeshArray, true);
 		// draw light for light position debug
 		light->draw(*fb, *ppc, V3(0.5f, 0.3f, 0.0f));
 		// draw meshes
-		drawTMesh(*tms[0], *fb, *ppc, false, true);
-		//drawTMesh(*tms[0], *fb, *ppc, false, true, false);
+		drawTMesh(*tms[0], *fb, *ppc, false, true, false);
 		drawTMesh(*tms[1], *fb, *ppc, false, true, false);
 		drawTMesh(*tms[2], *fb, *ppc, false, true, false);
 		fb->redraw();
-		//Fl::check();
-	//}
+		Fl::check();
+	}
 	return;
 }
 

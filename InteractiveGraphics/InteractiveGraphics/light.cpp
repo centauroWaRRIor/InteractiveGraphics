@@ -183,14 +183,17 @@ void Light::buildShadowMaps(
 	}
 
 	// For debug, visualize these shadowMaps as framebuffers
-	if (isDbgShowShadowMaps  && isUsingCubemap) {
+	if (isDbgShowShadowMaps && isUsingCubemap) {
 		for (unsigned int i = 0; i < shadowMapsN; i++) {
 			shadowMapCube[i]->show();
 		}
 	}
 	// its either a directional light or a point light with cubemap disabled
-	else {
-		shadowMapCube[0]->show();
+	else if(isDbgShowShadowMaps) {
+		if (!shadowMapCube[0]->shown())
+			shadowMapCube[0]->show();
+		else
+			shadowMapCube[0]->redraw();
 	}
 }
 
