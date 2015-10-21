@@ -11,6 +11,7 @@ class Light
 {
 protected:
 	bool isPointLgiht; // is point light vs directional light
+	bool isUsingCubemap; // cubemap is an option only for point lights
 	V3 position; // used for point lights
 	V3 direction; // used for directional lights (normalized)
 	V3 color;
@@ -60,5 +61,6 @@ public:
 	void setColor(const V3 &col) { color = col; }
 	void setMatColor(const V3 &matCol) { matColor = matCol; }
 	void setAmbientK(float ka) { ambientK = ka; }
+	void setIsUsingCubemap(bool value) { isUsingCubemap = value; }
 };
 

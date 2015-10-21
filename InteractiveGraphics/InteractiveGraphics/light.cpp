@@ -22,10 +22,22 @@ Light::Light(bool isPointLight) :
 
 {
 	if (isPointLight) {
+		// a point light supports a shadow cubemap however 
+		// current implementation of cubemap construction has
+		// limitations (too many blind spots) and has been
+		// turned off by default for now. It can be turned back
+		// on by calling setIsUsingCubemap(true)
 		shadowMapsN = 6;
+		isUsingCubemap = false;
+		// when isUsinfCubemap is false only the first shadow
+		// map in the cube is used an is built using a camera 
+		// with a specified direction simmilar to how its done
+		// for directional lights.
 	}
 	else { // directional light 
 		shadowMapsN = 1;
+		// directional lights don't need a shadow cube map
+		isUsingCubemap = false;
 	}
 
 	shadowMapCube = new FrameBuffer*[shadowMapsN];
@@ -78,23 +90,41 @@ V3 Light::computeDiffuseContribution(const V3 & triangleVertex, const V3 & norma
 
 bool Light::isPointInShadow(const V3 & point) const
 {
+	// assumes the shadow map or shadow maps are to date at this point
 	static float const epsilon = 0.15f;
 	V3 projP;
 	bool isProjValid;
-	// assumes the shadow map cube is up to date at this point
-	// iterate through shadow maps until we find an answer
-	for (unsigned int i = 0; i < shadowMapsN; i++) {
+	// determine if using shadow map cube
+	if (isPointLgiht && isUsingCubemap) {
+		// iterate through shadow maps until we find an answer
+		for (unsigned int i = 0; i < shadowMapsN; i++) {
+			// project 3d point into ith shadow map for query
+			isProjValid = shadowMapCams[i]->project(point, projP);
+			// be very strict with the projection:
+			// no projection if:
+			// point is left of view frustrum or is right of view frustrum
+			// or is above view frustrum or is below of view frustrum
+			if (isProjValid &&
+				(projP[0] > 0.0f) && (projP[0] < shadowMapCams[i]->getWidth()) &&
+				(projP[1] > 0.0f) && (projP[1] < shadowMapCams[i]->getHeight())) {
+				// if projection was valid, query shadow map
+				return !(shadowMapCube[i]->isDepthTestPass(projP, epsilon));
+			}
+		}	
+	}
+	// its either a directional light or a point light with cubemap disabled
+	else {
 		// project 3d point into shadow map for query
-		isProjValid = shadowMapCams[i]->project(point, projP);
+		isProjValid = shadowMapCams[0]->project(point, projP);
 		// be very strict with the projection:
 		// no projection if:
 		// point is left of view frustrum or is right of view frustrum
 		// or is above view frustrum or is below of view frustrum
 		if (isProjValid &&
-			(projP[0] > 0.0f) && (projP[0] < shadowMapCams[i]->getWidth()) &&
-			(projP[1] > 0.0f) && (projP[1] < shadowMapCams[i]->getHeight())) {
+			(projP[0] > 0.0f) && (projP[0] < shadowMapCams[0]->getWidth()) &&
+			(projP[1] > 0.0f) && (projP[1] < shadowMapCams[0]->getHeight())) {
 			// if projection was valid, query shadow map
-			return !(shadowMapCube[i]->isDepthTestPass(projP, epsilon));
+			return !(shadowMapCube[0]->isDepthTestPass(projP, epsilon));
 		}
 	}
 	// couldn't find a clear answer from shadow map cube so assume no
@@ -112,29 +142,52 @@ void Light::buildShadowMaps(
 	};
 	cleanShadowMaps();
 	setUpShadowMapCams();
-	// For all the shadow maps 
-	// (6 sides of shadow map cube for point lights or 
-	// just one shadow map for directional lights)
-	for (unsigned int i = 0; i < shadowMapsN; i ++ ) {
-		// Render all geometry into this shadow map
-		unsigned int j = 0;
-		for (vector<TMesh *>::iterator it = tMeshArray.begin();
-			 it != tMeshArray.end(); 
-			 ++it, j++)
-		{
+
+	// determine if using shadow map cube
+	if (isPointLgiht && isUsingCubemap) {
+
+		// For all the shadow maps 
+		// (6 sides of shadow map cube for point lights with
+		// shadow map enabled)
+		for (unsigned int i = 0; i < shadowMapsN; i++) {
+			// Render all geometry into this shadow map
+			unsigned int j = 0;
+			for (vector<TMesh *>::iterator it = tMeshArray.begin();
+			it != tMeshArray.end();
+				++it, j++)
+			{
 				(*it)->drawFilledFlatWithDepth(
 					*shadowMapCube[i],
 					*shadowMapCams[i],
 					filColors[j % 3].getColor());
-		}
+			}
 
+		}
 	}
-	
+	// its either a directional light or a point light with cubemap disabled
+	else {
+		// Render all geometry into this shadow map
+		unsigned int j = 0;
+		for (vector<TMesh *>::iterator it = tMeshArray.begin();
+		it != tMeshArray.end();
+			++it, j++)
+		{
+			(*it)->drawFilledFlatWithDepth(
+				*shadowMapCube[0],
+				*shadowMapCams[0],
+				filColors[j % 3].getColor());
+		}
+	}
+
 	// For debug, visualize these shadowMaps as framebuffers
-	if (isDbgShowShadowMaps) {
+	if (isDbgShowShadowMaps  && isUsingCubemap) {
 		for (unsigned int i = 0; i < shadowMapsN; i++) {
 			shadowMapCube[i]->show();
 		}
+	}
+	// its either a directional light or a point light with cubemap disabled
+	else {
+		shadowMapCube[0]->show();
 	}
 }
 
@@ -159,7 +212,7 @@ void Light::cleanShadowMaps(void)
 void Light::setUpShadowMapCams(void)
 {
 	// assumes the camera objects have been built at this point
-	if (isPointLgiht) {
+	if (isPointLgiht && isUsingCubemap) {
 		shadowMapCams[0]->positionRelativeToPoint(
 			position,
 			V3(1.0f, 0.0f, 0.0f), // look at pos x direction
@@ -191,6 +244,7 @@ void Light::setUpShadowMapCams(void)
 			V3(0.0f, 0.0f, 1.0f),
 			0.0f);
 	}
+	// its either a directional light or a point light with cubemap disabled
 	else {
 		shadowMapCams[0]->positionRelativeToPoint(
 			position,

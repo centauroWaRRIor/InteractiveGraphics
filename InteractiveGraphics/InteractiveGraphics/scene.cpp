@@ -258,33 +258,29 @@ void Scene::dbgDraw() {
 		light->setAmbientK(0.4f);
 		light->setMatColor(V3(1.0f, 0.0f, 0.0f));
 
-		// Create a plane TMesh and a teapot TMesh
-		//tms[1]->loadBin("geometry/teapot1K.bin");
-		//tms[1]->translate(V3(130.0f, 100.0f, 50.0f));
-
 		// create a light projector and set it up
 		//lightProjector = new LightProjector("pngs\\banskyGreen.png"); // test aplha best tone so far
 		//lightProjector->setPosition(ppc->getEyePoint());
 		//lightProjector->setDirection(ppc->getViewDir());
-		// create shadow maps
-		//vector<TMesh *> tMeshArray;
-		//for (int j = 0; j < 2; j++) {
-		//	tMeshArray.push_back(tms[j]);
-		//}
-		//light->buildShadowMaps(tMeshArray);
-		//lightProjector->buildShadowMaps(tMeshArray,true);
 
 		isDGBInit = true;
 	}
 
+	// create shadow maps
+	vector<TMesh *> tMeshArray;
+	for (int j = 0; j < 3; j++) {
+		tMeshArray.push_back(tms[j]);
+	}
+	
 	// initial light position
-	light->setPosition(V3(280.0f, 0.0f, 0.0f));
+	//light->setPosition(V3(280.0f, 0.0f, 0.0f));
+	light->setPosition(V3(450.0f, 20.0f, -140.0f));
 	// set up axis to rotate light about
 	V3 lightAxisRot = V3(280.0f, 0.0f, -280.0f) - V3(0.0f, 0.0f, 0.0f);
 	lightAxisRot.normalize();
 	V3 lightPos = light->getPosition();
 	V3 lightPosRot;
-	for (float steps = 0.0f; steps < 180.0f; steps += 1.0f) {
+	//for (float steps = 0.0f; steps < 180.0f; steps += 1.0f) {
 		// clear screen
 		fb->set(0xFFFFFFFF);
 		//fb->set(0x00000000);
@@ -295,17 +291,22 @@ void Scene::dbgDraw() {
 			fb->clearZB(0.0f);
 		// rotate light position
 		lightPosRot = lightPos;
-		lightPosRot.rotateThisPointAboutAxis(V3(0.0f, 0.0f, 0.0f), lightAxisRot, -steps);
-		light->setPosition(lightPosRot);
+		//lightPosRot.rotateThisPointAboutAxis(V3(0.0f, 0.0f, 0.0f), lightAxisRot, -steps);
+		lightPosRot.rotateThisPointAboutAxis(V3(0.0f, 0.0f, 0.0f), lightAxisRot, -30.0f);
+		//light->setPosition(lightPosRot);
+		// since light position changed, update shadow maps
+		light->buildShadowMaps(tMeshArray, true);
+		//lightProjector->buildShadowMaps(tMeshArray, false);
 		// draw light for light position debug
 		light->draw(*fb, *ppc, V3(0.5f, 0.3f, 0.0f));
 		// draw meshes
-		drawTMesh(*tms[0], *fb, *ppc, false, true, false);
+		drawTMesh(*tms[0], *fb, *ppc, false, true);
+		//drawTMesh(*tms[0], *fb, *ppc, false, true, false);
 		drawTMesh(*tms[1], *fb, *ppc, false, true, false);
 		drawTMesh(*tms[2], *fb, *ppc, false, true, false);
 		fb->redraw();
-		Fl::check();
-	}
+		//Fl::check();
+	//}
 	return;
 }
 
@@ -1030,10 +1031,14 @@ void Scene::testShadowMap(void)
 		ppc->moveUp(120.0f);
 		ppc->moveRight(100.0f);
 
-		// set up light
+		// set up point light
 		light->setAmbientK(0.4f);
 		light->setMatColor(V3(1.0f, 0.0f, 0.0f));
 		light->setPosition(ppc->getEyePoint());
+		// this is needed by shadow map camera ot know
+		// where to look since cubemap feature for point
+		// lights is disabled by default for now
+		light->setDirection(V3(0.0f, 0.0f, -1.0f));
 
 		// Create a plane TMesh and a teapot TMesh
 		tms[0]->createQuadTestTMesh(false);
@@ -1086,6 +1091,10 @@ void Scene::testTexProj(void)
 		light->setAmbientK(0.4f);
 		light->setMatColor(V3(1.0f, 0.0f, 0.0f));
 		light->setPosition(ppc->getEyePoint());
+		// this is needed by shadow map camera ot know
+		// where to look since cubemap feature for point
+		// lights is disabled by default for now
+		light->setDirection(V3(0.0f, 0.0f, -1.0f));
 
 		// Create a plane TMesh and a teapot TMesh
 		tms[0]->createQuadTestTMesh(false);
