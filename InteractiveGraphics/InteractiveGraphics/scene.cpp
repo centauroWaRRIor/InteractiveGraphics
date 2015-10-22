@@ -237,7 +237,7 @@ void Scene::dbgDraw() {
 		//ppc->moveUp(70.0f);
 		//ppc->moveRight(180.0f);
 		//ppc->tilt(-15);
-		ppc->loadCameraFromFile("camera_saves/A4DemoAudCamera.txt");
+		
 
 		// enable tiling for floor quad
 		tms[0]->createQuadTestTMesh(true);
@@ -276,7 +276,6 @@ void Scene::dbgDraw() {
 
 		// create a light projector and set it up
 		lightProjector = new LightProjector("pngs\\banskyGreen.png"); // test aplha best tone so far
-		lightProjector->setPosition(ppc->getEyePoint());
 		
 		isDGBInit = true;
 	}
@@ -331,51 +330,21 @@ void Scene::dbgDraw() {
 		//Fl::check();
 	}
 
+	// set up initial camera inside auditorium looking at seats
+	ppc->loadCameraFromFile("camera_saves/A4DemoAudCamera.txt");
+
+	// set up projector
 	tMeshArray.clear();
 	tMeshArray.push_back(tms[3]);
-	
-	PPC auxPPC(*ppc);
-	//auxPPC.tilt(0.0f);
-
-	//light->setPosition(ppc->getEyePoint());
-	//light->setDirection(ppc->getViewDir());
-	// update light shadow map
-	//light->buildShadowMaps(tMeshArray, false);
-
-	
-	float delta = 10.0f;
-	//for (float angle = -20.0f; angle <= 20.0f; angle += delta) { // change step to 0.23 for video
-		// clear screen
-		//fb->set(0xFFFFFFFF);
-		//fb->set(0x00000000);
-		// clear zBuffer
-		//if (currentDrawMode == DrawModes::MODELSPACELERP)
-			//fb->clearZB(FLT_MAX);
-		//else
-			//fb->clearZB(0.0f);
-
-		//lightProjector->setDirection(auxPPC.getViewDir());
-		// since light direction changed, update shadow map
-		//lightProjector->buildShadowMaps(tMeshArray, false);
-		// draw auditorium mesh
-		//drawTMesh(*tms[3], *fb, *ppc, false, false, true);
-		//ppc->tilt(10.0f);
-		//auxPPC.tilt(delta);
-		//fb->redraw();
-		//Fl::check();
-	//}
-
-
-	ppcLerp0 = new PPC("camera_saves\\A4DemoAudCamera.txt");
-	ppcLerp1 = new PPC("camera_saves\\A4DemoAudCameraEnd.txt");
-	static int i = 0;
-	static int n = 10;
-
 	lightProjector->setPosition(ppc->getEyePoint());
-	lightProjector->setDirection(auxPPC.getViewDir());
-	// since light direction changed, update shadow map
+	lightProjector->setDirection(ppc->getViewDir());
 	lightProjector->buildShadowMaps(tMeshArray, false);
 
+	// set up camera interpolation
+	static int i = 0;
+	static int n = 10;
+	ppcLerp0 = new PPC("camera_saves\\A4DemoAudCamera.txt");
+	ppcLerp1 = new PPC("camera_saves\\A4DemoAudCameraEnd.txt");
 	for (i = 0; i < n; i++) {
 
 		// clear screen
@@ -1238,10 +1207,11 @@ void Scene::testA4Demo(void)
 	if (!isA4DemoInit) {
 
 		cleanForNewScene();
-		// prepare 3 meshes
+		// prepare 4 meshes
 		tms[0] = new TMesh();
 		tms[1] = new TMesh();
 		tms[2] = new TMesh();
+		tms[3] = new TMesh();
 
 		// set up initial camera view
 		//ppc->moveForward(-200.0f);
@@ -1250,14 +1220,16 @@ void Scene::testA4Demo(void)
 		ppc->moveRight(150.0f);
 		ppc->tilt(-15);
 
-		// enable tiling for floor quad
-		tms[0]->createQuadTestTMesh(true);
+		tms[0]->createQuadTestTMesh(true); // enable tiling for floor quad
 		tms[1]->loadBin("geometry/happy4.bin");
 		tms[2]->loadBin("geometry/teapot1K.bin");
+		tms[3]->loadBin("geometry/auditorium.bin");
+		tms[3]->rotateAboutAxis(tms[3]->getCenter(), V3(1.0f, 0.0f, 0.0f), -90.0f);
 
 		// scale happy mesh to be same scale as teapots
 		AABB teapotAABB = tms[2]->getAABB();
 		tms[1]->setToFitAABB(teapotAABB);
+		tms[3]->setToFitAABB(teapotAABB);
 
 		// load floor texture
 		texObjects[0] = new Texture("pngs\\American_walnut_pxr128.png");
@@ -1271,6 +1243,8 @@ void Scene::testA4Demo(void)
 		tms[1]->translate(V3(200.0f, 23.0f, -140.0f));
 		// position teapot tmesh at the center of floor
 		tms[2]->translate(V3(120.0f, 0.0f, -200.0f));
+		// translate auditorium to camera view
+		tms[3]->translate(tms[1]->getCenter());
 
 		// set up light, build this light with a special HFOV for shadow maps
 		delete light;
@@ -1279,13 +1253,13 @@ void Scene::testA4Demo(void)
 		light->setAmbientK(0.4f);
 		light->setMatColor(V3(1.0f, 0.0f, 0.0f));
 
-		// create a light projector and set it up
-		//lightProjector = new LightProjector("pngs\\banskyGreen.png"); // test aplha best tone so far
-		//lightProjector->setPosition(ppc->getEyePoint());
-		//lightProjector->setDirection(ppc->getViewDir());
+		// create a light projector
+		lightProjector = new LightProjector("pngs\\banskyGreen.png"); // test aplha best tone so far
 
 		isA4DemoInit = true;
 	}
+
+	// step 1) showcase shadow mapping
 
 	vector<TMesh *> tMeshArray;
 	// create tMesh array to buiild shadow map later
@@ -1336,6 +1310,47 @@ void Scene::testA4Demo(void)
 		fb->redraw();
 		Fl::check();
 	}
+
+	// step 2) showcase projective texturing
+
+	// set up initial camera inside auditorium looking at seats
+	ppc->loadCameraFromFile("camera_saves/A4DemoAudCamera.txt");
+
+	// set up projector
+	tMeshArray.clear();
+	tMeshArray.push_back(tms[3]);
+	lightProjector->setPosition(ppc->getEyePoint());
+	lightProjector->setDirection(ppc->getViewDir());
+	lightProjector->buildShadowMaps(tMeshArray, false);
+
+	// update light position
+	light->setPosition(ppc->getEyePoint());
+
+	// set up camera interpolation
+	static int i = 0;
+	static int n = 10;
+	ppcLerp0 = new PPC("camera_saves\\A4DemoAudCamera.txt");
+	ppcLerp1 = new PPC("camera_saves\\A4DemoAudCameraEnd.txt");
+	for (i = 0; i < n; i++) {
+
+		// clear screen
+		fb->set(0xFFFFFFFF);
+		// clear zBuffer
+		if (currentDrawMode == DrawModes::MODELSPACELERP)
+			fb->clearZB(FLT_MAX);
+		else
+			fb->clearZB(0.0f);
+
+		ppc->setByInterpolation(*ppcLerp0, *ppcLerp1, i, n);
+
+
+		// draw auditorium mesh
+		drawTMesh(*tms[3], *fb, *ppc, false, false, true);
+		fb->redraw();
+		Fl::check();
+	}
+
+
 	return;
 }
 
