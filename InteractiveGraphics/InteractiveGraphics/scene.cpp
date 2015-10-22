@@ -130,6 +130,8 @@ void Scene::cleanForNewScene(void)
 	this->isTestBilTexLookupInit = false;
 	this->isShadowMapTestInit = false;
 	this->isTexProjectTestInit = false;
+	this->isA4DemoInit = false;
+	this->isA4DemoExtraInit = false;
 }
 
 Scene::Scene():
@@ -227,22 +229,28 @@ void Scene::dbgDraw() {
 		tms[0] = new TMesh();
 		tms[1] = new TMesh();
 		tms[2] = new TMesh();
-
+		tms[3] = new TMesh();
+ 
 		// set up initial camera view
 		//ppc->moveForward(-200.0f);
-		ppc->moveForward(-240.0f);
-		ppc->moveUp(100.0f);
-		ppc->moveRight(150.0f);
-		ppc->tilt(-15);
+		//ppc->moveForward(70.0f);
+		//ppc->moveUp(70.0f);
+		//ppc->moveRight(180.0f);
+		//ppc->tilt(-15);
+		ppc->loadCameraFromFile("camera_saves/A4DemoAudCamera.txt");
 
 		// enable tiling for floor quad
 		tms[0]->createQuadTestTMesh(true);
 		tms[1]->loadBin("geometry/happy4.bin");
 		tms[2]->loadBin("geometry/teapot1K.bin");
+		tms[3]->loadBin("geometry/auditorium.bin");
+
+		tms[3]->rotateAboutAxis(tms[3]->getCenter(), V3(1.0f, 0.0f, 0.0f), -90.0f);
 
 		// scale happy mesh to be same scale as teapots
 		AABB teapotAABB = tms[2]->getAABB();
 		tms[1]->setToFitAABB(teapotAABB);
+		tms[3]->setToFitAABB(teapotAABB);
 
 		// load floor texture
 		texObjects[0] = new Texture("pngs\\American_walnut_pxr128.png");
@@ -256,6 +264,8 @@ void Scene::dbgDraw() {
 		tms[1]->translate(V3(200.0f, 23.0f, -140.0f));
 		// position teapot tmesh at the center of floor
 		tms[2]->translate(V3(120.0f, 0.0f, -200.0f));
+		// translate auditorium to camera view
+		tms[3]->translate(tms[1]->getCenter());
 
 		// set up light, build this light with a special HFOV for shadow maps
 		delete light;
@@ -265,9 +275,8 @@ void Scene::dbgDraw() {
 		light->setMatColor(V3(1.0f, 0.0f, 0.0f));
 
 		// create a light projector and set it up
-		//lightProjector = new LightProjector("pngs\\banskyGreen.png"); // test aplha best tone so far
-		//lightProjector->setPosition(ppc->getEyePoint());
-		//lightProjector->setDirection(ppc->getViewDir());
+		lightProjector = new LightProjector("pngs\\banskyGreen.png"); // test aplha best tone so far
+		lightProjector->setPosition(ppc->getEyePoint());
 		
 		isDGBInit = true;
 	}
@@ -293,7 +302,7 @@ void Scene::dbgDraw() {
 	lightAxisRot.normalize();
 	lightPos = light->getPosition();
 	
-	for (float steps = 0.0f; steps < 180.0f; steps += 1.6f) {
+	for (float steps = 0.0f; steps < 1.6f; steps += 1.6f) {
 		// clear screen
 		fb->set(0xFFFFFFFF);
 		//fb->set(0x00000000);
@@ -311,16 +320,82 @@ void Scene::dbgDraw() {
 		shadowmapDirection.normalize();
 		light->setDirection(shadowmapDirection);
 		// since light position changed, update shadow maps
-		light->buildShadowMaps(tMeshArray, true);
+		light->buildShadowMaps(tMeshArray, false);
 		// draw light for light position debug
 		light->draw(*fb, *ppc, V3(0.5f, 0.3f, 0.0f));
 		// draw meshes
-		drawTMesh(*tms[0], *fb, *ppc, false, true, false);
-		drawTMesh(*tms[1], *fb, *ppc, false, true, false);
-		drawTMesh(*tms[2], *fb, *ppc, false, true, false);
+		//drawTMesh(*tms[0], *fb, *ppc, false, true, false);
+		//drawTMesh(*tms[1], *fb, *ppc, false, true, false);
+		//drawTMesh(*tms[2], *fb, *ppc, false, true, false);
+		//fb->redraw();
+		//Fl::check();
+	}
+
+	tMeshArray.clear();
+	tMeshArray.push_back(tms[3]);
+	
+	PPC auxPPC(*ppc);
+	//auxPPC.tilt(0.0f);
+
+	//light->setPosition(ppc->getEyePoint());
+	//light->setDirection(ppc->getViewDir());
+	// update light shadow map
+	//light->buildShadowMaps(tMeshArray, false);
+
+	
+	float delta = 10.0f;
+	//for (float angle = -20.0f; angle <= 20.0f; angle += delta) { // change step to 0.23 for video
+		// clear screen
+		//fb->set(0xFFFFFFFF);
+		//fb->set(0x00000000);
+		// clear zBuffer
+		//if (currentDrawMode == DrawModes::MODELSPACELERP)
+			//fb->clearZB(FLT_MAX);
+		//else
+			//fb->clearZB(0.0f);
+
+		//lightProjector->setDirection(auxPPC.getViewDir());
+		// since light direction changed, update shadow map
+		//lightProjector->buildShadowMaps(tMeshArray, false);
+		// draw auditorium mesh
+		//drawTMesh(*tms[3], *fb, *ppc, false, false, true);
+		//ppc->tilt(10.0f);
+		//auxPPC.tilt(delta);
+		//fb->redraw();
+		//Fl::check();
+	//}
+
+
+	ppcLerp0 = new PPC("camera_saves\\A4DemoAudCamera.txt");
+	ppcLerp1 = new PPC("camera_saves\\A4DemoAudCameraEnd.txt");
+	static int i = 0;
+	static int n = 10;
+
+	lightProjector->setPosition(ppc->getEyePoint());
+	lightProjector->setDirection(auxPPC.getViewDir());
+	// since light direction changed, update shadow map
+	lightProjector->buildShadowMaps(tMeshArray, false);
+
+	for (i = 0; i < n; i++) {
+
+		// clear screen
+		fb->set(0xFFFFFFFF);
+		// clear zBuffer
+		if (currentDrawMode == DrawModes::MODELSPACELERP)
+			fb->clearZB(FLT_MAX);
+		else
+			fb->clearZB(0.0f);
+
+		ppc->setByInterpolation(*ppcLerp0, *ppcLerp1, i, n);
+
+		
+		// draw auditorium mesh
+		drawTMesh(*tms[3], *fb, *ppc, false, false, true);
 		fb->redraw();
 		Fl::check();
 	}
+
+
 	return;
 }
 
@@ -1155,6 +1230,119 @@ void Scene::testTexProj(void)
 	return;
 }
 
+void Scene::testA4Demo(void)
+{
+	V3 shadowmapDirection;
+	V3 lightPosRot, lightAxisRot, lightPos;
+
+	if (!isA4DemoInit) {
+
+		cleanForNewScene();
+		// prepare 3 meshes
+		tms[0] = new TMesh();
+		tms[1] = new TMesh();
+		tms[2] = new TMesh();
+
+		// set up initial camera view
+		//ppc->moveForward(-200.0f);
+		ppc->moveForward(-240.0f);
+		ppc->moveUp(100.0f);
+		ppc->moveRight(150.0f);
+		ppc->tilt(-15);
+
+		// enable tiling for floor quad
+		tms[0]->createQuadTestTMesh(true);
+		tms[1]->loadBin("geometry/happy4.bin");
+		tms[2]->loadBin("geometry/teapot1K.bin");
+
+		// scale happy mesh to be same scale as teapots
+		AABB teapotAABB = tms[2]->getAABB();
+		tms[1]->setToFitAABB(teapotAABB);
+
+		// load floor texture
+		texObjects[0] = new Texture("pngs\\American_walnut_pxr128.png");
+
+		// use quad mesh as the floor
+		// make bigger
+		tms[0]->scale(7.0f);
+		// put in floor position
+		tms[0]->rotateAboutAxis(V3(0.0f, 0.0f, 0.0f), V3(1.0f, 0.0f, 0.0f), -90.0f);
+		// position happy tmesh at the center of floor
+		tms[1]->translate(V3(200.0f, 23.0f, -140.0f));
+		// position teapot tmesh at the center of floor
+		tms[2]->translate(V3(120.0f, 0.0f, -200.0f));
+
+		// set up light, build this light with a special HFOV for shadow maps
+		delete light;
+		light = nullptr;
+		light = new Light(true, 90.0f);
+		light->setAmbientK(0.4f);
+		light->setMatColor(V3(1.0f, 0.0f, 0.0f));
+
+		// create a light projector and set it up
+		//lightProjector = new LightProjector("pngs\\banskyGreen.png"); // test aplha best tone so far
+		//lightProjector->setPosition(ppc->getEyePoint());
+		//lightProjector->setDirection(ppc->getViewDir());
+
+		isA4DemoInit = true;
+	}
+
+	vector<TMesh *> tMeshArray;
+	// create tMesh array to buiild shadow map later
+	for (int j = 0; j < 3; j++) {
+		tMeshArray.push_back(tms[j]);
+	}
+
+	// calculate scene's centroid
+	V3 sceneCentroid;
+	for (int j = 0; j < 3; j++) {
+		sceneCentroid += tms[j]->getCenter();
+	}
+	sceneCentroid = sceneCentroid / 3.0f;
+
+	// initial light position
+	light->setPosition(V3(280.0f, 0.0f, 0.0f));
+	//light->setPosition(V3(450.0f, 20.0f, -140.0f));
+	// set up axis to rotate light about
+	lightAxisRot = V3(280.0f, 0.0f, -280.0f) - V3(0.0f, 0.0f, 0.0f);
+	lightAxisRot.normalize();
+	lightPos = light->getPosition();
+
+	for (float steps = 0.0f; steps < 180.0f; steps += 1.6f) {
+		// clear screen
+		fb->set(0xFFFFFFFF);
+		//fb->set(0x00000000);
+		// clear zBuffer
+		if (currentDrawMode == DrawModes::MODELSPACELERP)
+			fb->clearZB(FLT_MAX);
+		else
+			fb->clearZB(0.0f);
+		// rotate light position
+		lightPosRot = lightPos;
+		lightPosRot.rotateThisPointAboutAxis(V3(0.0f, 0.0f, 0.0f), lightAxisRot, -steps);
+		light->setPosition(lightPosRot);
+		// figure out shadow map direction so it captures most of the scene
+		shadowmapDirection = sceneCentroid - light->getPosition();
+		shadowmapDirection.normalize();
+		light->setDirection(shadowmapDirection);
+		// since light position changed, update shadow maps
+		light->buildShadowMaps(tMeshArray, true);
+		// draw light for light position debug
+		light->draw(*fb, *ppc, V3(0.5f, 0.3f, 0.0f));
+		// draw meshes
+		drawTMesh(*tms[0], *fb, *ppc, false, true, false);
+		drawTMesh(*tms[1], *fb, *ppc, false, true, false);
+		drawTMesh(*tms[2], *fb, *ppc, false, true, false);
+		fb->redraw();
+		Fl::check();
+	}
+	return;
+}
+
+void Scene::testA4DemoExtra(void)
+{
+}
+
 void Scene::saveCamera(void) const
 {
 	string filename = retrieveTimeDate();
@@ -1209,6 +1397,12 @@ void Scene::currentSceneRedraw(void)
 	case Scenes::TEXPROJTEST:
 		this->testTexProj();
 		break;
+	case Scenes::A4:
+		this->testA4Demo();
+		break;
+	case Scenes::A4EXTRA:
+		this->testA4DemoExtra();
+		break;
 	default:
 		dbgDraw();
 		break; // this statement is optional for default
@@ -1245,7 +1439,9 @@ void Scene::setDrawMode(int mode)
 		currentScene == Scenes::CAMLERP ||
 		currentScene == Scenes::CAMCONTROL || 
 		currentScene == Scenes::SHADOWTEST || 
-		currentScene == Scenes::TEXPROJTEST) {
+		currentScene == Scenes::TEXPROJTEST ||
+		currentScene == Scenes::A4 || 
+		currentScene == Scenes::A4EXTRA) {
 		currentSceneRedraw();
 	}
 }

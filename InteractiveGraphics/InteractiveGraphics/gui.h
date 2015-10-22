@@ -88,6 +88,11 @@ private:
   void cb_TestTexProj_i(Fl_Menu_*, void*);
   static void cb_TestTexProj(Fl_Menu_*, void*);
 public:
+  static Fl_Menu_Item *A4Demo;
+private:
+  void cb_A4Demo_i(Fl_Menu_*, void*);
+  static void cb_A4Demo(Fl_Menu_*, void*);
+public:
   Fl_Group *CameraFBSaveGroup;
   Fl_Button *SaveCameraButton;
 private:
@@ -153,5 +158,6 @@ public:
   void TestFBAs3DCloud_cb();
   void TestShadowMap_cb();
   void TestTexProj_cb();
+  void A4Demo_cb();
 };
 #endif

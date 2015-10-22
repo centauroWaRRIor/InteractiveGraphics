@@ -1044,15 +1044,13 @@ void FrameBuffer::draw2DLitTriangle(
 					// make use of projective texture with alpha mask included (very useful for text)
 					if (alpha > 0)
 					{
-						if (isShadowMapOn) { // combine shadow and projected texture
+						//if (isShadowMapOn) { // combine shadow and projected texture
 							
-							interpolatedColor[0] += (lightProjColor[0] * alphaModulation);
-							interpolatedColor[1] += (lightProjColor[1] * alphaModulation);
-							interpolatedColor[2] += (lightProjColor[2] * alphaModulation);
-						}
-						else { // just projected texture
-							interpolatedColor = lightProjColor * alphaModulation;
-						}
+							interpolatedColor += (lightProjColor * alphaModulation);
+						//}
+						//else { // just projected texture
+							//interpolatedColor = lightProjColor * alphaModulation; // this will need to be a separate mode
+						//}
 					}
 				}
 				// set pixel in color framebuffer as well as depth buffer if depth test passes

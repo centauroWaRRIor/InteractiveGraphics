@@ -105,7 +105,12 @@ class GUI {open
             }
             MenuItem TestTexProj {
               label {Test Texture Proj}
-              callback {TestTexProj_cb()} selected
+              callback {TestTexProj_cb()}
+              xywh {0 0 30 20}
+            }
+            MenuItem A4Demo {
+              label {Test A4 Demo}
+              callback {A4Demo_cb()} selected
               xywh {0 0 30 20}
             }
           }
@@ -246,5 +251,10 @@ scene->testShadowMap();} {}
   } {
     code {scene->regFuncForKbRedraw(Scenes::TEXPROJTEST);
 scene->testTexProj();} {}
+  }
+  Function {A4Demo_cb()} {open
+  } {
+    code {scene->regFuncForKbRedraw(Scenes::A4);
+scene->testA4Demo();} {}
   }
 } 

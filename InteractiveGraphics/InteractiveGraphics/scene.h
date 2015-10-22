@@ -18,7 +18,9 @@ enum class Scenes {
 	A3,
 	SPRITETEST,
 	SHADOWTEST,
-	TEXPROJTEST};
+	TEXPROJTEST,
+	A4,
+	A4EXTRA};
 enum class DrawModes { 
 	DOTS, 
 	WIREFRAME, 
@@ -47,7 +49,7 @@ private:
 	bool isA2Init, isDGBInit, isTestCamControlsInit,
 		isTextureInit, isA3Init, isSpriteTestInit, 
 		isTestBilTexLookupInit, isShadowMapTestInit,
-		isTexProjectTestInit; 
+		isTexProjectTestInit, isA4DemoInit, isA4DemoExtraInit; 
 	
 	static const int u0, v0; // initial window coordinates
 
@@ -89,6 +91,8 @@ public:
 	void renderFBAs3DPointCloud(void);
 	void testShadowMap(void);
 	void testTexProj(void);
+	void testA4Demo(void);
+	void testA4DemoExtra(void);
 
 	void saveCamera(void) const;
 	void saveThisFramebuffer(void) const;

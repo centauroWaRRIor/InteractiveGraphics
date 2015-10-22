@@ -100,6 +100,13 @@ void GUI::cb_TestTexProj(Fl_Menu_* o, void* v) {
   ((GUI*)(o->parent()->user_data()))->cb_TestTexProj_i(o,v);
 }
 
+void GUI::cb_A4Demo_i(Fl_Menu_*, void*) {
+  A4Demo_cb();
+}
+void GUI::cb_A4Demo(Fl_Menu_* o, void* v) {
+  ((GUI*)(o->parent()->user_data()))->cb_A4Demo_i(o,v);
+}
+
 Fl_Menu_Item GUI::menu_Main[] = {
  {"Previous Assignments", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
  {"A1", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
@@ -122,6 +129,7 @@ Fl_Menu_Item GUI::menu_Main[] = {
  {"FB To 3D Cloud", 0,  (Fl_Callback*)GUI::cb_TestFBAs3DCloud, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Test Shadow Mapping", 0,  (Fl_Callback*)GUI::cb_TestShadowMap, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Test Texture Proj", 0,  (Fl_Callback*)GUI::cb_TestTexProj, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Test A4 Demo", 0,  (Fl_Callback*)GUI::cb_A4Demo, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
  {0,0,0,0,0,0,0,0,0},
  {0,0,0,0,0,0,0,0,0}
@@ -143,6 +151,7 @@ Fl_Menu_Item* GUI::A4SubMenu = GUI::menu_Main + 17;
 Fl_Menu_Item* GUI::TestFBAs3DCloud = GUI::menu_Main + 18;
 Fl_Menu_Item* GUI::TestShadowMap = GUI::menu_Main + 19;
 Fl_Menu_Item* GUI::TestTexProj = GUI::menu_Main + 20;
+Fl_Menu_Item* GUI::A4Demo = GUI::menu_Main + 21;
 
 void GUI::cb_SaveCameraButton_i(Fl_Button*, void*) {
   SaveCameraButton_cb();
@@ -1315,4 +1324,9 @@ scene->testShadowMap();
 void GUI::TestTexProj_cb() {
   scene->regFuncForKbRedraw(Scenes::TEXPROJTEST);
 scene->testTexProj();
+}
+
+void GUI::A4Demo_cb() {
+  scene->regFuncForKbRedraw(Scenes::A4);
+scene->testA4Demo();
 }
