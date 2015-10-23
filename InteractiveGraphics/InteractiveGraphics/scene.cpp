@@ -228,8 +228,6 @@ void Scene::dbgDraw() {
 		// prepare 3 meshes
 		tms[0] = new TMesh();
 		tms[1] = new TMesh();
-		tms[2] = new TMesh();
-		tms[3] = new TMesh();
  
 		// set up initial camera view
 		//ppc->moveForward(-200.0f);
@@ -237,116 +235,61 @@ void Scene::dbgDraw() {
 		//ppc->moveUp(70.0f);
 		//ppc->moveRight(180.0f);
 		//ppc->tilt(-15);
+		// set up initial camera inside auditorium looking at seats
+		ppc->loadCameraFromFile("camera_saves/A4MagicTrickCamera.txt");
 		
-
-		// enable tiling for floor quad
-		tms[0]->createQuadTestTMesh(true);
-		tms[1]->loadBin("geometry/happy4.bin");
-		tms[2]->loadBin("geometry/teapot1K.bin");
-		tms[3]->loadBin("geometry/auditorium.bin");
-
-		tms[3]->rotateAboutAxis(tms[3]->getCenter(), V3(1.0f, 0.0f, 0.0f), -90.0f);
+		tms[0]->loadBin("geometry/teapot1K.bin");
+		tms[1]->loadBin("geometry/auditorium.bin");
+		tms[1]->rotateAboutAxis(tms[1]->getCenter(), V3(1.0f, 0.0f, 0.0f), -90.0f);
 
 		// scale happy mesh to be same scale as teapots
-		AABB teapotAABB = tms[2]->getAABB();
+		AABB teapotAABB = tms[0]->getAABB();
 		tms[1]->setToFitAABB(teapotAABB);
-		tms[3]->setToFitAABB(teapotAABB);
+		// this is silly but already have a camera for it 
+		tms[0]->scale(0.25f);
 
-		// load floor texture
-		texObjects[0] = new Texture("pngs\\American_walnut_pxr128.png");
-
-		// use quad mesh as the floor
-		// make bigger
-		tms[0]->scale(7.0f);
-		// put in floor position
-		tms[0]->rotateAboutAxis(V3(0.0f, 0.0f, 0.0f), V3(1.0f, 0.0f, 0.0f), -90.0f);
-		// position happy tmesh at the center of floor
-		tms[1]->translate(V3(200.0f, 23.0f, -140.0f));
-		// position teapot tmesh at the center of floor
-		tms[2]->translate(V3(120.0f, 0.0f, -200.0f));
-		// translate auditorium to camera view
-		tms[3]->translate(tms[1]->getCenter());
+		// translate auditorium to known location
+		tms[1]->translate(V3(200.0f, 50.0f, -140.0f));
+		// position teapot tmesh at front of audience in auditorium
+		//tms[0]->translate(tms[1]->getCenter());
+		tms[0]->translate(V3(160.0f, 60.0f, -90.0f)); // starting point
+		//tms[0]->translate(V3(245.0f, 60.0f, -90.0f)); // ending point
 
 		// set up light, build this light with a special HFOV for shadow maps
-		delete light;
-		light = nullptr;
-		light = new Light(true, 90.0f);
+		//delete light;
+		//light = nullptr;
+		//light = new Light(true, 90.0f);
 		light->setAmbientK(0.4f);
 		light->setMatColor(V3(1.0f, 0.0f, 0.0f));
 
 		// create a light projector and set it up
-		lightProjector = new LightProjector("pngs\\banskyGreen.png"); // test aplha best tone so far
+		lightProjector = new LightProjector("pngs\\banskyGreen.png");
+
+		// set up projector
+		//tMeshArray.clear();
+		//tMeshArray.push_back(tms[3]);
 		
+
 		isDGBInit = true;
 	}
 
+	float delta = 5.0f;
+	V3 lookAtTeapot;
+
 	vector<TMesh *> tMeshArray;
-	// create tMesh array to buiild shadow map later
-	for (int j = 0; j < 3; j++) {
-		tMeshArray.push_back(tms[j]);
-	}
+	// create tMesh array to for shadow map. Its very
+	// important that this array does not contain the 
+	// teapot itself
+	tMeshArray.push_back(tms[1]);
 
-	// calculate scene's centroid
-	V3 sceneCentroid;
-	for (int j = 0; j < 3; j++) {
-		sceneCentroid += tms[j]->getCenter();
-	}
-	sceneCentroid = sceneCentroid / 3.0f;
-
-	// initial light position
-	light->setPosition(V3(280.0f, 0.0f, 0.0f));
-	//light->setPosition(V3(450.0f, 20.0f, -140.0f));
-	// set up axis to rotate light about
-	lightAxisRot = V3(280.0f, 0.0f, -280.0f) - V3(0.0f, 0.0f, 0.0f);
-	lightAxisRot.normalize();
-	lightPos = light->getPosition();
-	
-	for (float steps = 0.0f; steps < 1.6f; steps += 1.6f) {
-		// clear screen
-		fb->set(0xFFFFFFFF);
-		//fb->set(0x00000000);
-		// clear zBuffer
-		if (currentDrawMode == DrawModes::MODELSPACELERP)
-			fb->clearZB(FLT_MAX);
-		else
-			fb->clearZB(0.0f);
-		// rotate light position
-		lightPosRot = lightPos;
-		lightPosRot.rotateThisPointAboutAxis(V3(0.0f, 0.0f, 0.0f), lightAxisRot, -steps);
-		light->setPosition(lightPosRot);
-		// figure out shadow map direction so it captures most of the scene
-		shadowmapDirection = sceneCentroid - light->getPosition();
-		shadowmapDirection.normalize();
-		light->setDirection(shadowmapDirection);
-		// since light position changed, update shadow maps
-		light->buildShadowMaps(tMeshArray, false);
-		// draw light for light position debug
-		light->draw(*fb, *ppc, V3(0.5f, 0.3f, 0.0f));
-		// draw meshes
-		//drawTMesh(*tms[0], *fb, *ppc, false, true, false);
-		//drawTMesh(*tms[1], *fb, *ppc, false, true, false);
-		//drawTMesh(*tms[2], *fb, *ppc, false, true, false);
-		//fb->redraw();
-		//Fl::check();
-	}
-
-	// set up initial camera inside auditorium looking at seats
-	ppc->loadCameraFromFile("camera_saves/A4DemoAudCamera.txt");
-
-	// set up projector
-	tMeshArray.clear();
-	tMeshArray.push_back(tms[3]);
+	light->setPosition(ppc->getEyePoint());
 	lightProjector->setPosition(ppc->getEyePoint());
-	lightProjector->setDirection(ppc->getViewDir());
-	lightProjector->buildShadowMaps(tMeshArray, false);
+	// shift it up a little bit
+	V3 auxVec = lightProjector->getPosition();
+	auxVec[1] += 2.0;
+	lightProjector->setPosition(auxVec);
 
-	// set up camera interpolation
-	static int i = 0;
-	static int n = 10;
-	ppcLerp0 = new PPC("camera_saves\\A4DemoAudCamera.txt");
-	ppcLerp1 = new PPC("camera_saves\\A4DemoAudCameraEnd.txt");
-	for (i = 0; i < n; i++) {
-
+	for (float step = 160.0f; step < 245.0f; step += delta) {
 		// clear screen
 		fb->set(0xFFFFFFFF);
 		// clear zBuffer
@@ -355,16 +298,19 @@ void Scene::dbgDraw() {
 		else
 			fb->clearZB(0.0f);
 
-		ppc->setByInterpolation(*ppcLerp0, *ppcLerp1, i, n);
+		// set up projector
+		lookAtTeapot = tms[0]->getCenter() - lightProjector->getPosition();
+		lookAtTeapot.normalize();
+		lightProjector->setDirection(lookAtTeapot);
+		lightProjector->buildShadowMaps(tMeshArray, true);
 
-		
 		// draw auditorium mesh
-		drawTMesh(*tms[3], *fb, *ppc, false, false, true);
+		drawTMesh(*tms[1], *fb, *ppc, false, false, true);
+		drawTMesh(*tms[0], *fb, *ppc, false, false, true);
+		tms[0]->translate(V3(delta, 0.0f, 0.0f));
 		fb->redraw();
 		Fl::check();
 	}
-
-
 	return;
 }
 

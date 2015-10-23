@@ -136,7 +136,8 @@ bool Light::isPointInShadow(const V3 & point) const
 
 void Light::buildShadowMaps(
 	vector<TMesh *> &tMeshArray,
-	bool isDbgShowShadowMaps)
+	bool isDbgShowShadowMaps,
+	DrawModes drawMode)
 {
 	V3 filColors[3] = { // for visual debug (isDbgShowShadowMaps)
 		V3(1.0f, 0.0f, 0.0f),

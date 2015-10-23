@@ -43,7 +43,8 @@ public:
 	// allocated contiguosly. Vector allows us to pass a list of pointers. 
 	void buildShadowMaps(
 		vector<TMesh *> &tMeshArray,
-		bool isDbgShowShadowMaps = false);
+		bool isDbgShowShadowMaps = false,
+		DrawModes drawMode = );
 	// draws itself for visual debug
 	void draw(FrameBuffer &fb, const PPC &ppc, V3 &color) const;
 
