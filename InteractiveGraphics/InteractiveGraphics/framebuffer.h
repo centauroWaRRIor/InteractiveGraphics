@@ -125,7 +125,21 @@ public:
 	void draw2DFlatTriangleWithDepth(
 		V3 *const pvs,
 		unsigned int color);
-
+	// draws 2D textured triangle in stealth mode so that it gets cammouflaged 
+	// with its environment
+	void draw2DStealthTriangle(
+		V3 *const vs,
+		V3 *const pvs,
+		V3 *const cols,
+		const V3 *const normals,
+		const Light &light,
+		M33 perspCorrectMatQ,
+		bool isTexturedOn,
+		const V3 &sCoords,
+		const V3 &tCoords,
+		const Texture *const texture,
+		const PPC &cam,
+		const LightProjector *const lightProj);
 
 	// draw 2D segment specified by 2 points, each with own color
 	void draw2DSegment(const V3 &v0, const V3 &c0, const V3 &v1, const V3 &c1);

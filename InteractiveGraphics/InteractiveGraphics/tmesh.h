@@ -81,6 +81,14 @@ public:
 	// draws triangle mesh in filled mode using a single color and depth 1/w in screen
 	// coordinates mainly for shadow mapping purposes
 	void drawFilledFlatWithDepth(FrameBuffer &fb, const PPC &ppc, unsigned int color);
+	// draws triangle mesh in stealth mode to support David Copperfiled magic trick
+	void drawStealth(
+		FrameBuffer &fb,
+		const PPC &ppc,
+		const Light &light,
+		const LightProjector *const lightProj = nullptr,
+		const Texture *const texture = nullptr,
+		bool isTexturedOn = false);
 
 	// rotate about axis
 	void rotateAboutAxis(const V3 &aO, const V3 &adir, float theta);
