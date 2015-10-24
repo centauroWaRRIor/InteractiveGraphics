@@ -229,13 +229,7 @@ void Scene::dbgDraw() {
 		tms[0] = new TMesh();
 		tms[1] = new TMesh();
  
-		// set up initial camera view
-		//ppc->moveForward(-200.0f);
-		//ppc->moveForward(70.0f);
-		//ppc->moveUp(70.0f);
-		//ppc->moveRight(180.0f);
-		//ppc->tilt(-15);
-		// set up initial camera inside auditorium looking at seats
+		// set up initial camera view inside auditorium looking at seats
 		ppc->loadCameraFromFile("camera_saves/A4MagicTrickCamera.txt");
 		
 		tms[0]->loadBin("geometry/teapot1K.bin");
@@ -246,29 +240,20 @@ void Scene::dbgDraw() {
 		AABB teapotAABB = tms[0]->getAABB();
 		tms[1]->setToFitAABB(teapotAABB);
 		// this is silly but already have a camera for it 
+		// so make auditorium fit into my camera view
 		tms[0]->scale(0.25f);
 
 		// translate auditorium to known location
 		tms[1]->translate(V3(200.0f, 50.0f, -140.0f));
 		// position teapot tmesh at front of audience in auditorium
-		//tms[0]->translate(tms[1]->getCenter());
 		tms[0]->translate(V3(160.0f, 60.0f, -90.0f)); // starting point
-		//tms[0]->translate(V3(245.0f, 60.0f, -90.0f)); // ending point
 
 		// set up light, build this light with a special HFOV for shadow maps
-		//delete light;
-		//light = nullptr;
-		//light = new Light(true, 90.0f);
 		light->setAmbientK(0.4f);
 		light->setMatColor(V3(1.0f, 0.0f, 0.0f));
 
 		// create a light projector and set it up
 		lightProjector = new LightProjector("pngs\\banskyGreen.png");
-
-		// set up projector
-		//tMeshArray.clear();
-		//tMeshArray.push_back(tms[3]);
-		
 
 		isDGBInit = true;
 	}
@@ -279,9 +264,8 @@ void Scene::dbgDraw() {
 	vector<TMesh *> tMeshArray;
 	// create tMesh array to for shadow map. Its very
 	// important that this array does not contain the 
-	// teapot itself
+	// teapot
 	tMeshArray.push_back(tms[1]);
-	//tMeshArray.push_back(tms[0]); // not needed
 
 	light->setPosition(ppc->getEyePoint());
 	lightProjector->setPosition(ppc->getEyePoint());
@@ -310,7 +294,8 @@ void Scene::dbgDraw() {
 		// draw auditorium mesh
 		drawTMesh(*tms[1], *fb, *ppc, false, false, false);
 		// draw teapot in stealth mode
-		tms[0]->drawStealth(*fb, *ppc, *light, lightProjector, nullptr, false);
+		tms[0]->drawStealth(*fb, *ppc, *light, *lightProjector, 
+			nullptr, false, false);
 		//drawTMesh(*tms[0], *fb, *ppc, false, false, false);
 		tms[0]->translate(V3(delta, 0.0f, 0.0f));
 		fb->redraw();

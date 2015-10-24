@@ -1147,12 +1147,13 @@ void FrameBuffer::draw2DStealthTriangle(
 	const V3 * const normals, 
 	const Light & light, 
 	M33 Q, 
+	bool isLightOn,
 	bool isTexturedOn, 
 	const V3 & sCoords, 
 	const V3 & tCoords, 
 	const Texture * const texture, 
 	const PPC & cam, 
-	const LightProjector * const lightProj)
+	const LightProjector & lightProj)
 {
 	// compute screen axes-aligned bounding box for triangle 
 	// clipping against framebuffer
@@ -1183,14 +1184,16 @@ void FrameBuffer::draw2DStealthTriangle(
 
 	// lighting
 	V3 litCols[3];
-	for (int vi = 0; vi < 3; vi++) {
-		litCols[vi] = light.computeDiffuseContribution(vs[vi], normals[vi]);
+	if (isLightOn) {
+		for (int vi = 0; vi < 3; vi++) {
+			litCols[vi] = light.computeDiffuseContribution(vs[vi], normals[vi]);
+		}
 	}
-	//litCols[0] = cols[0];
-	//litCols[1] = cols[1];
-	//litCols[2] = cols[2];
-	// TODO: Find a way to combine litCols with cols. For now litCols overrides 
-	// cols.
+	else {
+		litCols[0] = cols[0];
+		litCols[1] = cols[1];
+		litCols[2] = cols[2];
+	}
 
 	// set model space interpolation
 	// build rasterization parameters to be lerped in screen space
@@ -1289,7 +1292,7 @@ void FrameBuffer::draw2DStealthTriangle(
 				// TODO: Find a way to combine the colors: interpolated, texture, lit and projLight color
 				// instead of overriding each other (projLight and lit color no longer override each other)
 				// do projective texture mapping
-				if (lightProj->getProjectedStealthColor(pixel3dPoint, texelColor)) {
+				if (lightProj.getProjectedStealthColor(pixel3dPoint, texelColor)) {
 
 					V3 lightProjColor;
 					lightProjColor.setFromColor(texelColor);
@@ -1298,13 +1301,7 @@ void FrameBuffer::draw2DStealthTriangle(
 					// make use of projective texture with alpha mask included (very useful for text)
 					if (alpha > 0)
 					{
-						//if (isShadowMapOn) { // combine shadow and projected texture
-
 						interpolatedColor += (lightProjColor * alphaModulation);
-						//}
-						//else { // just projected texture
-						//interpolatedColor = lightProjColor * alphaModulation; // this will need to be a separate mode
-						//}
 					}
 				}
 				// set pixel in color framebuffer as well as depth buffer if depth test passes

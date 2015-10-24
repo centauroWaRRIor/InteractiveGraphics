@@ -892,8 +892,9 @@ void TMesh::drawStealth(
 	FrameBuffer & fb, 
 	const PPC & ppc, 
 	const Light & light, 
-	const LightProjector * const lightProj, 
+	const LightProjector & lightProj,
 	const Texture * const texture, 
+	bool isLightOn,
 	bool isTexturedOn)
 {
 	if ((vertsN == 0) || (trisN < 1)) {
@@ -994,10 +995,10 @@ void TMesh::drawStealth(
 				fb.draw2DStealthTriangle(
 					currvs, tProjVerts, currcols, currnormals,
 					light, perspCorrectMatQ,
-					isTexturedOn,
+					isLightOn, isTexturedOn,
 					sParameters, tParameters,
 					texture,
-					ppc,
+					ppc,					
 					lightProj);
 			}
 			else

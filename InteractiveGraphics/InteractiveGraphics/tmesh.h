@@ -86,9 +86,10 @@ public:
 		FrameBuffer &fb,
 		const PPC &ppc,
 		const Light &light,
-		const LightProjector *const lightProj = nullptr,
-		const Texture *const texture = nullptr,
-		bool isTexturedOn = false);
+		const LightProjector &lightProj,
+		const Texture *const texture,
+		bool isLightOn,
+		bool isTexturedOn);
 
 	// rotate about axis
 	void rotateAboutAxis(const V3 &aO, const V3 &adir, float theta);
