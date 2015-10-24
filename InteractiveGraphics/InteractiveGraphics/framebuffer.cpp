@@ -1016,7 +1016,6 @@ void FrameBuffer::draw2DLitTriangle(
 				// 1/w is interpoalted in screen space
 				interpolatedDepth = depthABC * pixC; // 1/w at current pixel interpolated lin. in s s
 
-				// TODO: Combine texture color with lit color instead of overriding each other
 				if (texture != nullptr) {
 					// sample texture using lerped result of s,t raster parameters (in model space)
 					texelColor = texture->sampleTexBilinearTile(interpolatedS, interpolatedT);

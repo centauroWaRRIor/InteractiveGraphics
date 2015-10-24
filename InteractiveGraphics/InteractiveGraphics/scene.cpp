@@ -1212,14 +1212,9 @@ void Scene::testA4Demo(void)
 	lightPos = light->getPosition();
 
 	for (float steps = 0.0f; steps < 180.0f; steps += 1.6f) {
-		// clear screen
-		//fb->set(0xFFFFFFFF);
+		// clear screen and depth buffer
 		fb->set(0x00000000);
-		// clear zBuffer
-		if (currentDrawMode == DrawModes::MODELSPACELERP)
-			fb->clearZB(FLT_MAX);
-		else
-			fb->clearZB(0.0f);
+		fb->clearZB(0.0f);
 		// rotate light position
 		lightPosRot = lightPos;
 		lightPosRot.rotateThisPointAboutAxis(V3(0.0f, 0.0f, 0.0f), lightAxisRot, -steps);
@@ -1237,9 +1232,14 @@ void Scene::testA4Demo(void)
 		light->setMatColor(V3(1.0f, 1.0f, 1.0f)); // set to white to modulate against texture
 		tms[0]->drawLit(*fb, *ppc, *light, lightProjector,
 			texObjects[0], true, false);
-		light->setMatColor(V3(1.0f, 0.0f, 0.0f));
+
+		// draw 
+		light->setMatColor(V3(104.0f/255.0f, 108.0f/255.0f, 94.0f/255.0f)); // concrete color
 		//drawTMesh(*tms[1], *fb, *ppc, false, true, false);
-		//drawTMesh(*tms[2], *fb, *ppc, false, true, false);
+		tms[1]->drawLit(*fb, *ppc, *light, lightProjector,
+			nullptr, true, false);
+		tms[2]->drawLit(*fb, *ppc, *light, lightProjector,
+			nullptr, true, false);
 		fb->redraw();
 		Fl::check();
 	}
