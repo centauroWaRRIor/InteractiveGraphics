@@ -1296,7 +1296,8 @@ void FrameBuffer::draw2DStealthTriangle(
 
 					V3 lightProjColor;
 					lightProjColor.setFromColor(texelColor);
-					interpolatedColor += (lightProjColor);
+					//interpolatedColor += (lightProjColor); // glass material effect (with refraction)
+					interpolatedColor = (lightProjColor); // 100% stealth predator like
 				}
 				// set pixel in color framebuffer as well as depth buffer if depth test passes
 				setIfOneOverWCloser(V3(pixC[0], pixC[1], interpolatedDepth), interpolatedColor);
