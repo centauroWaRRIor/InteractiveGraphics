@@ -37,6 +37,8 @@ private:
 public:
 	// constructors (builds a 0 vector by default)
 	V3(float x = 0, float y = 0, float z = 0);
+	// builds a color vector from unsigned int format color
+	V3(unsigned int color);
 	//V3() {}; // No need for this since I'm specifying default values above
 
 	// copy constructor
@@ -96,6 +98,9 @@ public:
 	// set and get color using unsigned int format
 	void setFromColor(unsigned int color);
 	unsigned int getColor() const;
+	// modulate this color vector by another color vector
+	// not to be confused with a dot product
+	void modulateBy(const V3 &color);
 
 	// rotation of "this" point about arbitrary axis
 	void rotateThisPointAboutAxis(const V3 &axisOrigin, const V3 &axisDirection, float theta);

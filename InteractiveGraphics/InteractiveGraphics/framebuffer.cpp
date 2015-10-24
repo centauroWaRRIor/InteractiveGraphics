@@ -887,7 +887,6 @@ void FrameBuffer::draw2DLitTriangle(
 	const V3 * const normals,
 	const Light & light, 
 	M33 Q, 
-	bool isTexturedOn,
 	const V3 & sCoords, 
 	const V3 & tCoords, 
 	const Texture * const texture,
@@ -1018,18 +1017,20 @@ void FrameBuffer::draw2DLitTriangle(
 				interpolatedDepth = depthABC * pixC; // 1/w at current pixel interpolated lin. in s s
 
 				// TODO: Combine texture color with lit color instead of overriding each other
-				if (isTexturedOn && texture != nullptr) {
+				if (texture != nullptr) {
 					// sample texture using lerped result of s,t raster parameters (in model space)
 					texelColor = texture->sampleTexBilinearTile(interpolatedS, interpolatedT);
-					// override interpolated color for now. In the future texel can be modulated by color
-					interpolatedColor.setFromColor(texelColor);
+					// override interpolated color for now. In the future texel can be modulated by color?
+					V3 texelColorVec(texelColor);
+					texelColorVec.modulateBy(interpolatedColor); // however modulate texture color against pixel lit value
+					interpolatedColor = texelColorVec;
 				}
 
 				// get 3d point corresponding to this pixel
 				V3 pixel3dPoint = cam.unproject(V3(pixC[0], pixC[1], interpolatedDepth));
 				// do shadow mapping
 				if (isShadowMapOn && light.isPointInShadow(pixel3dPoint)) {
-					interpolatedColor = light.getMatColor() * light.getAmbientK();					
+						interpolatedColor = interpolatedColor * light.getAmbientK();					
 				}
 
 				// TODO: Find a way to combine the colors: interpolated, texture, lit and projLight color

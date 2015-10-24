@@ -14,6 +14,11 @@ V3::V3(float x, float y, float z) {
    xyz[2] = z;
 }
 
+V3::V3(unsigned int color)
+{
+	this->setFromColor(color);
+}
+
 V3::V3(const V3 &vectorToCopy) {
 
    xyz[0] = vectorToCopy.xyz[0];
@@ -281,6 +286,13 @@ unsigned int V3::getColor() const {
 	}
 
 	return ret;
+}
+
+void V3::modulateBy(const V3 & color)
+{
+	this->xyz[0] *= color.xyz[0];
+	this->xyz[1] *= color.xyz[1];
+	this->xyz[2] *= color.xyz[2];
 }
 
 float V3::getComp(int i) const

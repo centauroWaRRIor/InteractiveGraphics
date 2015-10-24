@@ -724,7 +724,6 @@ void TMesh::drawLit(
 	const Light &light,
 	const LightProjector *const lightProj,
 	const Texture *const texture,
-	bool isTexturedOn,
 	bool isShadowMapOn,
 	bool isLightProjOn)
 {
@@ -791,7 +790,7 @@ void TMesh::drawLit(
 		currnormals[1] = normals[tris[3 * tri + 1]];
 		currnormals[2] = normals[tris[3 * tri + 2]];
 
-		if (isTexturedOn) {
+		if (texture != nullptr) {
 			// grab current triangle texture coordinates
 			sParameters[0] = tcs[tris[3 * tri + 0] * 2 + 0];
 			sParameters[1] = tcs[tris[3 * tri + 1] * 2 + 0];
@@ -826,7 +825,6 @@ void TMesh::drawLit(
 				fb.draw2DLitTriangle(
 					currvs, tProjVerts, currcols, currnormals,
 					light, perspCorrectMatQ,
-					isTexturedOn,
 					sParameters, tParameters,
 					texture,
 					isShadowMapOn,

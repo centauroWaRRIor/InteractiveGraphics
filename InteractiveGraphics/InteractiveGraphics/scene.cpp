@@ -58,8 +58,7 @@ void Scene::drawTMesh(
 			planarPinholeCamera,
 			*light,
 			lightProjector,
-			nullptr,
-			false, // not texturing at this point
+			nullptr, // not using lit + texture mode here
 			isShadowsEnabled,
 			isLightProjEnabled);
 
@@ -1182,7 +1181,6 @@ void Scene::testA4Demo(void)
 		light = nullptr;
 		light = new Light(true, 90.0f);
 		light->setAmbientK(0.4f);
-		light->setMatColor(V3(1.0f, 0.0f, 0.0f));
 
 		// create a light projector
 		lightProjector = new LightProjector("pngs\\banskyGreen.png"); // test aplha best tone so far
@@ -1215,8 +1213,8 @@ void Scene::testA4Demo(void)
 
 	for (float steps = 0.0f; steps < 180.0f; steps += 1.6f) {
 		// clear screen
-		fb->set(0xFFFFFFFF);
-		//fb->set(0x00000000);
+		//fb->set(0xFFFFFFFF);
+		fb->set(0x00000000);
 		// clear zBuffer
 		if (currentDrawMode == DrawModes::MODELSPACELERP)
 			fb->clearZB(FLT_MAX);
@@ -1234,14 +1232,18 @@ void Scene::testA4Demo(void)
 		light->buildShadowMaps(tMeshArray, true);
 		// draw light for light position debug
 		light->draw(*fb, *ppc, V3(0.5f, 0.3f, 0.0f));
-		// draw meshes
-		drawTMesh(*tms[0], *fb, *ppc, false, true, false);
-		drawTMesh(*tms[1], *fb, *ppc, false, true, false);
-		drawTMesh(*tms[2], *fb, *ppc, false, true, false);
+		// draw floor mesh in lit + texture mode
+
+		light->setMatColor(V3(1.0f, 1.0f, 1.0f)); // set to white to modulate against texture
+		tms[0]->drawLit(*fb, *ppc, *light, lightProjector,
+			texObjects[0], true, false);
+		light->setMatColor(V3(1.0f, 0.0f, 0.0f));
+		//drawTMesh(*tms[1], *fb, *ppc, false, true, false);
+		//drawTMesh(*tms[2], *fb, *ppc, false, true, false);
 		fb->redraw();
 		Fl::check();
 	}
-
+#if 0
 	// step 2) showcase projective texturing
 
 	// set up initial camera inside auditorium looking at seats
@@ -1280,7 +1282,7 @@ void Scene::testA4Demo(void)
 		fb->redraw();
 		Fl::check();
 	}
-
+#endif
 
 	return;
 }

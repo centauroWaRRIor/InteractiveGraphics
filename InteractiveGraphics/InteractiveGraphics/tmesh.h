@@ -75,7 +75,6 @@ public:
 		const Light &light,
 		const LightProjector *const lightProj = nullptr,
 		const Texture *const texture = nullptr,
-		bool isTexturedOn = false,
 		bool isShadowMapOn = false,
 		bool isLightProjOn = false);
 	// draws triangle mesh in filled mode using a single color and depth 1/w in screen
