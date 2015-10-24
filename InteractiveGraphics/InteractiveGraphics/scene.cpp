@@ -248,10 +248,6 @@ void Scene::dbgDraw() {
 		// position teapot tmesh at front of audience in auditorium
 		tms[0]->translate(V3(160.0f, 60.0f, -90.0f)); // starting point
 
-		// set up light, build this light with a special HFOV for shadow maps
-		light->setAmbientK(0.4f);
-		light->setMatColor(V3(1.0f, 0.0f, 0.0f));
-
 		// create a light projector and set it up
 		lightProjector = new LightProjector("pngs\\banskyGreen.png");
 
@@ -267,9 +263,8 @@ void Scene::dbgDraw() {
 	// teapot
 	tMeshArray.push_back(tms[1]);
 
-	light->setPosition(ppc->getEyePoint());
+	// set up texture projector above audience heads
 	lightProjector->setPosition(ppc->getEyePoint());
-	// shift it up a little bit
 	V3 auxVec = lightProjector->getPosition();
 	auxVec[1] += 2.0;
 	lightProjector->setPosition(auxVec);
@@ -278,10 +273,7 @@ void Scene::dbgDraw() {
 		// clear screen
 		fb->set(0xFFFFFFFF);
 		// clear zBuffer
-		if (currentDrawMode == DrawModes::MODELSPACELERP)
-			fb->clearZB(FLT_MAX);
-		else
-			fb->clearZB(0.0f);
+		fb->clearZB(0.0f);
 
 		// set up projector
 		lookAtTeapot = tms[0]->getCenter() - lightProjector->getPosition();
@@ -291,12 +283,14 @@ void Scene::dbgDraw() {
 		// map using interpolated colors as opposed to flat mode as its usually done
 		lightProjector->buildShadowMaps(tMeshArray, false, false);
 
-		// draw auditorium mesh
-		drawTMesh(*tms[1], *fb, *ppc, false, false, false);
-		// draw teapot in stealth mode
-		tms[0]->drawStealth(*fb, *ppc, *light, *lightProjector, 
+		// draw auditorium mesh in color interpolation mode since color
+		// already provides lighting cues. Adding a light makes things look too
+		// bright right now since I hanve't implemented the distance attenuation 
+		// for point lights.
+		tms[1]->drawFilledFlatBarycentric(*fb, *ppc);
+		// draw teapot in stealth mode (with lighting turned off)
+		tms[0]->drawStealth(*fb, *ppc, nullptr, *lightProjector, 
 			nullptr, false, false);
-		//drawTMesh(*tms[0], *fb, *ppc, false, false, false);
 		tms[0]->translate(V3(delta, 0.0f, 0.0f));
 		fb->redraw();
 		Fl::check();

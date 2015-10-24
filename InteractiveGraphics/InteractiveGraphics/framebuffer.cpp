@@ -923,7 +923,7 @@ void FrameBuffer::draw2DLitTriangle(
 			eeqs[ei] = eeqs[ei] * -1.0f;
 	}
 
-	// lighting
+	// compute lighting colors at 3 vertices
 	V3 litCols[3];
 	for (int vi = 0; vi < 3; vi++) {
 		litCols[vi] = light.computeDiffuseContribution(vs[vi], normals[vi]);
