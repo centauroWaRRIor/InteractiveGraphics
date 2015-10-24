@@ -1177,7 +1177,7 @@ void Scene::testA4Demo(void)
 		// translate auditorium to camera view
 		tms[3]->translate(tms[1]->getCenter());
 
-		// set up light, build this light with a special HFOV for shadow maps
+		// set up light, build this point light with a special HFOV for shadow maps
 		delete light;
 		light = nullptr;
 		light = new Light(true, 90.0f);
@@ -1197,7 +1197,7 @@ void Scene::testA4Demo(void)
 	for (int j = 0; j < 3; j++) {
 		tMeshArray.push_back(tms[j]);
 	}
-#if 0
+
 	// calculate scene's centroid
 	V3 sceneCentroid;
 	for (int j = 0; j < 3; j++) {
@@ -1211,7 +1211,7 @@ void Scene::testA4Demo(void)
 	lightAxisRot = V3(280.0f, 0.0f, -280.0f) - V3(0.0f, 0.0f, 0.0f);
 	lightAxisRot.normalize();
 	lightPos = light->getPosition();
-
+#if 0
 	for (float steps = 0.0f; steps < 180.0f; steps += 1.6f) {
 		// clear screen and depth buffer
 		fb->set(0x00000000);
@@ -1257,8 +1257,12 @@ void Scene::testA4Demo(void)
 	lightProjector->setDirection(ppc->getViewDir());
 	lightProjector->buildShadowMaps(tMeshArray, false);
 
-	// update light position
+	// set up light
 	light->setPosition(ppc->getEyePoint());
+	// shadow mapping is not used for this scene but it can
+	// (although it doesn't add anything visually)
+	lightProjector->setDirection(ppc->getViewDir());
+	lightProjector->buildShadowMaps(tMeshArray, false);
 	// light color needs to be white in order to modulate by colors of tmesh
 	light->setMatColor(V3(1.0f , 1.0f, 1.0f));
 
@@ -1278,7 +1282,7 @@ void Scene::testA4Demo(void)
 
 		// draw auditorium mesh in lit mode + colors + shadowmap + projective texturing
 		tms[3]->drawLit(*fb, *ppc, *light, lightProjector,
-			nullptr, true, true, true);
+			nullptr, true, false, true);
 		fb->redraw();
 		Fl::check();
 	}
@@ -1317,8 +1321,8 @@ void Scene::testA4DemoExtra(void)
 		// position teapot tmesh at front of audience in auditorium
 		tms[0]->translate(V3(160.0f, 60.0f, -90.0f)); // starting point
 
-													  // create a light projector and set it up, texture loaded does not 
-													  // matter since its going to use its own texture from the color shadow map
+		// create a light projector and set it up, texture loaded does not 
+		// matter since its going to use its own texture from the color shadow map
 		lightProjector = new LightProjector("pngs\\banskyGreen.png");
 
 		isA4DemoExtraInit = true;
