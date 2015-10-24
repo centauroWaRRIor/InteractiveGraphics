@@ -137,7 +137,7 @@ bool Light::isPointInShadow(const V3 & point) const
 void Light::buildShadowMaps(
 	vector<TMesh *> &tMeshArray,
 	bool isDbgShowShadowMaps,
-	DrawModes drawMode)
+	bool isDrawModeFlat)
 {
 	V3 filColors[3] = { // for visual debug (isDbgShowShadowMaps)
 		V3(1.0f, 0.0f, 0.0f),
@@ -160,10 +160,17 @@ void Light::buildShadowMaps(
 			it != tMeshArray.end();
 				++it, j++)
 			{
-				(*it)->drawFilledFlatWithDepth(
-					*shadowMapCube[i],
-					*shadowMapCams[i],
-					filColors[j % 3].getColor());
+				if (isDrawModeFlat == true) {
+					(*it)->drawFilledFlatWithDepth(
+						*shadowMapCube[i],
+						*shadowMapCams[i],
+						filColors[j % 3].getColor());
+				}
+				else { // this is only used by stealth mode 
+					(*it)->drawFilledFlatPerspCorrect(
+						*shadowMapCube[i],
+						*shadowMapCams[i]);
+				}
 			}
 
 		}
@@ -176,17 +183,27 @@ void Light::buildShadowMaps(
 		it != tMeshArray.end();
 			++it, j++)
 		{
-			(*it)->drawFilledFlatWithDepth(
-				*shadowMapCube[0],
-				*shadowMapCams[0],
-				filColors[j % 3].getColor());
+			if (isDrawModeFlat == true) {
+				(*it)->drawFilledFlatWithDepth(
+					*shadowMapCube[0],
+					*shadowMapCams[0],
+					filColors[j % 3].getColor());
+			}
+			else { // this is only used by stealth mode
+				(*it)->drawFilledFlatBarycentric(
+					*shadowMapCube[0],
+					*shadowMapCams[0]);
+			}
 		}
 	}
 
 	// For debug, visualize these shadowMaps as framebuffers
 	if (isDbgShowShadowMaps && isUsingCubemap) {
 		for (unsigned int i = 0; i < shadowMapsN; i++) {
-			shadowMapCube[i]->show();
+			if (!shadowMapCube[i]->shown())
+				shadowMapCube[i]->show();
+			else
+				shadowMapCube[i]->redraw();
 		}
 	}
 	// its either a directional light or a point light with cubemap disabled

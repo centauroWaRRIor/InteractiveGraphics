@@ -281,6 +281,7 @@ void Scene::dbgDraw() {
 	// important that this array does not contain the 
 	// teapot itself
 	tMeshArray.push_back(tms[1]);
+	//tMeshArray.push_back(tms[0]); // not needed
 
 	light->setPosition(ppc->getEyePoint());
 	lightProjector->setPosition(ppc->getEyePoint());
@@ -302,11 +303,15 @@ void Scene::dbgDraw() {
 		lookAtTeapot = tms[0]->getCenter() - lightProjector->getPosition();
 		lookAtTeapot.normalize();
 		lightProjector->setDirection(lookAtTeapot);
-		lightProjector->buildShadowMaps(tMeshArray, true);
+		// last argument equals false to indicate that we want to build the shadow
+		// map using interpolated colors as opposed to flat mode as its usually done
+		lightProjector->buildShadowMaps(tMeshArray, false, false);
 
 		// draw auditorium mesh
-		drawTMesh(*tms[1], *fb, *ppc, false, false, true);
-		drawTMesh(*tms[0], *fb, *ppc, false, false, true);
+		drawTMesh(*tms[1], *fb, *ppc, false, false, false);
+		// draw teapot in stealth mode
+		tms[0]->drawStealth(*fb, *ppc, *light, lightProjector, nullptr, false);
+		//drawTMesh(*tms[0], *fb, *ppc, false, false, false);
 		tms[0]->translate(V3(delta, 0.0f, 0.0f));
 		fb->redraw();
 		Fl::check();

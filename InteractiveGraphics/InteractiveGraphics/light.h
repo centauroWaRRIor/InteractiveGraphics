@@ -44,7 +44,7 @@ public:
 	void buildShadowMaps(
 		vector<TMesh *> &tMeshArray,
 		bool isDbgShowShadowMaps = false,
-		DrawModes drawMode = );
+		bool isDrawModeFlat = true);
 	// draws itself for visual debug
 	void draw(FrameBuffer &fb, const PPC &ppc, V3 &color) const;
 
