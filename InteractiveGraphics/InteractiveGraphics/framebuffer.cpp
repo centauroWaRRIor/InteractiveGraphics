@@ -927,11 +927,13 @@ void FrameBuffer::draw2DLitTriangle(
 	for (int vi = 0; vi < 3; vi++) {
 		litCols[vi] = light.computeDiffuseContribution(vs[vi], normals[vi]);
 	}
-	//litCols[0] = cols[0];
-	//litCols[1] = cols[1];
-	//litCols[2] = cols[2];
-	// TODO: Find a way to combine litCols with cols. For now litCols overrides 
-	// cols.
+
+	if (cols != nullptr) {
+
+		litCols[0].modulateBy(cols[0]);
+		litCols[1].modulateBy(cols[1]);
+		litCols[2].modulateBy(cols[2]);
+	}
 
 	// set model space interpolation
 	// build rasterization parameters to be lerped in screen space
@@ -1032,8 +1034,6 @@ void FrameBuffer::draw2DLitTriangle(
 						interpolatedColor = interpolatedColor * light.getAmbientK();					
 				}
 
-				// TODO: Find a way to combine the colors: interpolated, texture, lit and projLight color
-				// instead of overriding each other (projLight and lit color no longer override each other)
 				// do projective texture mapping
 				if (isLightProjOn && lightProj->getProjectedColor(pixel3dPoint, texelColor)) {
 					
@@ -1044,13 +1044,7 @@ void FrameBuffer::draw2DLitTriangle(
 					// make use of projective texture with alpha mask included (very useful for text)
 					if (alpha > 0)
 					{
-						//if (isShadowMapOn) { // combine shadow and projected texture
-							
-							interpolatedColor += (lightProjColor * alphaModulation);
-						//}
-						//else { // just projected texture
-							//interpolatedColor = lightProjColor * alphaModulation; // this will need to be a separate mode
-						//}
+						interpolatedColor += (lightProjColor * alphaModulation);
 					}
 				}
 				// set pixel in color framebuffer as well as depth buffer if depth test passes

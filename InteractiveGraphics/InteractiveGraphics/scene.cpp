@@ -59,6 +59,7 @@ void Scene::drawTMesh(
 			*light,
 			lightProjector,
 			nullptr, // not using lit + texture mode here
+			false,
 			isShadowsEnabled,
 			isLightProjEnabled);
 
@@ -1192,10 +1193,11 @@ void Scene::testA4Demo(void)
 
 	vector<TMesh *> tMeshArray;
 	// create tMesh array to buiild shadow map later
+	// don't include auditorium here
 	for (int j = 0; j < 3; j++) {
 		tMeshArray.push_back(tms[j]);
 	}
-
+#if 0
 	// calculate scene's centroid
 	V3 sceneCentroid;
 	for (int j = 0; j < 3; j++) {
@@ -1205,7 +1207,6 @@ void Scene::testA4Demo(void)
 
 	// initial light position
 	light->setPosition(V3(280.0f, 0.0f, 0.0f));
-	//light->setPosition(V3(450.0f, 20.0f, -140.0f));
 	// set up axis to rotate light about
 	lightAxisRot = V3(280.0f, 0.0f, -280.0f) - V3(0.0f, 0.0f, 0.0f);
 	lightAxisRot.normalize();
@@ -1231,19 +1232,19 @@ void Scene::testA4Demo(void)
 
 		light->setMatColor(V3(1.0f, 1.0f, 1.0f)); // set to white to modulate against texture
 		tms[0]->drawLit(*fb, *ppc, *light, lightProjector,
-			texObjects[0], true, false);
+			texObjects[0], false, true, false);
 
-		// draw 
+		// draw teapot mesh and happy mesh
 		light->setMatColor(V3(104.0f/255.0f, 108.0f/255.0f, 94.0f/255.0f)); // concrete color
 		//drawTMesh(*tms[1], *fb, *ppc, false, true, false);
 		tms[1]->drawLit(*fb, *ppc, *light, lightProjector,
-			nullptr, true, false);
+			nullptr, false, true, false);
 		tms[2]->drawLit(*fb, *ppc, *light, lightProjector,
-			nullptr, true, false);
+			nullptr, false, true, false);
 		fb->redraw();
 		Fl::check();
 	}
-#if 0
+#endif
 	// step 2) showcase projective texturing
 
 	// set up initial camera inside auditorium looking at seats
@@ -1258,6 +1259,8 @@ void Scene::testA4Demo(void)
 
 	// update light position
 	light->setPosition(ppc->getEyePoint());
+	// light color needs to be white in order to modulate by colors of tmesh
+	light->setMatColor(V3(1.0f , 1.0f, 1.0f));
 
 	// set up camera interpolation
 	static int i = 0;
@@ -1269,20 +1272,16 @@ void Scene::testA4Demo(void)
 		// clear screen
 		fb->set(0xFFFFFFFF);
 		// clear zBuffer
-		if (currentDrawMode == DrawModes::MODELSPACELERP)
-			fb->clearZB(FLT_MAX);
-		else
-			fb->clearZB(0.0f);
+		fb->clearZB(0.0f);
 
 		ppc->setByInterpolation(*ppcLerp0, *ppcLerp1, i, n);
 
-
-		// draw auditorium mesh
-		drawTMesh(*tms[3], *fb, *ppc, false, false, true);
+		// draw auditorium mesh in lit mode + colors + shadowmap + projective texturing
+		tms[3]->drawLit(*fb, *ppc, *light, lightProjector,
+			nullptr, true, true, true);
 		fb->redraw();
 		Fl::check();
 	}
-#endif
 
 	return;
 }
@@ -1424,11 +1423,7 @@ void Scene::currentSceneRedraw(void)
 		this->testTexProj();
 		break;
 	case Scenes::A4:
-		this->testA4Demo();
-		break;
 	case Scenes::A4EXTRA:
-		this->testA4DemoExtra();
-		break;
 	default:
 		dbgDraw();
 		break; // this statement is optional for default

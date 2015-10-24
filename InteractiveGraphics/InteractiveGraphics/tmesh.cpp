@@ -724,12 +724,13 @@ void TMesh::drawLit(
 	const Light &light,
 	const LightProjector *const lightProj,
 	const Texture *const texture,
+	bool isColorsOn,
 	bool isShadowMapOn,
 	bool isLightProjOn)
 {
 	if ((vertsN == 0) || (trisN < 1)) {
 		cerr << "ERROR: Attempted to draw an empty mesh. "
-			<< "drawTextured() command was aborted." << endl;
+			<< "drawLit() command was aborted." << endl;
 		return;
 	}
 	else if (normals == nullptr) {
@@ -784,7 +785,7 @@ void TMesh::drawLit(
 		currcols[0] = cols[tris[3 * tri + 0]];
 		currcols[1] = cols[tris[3 * tri + 1]];
 		currcols[2] = cols[tris[3 * tri + 2]];
-
+		
 		// grab current normals
 		currnormals[0] = normals[tris[3 * tri + 0]];
 		currnormals[1] = normals[tris[3 * tri + 1]];
@@ -822,15 +823,28 @@ void TMesh::drawLit(
 				VMinC.setInverted();
 				perspCorrectMatQ = VMinC * abc;
 
-				fb.draw2DLitTriangle(
-					currvs, tProjVerts, currcols, currnormals,
-					light, perspCorrectMatQ,
-					sParameters, tParameters,
-					texture,
-					isShadowMapOn,
-					ppc,
-					isLightProjOn,
-					lightProj);
+				if (isColorsOn) {
+					fb.draw2DLitTriangle(
+						currvs, tProjVerts, currcols, currnormals,
+						light, perspCorrectMatQ,
+						sParameters, tParameters,
+						texture,
+						isShadowMapOn,
+						ppc,
+						isLightProjOn,
+						lightProj);
+				}
+				else {
+					fb.draw2DLitTriangle(
+						currvs, tProjVerts, nullptr, currnormals,
+						light, perspCorrectMatQ,
+						sParameters, tParameters,
+						texture,
+						isShadowMapOn,
+						ppc,
+						isLightProjOn,
+						lightProj);
+				}
 			}
 			else
 				cerr << "WARNING: Triangle screen footprint is stoo small, discarding..." << endl;
@@ -897,17 +911,17 @@ void TMesh::drawStealth(
 {
 	if ((vertsN == 0) || (trisN < 1)) {
 		cerr << "ERROR: Attempted to draw an empty mesh. "
-			<< "drawTextured() command was aborted." << endl;
+			<< "drawStealth() command was aborted." << endl;
 		return;
 	}
 	else if (normals == nullptr) {
 		cerr << "ERROR: Attempted to draw a mesh in lit mode without specifying normals. "
-			<< "drawLit() command was aborted." << endl;
+			<< "drawStealth() command was aborted." << endl;
 		return;
 	}
 	else if (texture != nullptr && tcs == nullptr) {
 		cerr << "ERROR: Attempted to draw a mesh in lit texture mode without specifying s,t's. "
-			<< "drawLit() command was aborted." << endl;
+			<< "drawStealth() command was aborted." << endl;
 		return;
 	}
 
