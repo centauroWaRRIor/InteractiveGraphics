@@ -248,7 +248,8 @@ void Scene::dbgDraw() {
 		// position teapot tmesh at front of audience in auditorium
 		tms[0]->translate(V3(160.0f, 60.0f, -90.0f)); // starting point
 
-		// create a light projector and set it up
+		// create a light projector and set it up, texture loaded does not 
+		// matter since its going to use its own texture from the color shadow map
 		lightProjector = new LightProjector("pngs\\banskyGreen.png");
 
 		isDGBInit = true;
@@ -1286,6 +1287,84 @@ void Scene::testA4Demo(void)
 
 void Scene::testA4DemoExtra(void)
 {
+	V3 shadowmapDirection;
+	V3 lightPosRot, lightAxisRot, lightPos;
+
+	if (!isA4DemoExtraInit) {
+
+		cleanForNewScene();
+		// prepare 3 meshes
+		tms[0] = new TMesh();
+		tms[1] = new TMesh();
+
+		// set up initial camera view inside auditorium looking at seats
+		ppc->loadCameraFromFile("camera_saves/A4MagicTrickCamera.txt");
+
+		tms[0]->loadBin("geometry/teapot1K.bin");
+		tms[1]->loadBin("geometry/auditorium.bin");
+		tms[1]->rotateAboutAxis(tms[1]->getCenter(), V3(1.0f, 0.0f, 0.0f), -90.0f);
+
+		// scale happy mesh to be same scale as teapots
+		AABB teapotAABB = tms[0]->getAABB();
+		tms[1]->setToFitAABB(teapotAABB);
+		// this is silly but already have a camera for it 
+		// so make auditorium fit into my camera view
+		tms[0]->scale(0.25f);
+
+		// translate auditorium to known location
+		tms[1]->translate(V3(200.0f, 50.0f, -140.0f));
+		// position teapot tmesh at front of audience in auditorium
+		tms[0]->translate(V3(160.0f, 60.0f, -90.0f)); // starting point
+
+													  // create a light projector and set it up, texture loaded does not 
+													  // matter since its going to use its own texture from the color shadow map
+		lightProjector = new LightProjector("pngs\\banskyGreen.png");
+
+		isA4DemoExtraInit = true;
+	}
+
+	float delta = 5.0f;
+	V3 lookAtTeapot;
+
+	vector<TMesh *> tMeshArray;
+	// create tMesh array to for shadow map. Its very
+	// important that this array does not contain the 
+	// teapot
+	tMeshArray.push_back(tms[1]);
+
+	// set up texture projector above audience heads
+	lightProjector->setPosition(ppc->getEyePoint());
+	V3 auxVec = lightProjector->getPosition();
+	auxVec[1] += 2.0;
+	lightProjector->setPosition(auxVec);
+
+	for (float step = 160.0f; step < 245.0f; step += delta) {
+		// clear screen
+		fb->set(0xFFFFFFFF);
+		// clear zBuffer
+		fb->clearZB(0.0f);
+
+		// set up projector
+		lookAtTeapot = tms[0]->getCenter() - lightProjector->getPosition();
+		lookAtTeapot.normalize();
+		lightProjector->setDirection(lookAtTeapot);
+		// last argument equals false to indicate that we want to build the shadow
+		// map using interpolated colors as opposed to flat mode as its usually done
+		lightProjector->buildShadowMaps(tMeshArray, false, false);
+
+		// draw auditorium mesh in color interpolation mode since color
+		// already provides lighting cues. Adding a light makes things look too
+		// bright right now since I hanve't implemented the distance attenuation 
+		// for point lights.
+		tms[1]->drawFilledFlatBarycentric(*fb, *ppc);
+		// draw teapot in stealth mode (with lighting turned off)
+		tms[0]->drawStealth(*fb, *ppc, nullptr, *lightProjector,
+			nullptr, false, false);
+		tms[0]->translate(V3(delta, 0.0f, 0.0f));
+		fb->redraw();
+		Fl::check();
+	}
+	return;
 }
 
 void Scene::saveCamera(void) const

@@ -110,7 +110,12 @@ class GUI {open
             }
             MenuItem A4Demo {
               label {Test A4 Demo}
-              callback {A4Demo_cb()} selected
+              callback {A4Demo_cb()}
+              xywh {0 0 30 20}
+            }
+            MenuItem A4DemoExtra {
+              label {Test A4 Demo Extra}
+              callback {A4DemoExtra_cb()} selected
               xywh {0 0 30 20}
             }
           }
@@ -256,5 +261,9 @@ scene->testTexProj();} {}
   } {
     code {scene->regFuncForKbRedraw(Scenes::A4);
 scene->testA4Demo();} {}
+  }
+  Function {A4DemoExtra_cb()} {open
+  } {
+    code {scene->testA4DemoExtra();} {}
   }
 } 

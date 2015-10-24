@@ -93,6 +93,11 @@ private:
   void cb_A4Demo_i(Fl_Menu_*, void*);
   static void cb_A4Demo(Fl_Menu_*, void*);
 public:
+  static Fl_Menu_Item *A4DemoExtra;
+private:
+  void cb_A4DemoExtra_i(Fl_Menu_*, void*);
+  static void cb_A4DemoExtra(Fl_Menu_*, void*);
+public:
   Fl_Group *CameraFBSaveGroup;
   Fl_Button *SaveCameraButton;
 private:
@@ -159,5 +164,6 @@ public:
   void TestShadowMap_cb();
   void TestTexProj_cb();
   void A4Demo_cb();
+  void A4DemoExtra_cb();
 };
 #endif

@@ -1296,13 +1296,7 @@ void FrameBuffer::draw2DStealthTriangle(
 
 					V3 lightProjColor;
 					lightProjColor.setFromColor(texelColor);
-					unsigned char alpha = ((unsigned char*)(&texelColor))[3];
-					float alphaModulation = (float)(alpha) / 255.0f;
-					// make use of projective texture with alpha mask included (very useful for text)
-					if (alpha > 0)
-					{
-						interpolatedColor += (lightProjColor * alphaModulation);
-					}
+					interpolatedColor += (lightProjColor);
 				}
 				// set pixel in color framebuffer as well as depth buffer if depth test passes
 				setIfOneOverWCloser(V3(pixC[0], pixC[1], interpolatedDepth), interpolatedColor);
