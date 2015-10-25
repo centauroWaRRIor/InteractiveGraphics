@@ -1211,7 +1211,7 @@ void Scene::testA4Demo(void)
 	lightAxisRot = V3(280.0f, 0.0f, -280.0f) - V3(0.0f, 0.0f, 0.0f);
 	lightAxisRot.normalize();
 	lightPos = light->getPosition();
-#if 0
+
 	for (float steps = 0.0f; steps < 180.0f; steps += 1.6f) {
 		// clear screen and depth buffer
 		fb->set(0x00000000);
@@ -1244,7 +1244,7 @@ void Scene::testA4Demo(void)
 		fb->redraw();
 		Fl::check();
 	}
-#endif
+#if 0
 	// step 2) showcase projective texturing
 
 	// set up initial camera inside auditorium looking at seats
@@ -1286,7 +1286,7 @@ void Scene::testA4Demo(void)
 		fb->redraw();
 		Fl::check();
 	}
-
+#endif
 	return;
 }
 

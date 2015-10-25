@@ -299,8 +299,8 @@ void TMesh::drawWireframe(FrameBuffer &fb, const PPC &ppc) {
 		projV[1] = projVerts[tris[3 * tri + 1]];
 		projV[2] = projVerts[tris[3 * tri + 2]];
 		isVisible = isVertProjVis[tris[3 * tri + 0]];
-		isVisible &= isVertProjVis[tris[3 * tri + 1]];
-		isVisible &= isVertProjVis[tris[3 * tri + 2]];
+		isVisible |= isVertProjVis[tris[3 * tri + 1]];
+		isVisible |= isVertProjVis[tris[3 * tri + 2]];
 
 		// grab current triangle vertex colors
 		currcols[0] = cols[tris[3 * tri + 0]];
@@ -362,8 +362,8 @@ void TMesh::drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color)
 		tProjVerts[1] = projVerts[tris[3 * tri + 1]];
 		tProjVerts[2] = projVerts[tris[3 * tri + 2]];
 		isVisible = isVertProjVis[tris[3 * tri + 0]];
-		isVisible &= isVertProjVis[tris[3 * tri + 1]];
-		isVisible &= isVertProjVis[tris[3 * tri + 2]];
+		isVisible |= isVertProjVis[tris[3 * tri + 1]];
+		isVisible |= isVertProjVis[tris[3 * tri + 2]];
 		
 		if (isVisible) {
 
@@ -406,8 +406,8 @@ void TMesh::drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc) {
 		tProjVerts[1] = projVerts[tris[3 * tri + 1]];
 		tProjVerts[2] = projVerts[tris[3 * tri + 2]];
 		isVisible = isVertProjVis[tris[3 * tri + 0]];
-		isVisible &= isVertProjVis[tris[3 * tri + 1]];
-		isVisible &= isVertProjVis[tris[3 * tri + 2]];
+		isVisible |= isVertProjVis[tris[3 * tri + 1]];
+		isVisible |= isVertProjVis[tris[3 * tri + 2]];
 
 		// grab current triangle vertex colors
 		currcols[0] = cols[tris[3 * tri + 0]];
@@ -476,8 +476,8 @@ void TMesh::drawFilledFlatPerspCorrect(FrameBuffer & fb, const PPC & ppc)
 		tProjVerts[1] = projVerts[tris[3 * tri + 1]];
 		tProjVerts[2] = projVerts[tris[3 * tri + 2]];
 		isVisible = isVertProjVis[tris[3 * tri + 0]];
-		isVisible &= isVertProjVis[tris[3 * tri + 1]];
-		isVisible &= isVertProjVis[tris[3 * tri + 2]];
+		isVisible |= isVertProjVis[tris[3 * tri + 1]];
+		isVisible |= isVertProjVis[tris[3 * tri + 2]];
 
 		// grab current triangle vertex colors
 		currcols[0] = cols[tris[3 * tri + 0]];
@@ -556,8 +556,8 @@ void TMesh::drawTextured(FrameBuffer & fb, const PPC & ppc, const Texture & text
 		tProjVerts[1] = projVerts[tris[3 * tri + 1]];
 		tProjVerts[2] = projVerts[tris[3 * tri + 2]];
 		isVisible = isVertProjVis[tris[3 * tri + 0]];
-		isVisible &= isVertProjVis[tris[3 * tri + 1]];
-		isVisible &= isVertProjVis[tris[3 * tri + 2]];
+		isVisible |= isVertProjVis[tris[3 * tri + 1]];
+		isVisible |= isVertProjVis[tris[3 * tri + 2]];
 
 		// grab current triangle vertex colors
 		currcols[0] = cols[tris[3 * tri + 0]];
@@ -655,8 +655,8 @@ void TMesh::drawSprite(
 		tProjVerts[1] = projVerts[tris[3 * tri + 1]];
 		tProjVerts[2] = projVerts[tris[3 * tri + 2]];
 		isVisible = isVertProjVis[tris[3 * tri + 0]];
-		isVisible &= isVertProjVis[tris[3 * tri + 1]];
-		isVisible &= isVertProjVis[tris[3 * tri + 2]];
+		isVisible |= isVertProjVis[tris[3 * tri + 1]];
+		isVisible |= isVertProjVis[tris[3 * tri + 2]];
 
 		// grab current triangle vertex colors
 		currcols[0] = cols[tris[3 * tri + 0]];
@@ -778,8 +778,8 @@ void TMesh::drawLit(
 		tProjVerts[1] = projVerts[tris[3 * tri + 1]];
 		tProjVerts[2] = projVerts[tris[3 * tri + 2]];
 		isVisible = isVertProjVis[tris[3 * tri + 0]];
-		isVisible &= isVertProjVis[tris[3 * tri + 1]];
-		isVisible &= isVertProjVis[tris[3 * tri + 2]];
+		isVisible |= isVertProjVis[tris[3 * tri + 1]];
+		isVisible |= isVertProjVis[tris[3 * tri + 2]];
 
 		// grab current triangle vertex colors
 		currcols[0] = cols[tris[3 * tri + 0]];
@@ -861,7 +861,6 @@ void TMesh::drawFilledFlatWithDepth(FrameBuffer & fb, const PPC & ppc, unsigned 
 	}
 
 	// draw filled triangles with single color (provided)
-	V3 currcols[3];
 	V3 tProjVerts[3];
 	bool isVisible;
 
@@ -875,13 +874,8 @@ void TMesh::drawFilledFlatWithDepth(FrameBuffer & fb, const PPC & ppc, unsigned 
 		tProjVerts[1] = projVerts[tris[3 * tri + 1]];
 		tProjVerts[2] = projVerts[tris[3 * tri + 2]];
 		isVisible = isVertProjVis[tris[3 * tri + 0]];
-		isVisible &= isVertProjVis[tris[3 * tri + 1]];
-		isVisible &= isVertProjVis[tris[3 * tri + 2]];
-
-		// grab current triangle vertex colors
-		currcols[0] = cols[tris[3 * tri + 0]];
-		currcols[1] = cols[tris[3 * tri + 1]];
-		currcols[2] = cols[tris[3 * tri + 2]];
+		isVisible |= isVertProjVis[tris[3 * tri + 1]];
+		isVisible |= isVertProjVis[tris[3 * tri + 2]];
 
 		if (isVisible) {
 
@@ -959,8 +953,8 @@ void TMesh::drawStealth(
 		tProjVerts[1] = projVerts[tris[3 * tri + 1]];
 		tProjVerts[2] = projVerts[tris[3 * tri + 2]];
 		isVisible = isVertProjVis[tris[3 * tri + 0]];
-		isVisible &= isVertProjVis[tris[3 * tri + 1]];
-		isVisible &= isVertProjVis[tris[3 * tri + 2]];
+		isVisible |= isVertProjVis[tris[3 * tri + 1]];
+		isVisible |= isVertProjVis[tris[3 * tri + 2]];
 
 		// grab current triangle vertex colors
 		currcols[0] = cols[tris[3 * tri + 0]];

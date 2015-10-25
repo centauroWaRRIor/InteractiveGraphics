@@ -1099,8 +1099,8 @@ void FrameBuffer::draw2DFlatTriangleWithDepth(V3 * const pvs, unsigned int color
 	V3 topLeftPixC(left + 0.5f, top + 0.5f, 1.0f); // top left pixel center
 	V3 currEELS; // edge expression values for the line start
 	V3 currEE; // edge expression value within a given line 
-	V3 vColor; // final raster parameter interpolated result
-	vColor.setFromColor(color);
+	V3 pColor; // final raster parameter interpolated result
+	pColor.setFromColor(color);
 	float interpolatedDepth; // final raster parameter interpolated result
 
 	// rasterize triangle
@@ -1128,7 +1128,7 @@ void FrameBuffer::draw2DFlatTriangleWithDepth(V3 * const pvs, unsigned int color
 
 				pixC = V3(.5f + (float)currPixU, .5f + (float)currPixV, 1.0f);
 				interpolatedDepth = depthABC * pixC; // 1/w at current pixel interpolated lin. in s s
-				setIfOneOverWCloser(V3(pixC[0], pixC[1], interpolatedDepth), vColor);
+				setIfOneOverWCloser(V3(pixC[0], pixC[1], interpolatedDepth), pColor);
 			}
 		}
 	}
