@@ -1134,7 +1134,11 @@ void Scene::testA4Demo(void)
 {
 	V3 shadowmapDirection;
 	V3 lightPosRot, lightAxisRot, lightPos;
-
+	// 20 second video at 30 fps
+#ifdef _MAKE_VIDEO_
+	string pngFilename;
+	int si = 0;
+#endif
 	if (!isA4DemoInit) {
 
 		cleanForNewScene();
@@ -1153,7 +1157,9 @@ void Scene::testA4Demo(void)
 
 		tms[0]->createQuadTestTMesh(true); // enable tiling for floor quad
 		tms[1]->loadBin("geometry/happy4.bin");
+		//tms[1]->loadBin("geometry/happy2.bin"); // high res version (not ready for it, takes too long)
 		tms[2]->loadBin("geometry/teapot1K.bin");
+		//tms[2]->loadBin("geometry/teapot57K.bin"); // high res version (not ready for it, takes too long)
 		tms[3]->loadBin("geometry/auditorium.bin");
 		tms[3]->rotateAboutAxis(tms[3]->getCenter(), V3(1.0f, 0.0f, 0.0f), -90.0f);
 
@@ -1212,7 +1218,8 @@ void Scene::testA4Demo(void)
 	lightAxisRot.normalize();
 	lightPos = light->getPosition();
 
-	for (float steps = 0.0f; steps < 180.0f; steps += 1.6f) {
+	//14s -> 30f * 14s = 420 -> 180 / 420 -> 0.4285
+	for (float steps = 0.0f; steps < 180.0f; steps += 0.4285f) {
 		// clear screen and depth buffer
 		fb->set(0x00000000);
 		fb->clearZB(0.0f);
@@ -1227,7 +1234,7 @@ void Scene::testA4Demo(void)
 		// since light position changed, update shadow maps
 		light->buildShadowMaps(tMeshArray, true);
 		// draw light for light position debug
-		light->draw(*fb, *ppc, V3(0.5f, 0.3f, 0.0f));
+		light->draw(*fb, *ppc, V3(253.0f / 255.0f, 184.0f / 255.0f, 19.0f/255.0f));
 		// draw floor mesh in lit + texture mode
 
 		light->setMatColor(V3(1.0f, 1.0f, 1.0f)); // set to white to modulate against texture
@@ -1243,6 +1250,12 @@ void Scene::testA4Demo(void)
 			nullptr, false, true, false);
 		fb->redraw();
 		Fl::check();
+#ifdef _MAKE_VIDEO_
+		pngFilename = string("movieFrame");
+		pngFilename += std::to_string(si) + ".png";
+		fb->saveAsPng(pngFilename);
+		si++;
+#endif
 	}
 
 	// step 2) showcase projective texturing
@@ -1268,7 +1281,8 @@ void Scene::testA4Demo(void)
 
 	// set up camera interpolation
 	static int i = 0;
-	static int n = 10;
+	//6s -> 30f * 6s = 180
+	static int n = 180;
 	ppcLerp0 = new PPC("camera_saves\\A4DemoAudCamera.txt");
 	ppcLerp1 = new PPC("camera_saves\\A4DemoAudCameraEnd.txt");
 	for (i = 0; i < n; i++) {
@@ -1285,6 +1299,12 @@ void Scene::testA4Demo(void)
 			nullptr, true, false, true);
 		fb->redraw();
 		Fl::check();
+#ifdef _MAKE_VIDEO_
+		pngFilename = string("movieFrame");
+		pngFilename += std::to_string(si) + ".png";
+		fb->saveAsPng(pngFilename);
+		si++;
+#endif
 	}
 
 	return;
