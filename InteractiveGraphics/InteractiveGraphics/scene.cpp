@@ -1314,6 +1314,10 @@ void Scene::testA4DemoExtra(void)
 {
 	V3 shadowmapDirection;
 	V3 lightPosRot, lightAxisRot, lightPos;
+#ifdef _MAKE_VIDEO_
+	string pngFilename;
+	int si = 0;
+#endif
 
 	if (!isA4DemoExtraInit) {
 
@@ -1332,14 +1336,10 @@ void Scene::testA4DemoExtra(void)
 		// scale happy mesh to be same scale as teapots
 		AABB teapotAABB = tms[0]->getAABB();
 		tms[1]->setToFitAABB(teapotAABB);
-		// this is silly but already have a camera for it 
-		// so make auditorium fit into my camera view
 		tms[0]->scale(0.25f);
 
 		// translate auditorium to known location
 		tms[1]->translate(V3(200.0f, 50.0f, -140.0f));
-		// position teapot tmesh at front of audience in auditorium
-		tms[0]->translate(V3(160.0f, 60.0f, -90.0f)); // starting point
 
 		// create a light projector and set it up, texture loaded does not 
 		// matter since its going to use its own texture from the color shadow map
@@ -1347,8 +1347,8 @@ void Scene::testA4DemoExtra(void)
 
 		isA4DemoExtraInit = true;
 	}
-
-	float delta = 5.0f;
+	// 10 second vide at 30fps -> (245.0-160)/300 = 0.28333
+	float delta = 0.28333f;//5.0f;
 	V3 lookAtTeapot;
 
 	vector<TMesh *> tMeshArray;
@@ -1362,7 +1362,75 @@ void Scene::testA4DemoExtra(void)
 	V3 auxVec = lightProjector->getPosition();
 	auxVec[1] += 2.0;
 	lightProjector->setPosition(auxVec);
+	
+	// position teapot tmesh at front of audience in auditorium
+	tms[0]->translate(V3(160.0f, 60.0f, -90.0f)); // starting point
 
+	// what audience sees without the effect
+	for (float step = 160.0f; step < 245.0f; step += delta) {
+		// clear screen
+		fb->set(0xFFFFFFFF);
+		// clear zBuffer
+		fb->clearZB(0.0f);
+
+		// draw auditorium mesh in color interpolation mode 
+		tms[1]->drawFilledFlatBarycentric(*fb, *ppc);
+		// draw teapot in color interpolation mode
+		tms[0]->drawFilledFlatBarycentric(*fb, *ppc);
+		tms[0]->translate(V3(delta, 0.0f, 0.0f));
+		fb->redraw();
+		Fl::check();
+#ifdef _MAKE_VIDEO_
+		pngFilename = string("movieFrame");
+		pngFilename += std::to_string(si) + ".png";
+		fb->saveAsPng(pngFilename);
+		si++;
+#endif
+	}
+
+	// reset position teapot tmesh at front of audience in auditorium
+	tms[0]->loadBin("geometry/teapot1K.bin");
+	tms[0]->scale(0.25f);
+	tms[0]->translate(V3(160.0f, 60.0f, -90.0f)); // starting point
+
+	// what the projector projects
+	for (float step = 160.0f; step < 245.0f; step += delta) {
+		// clear screen
+		fb->set(0xFFFFFFFF);
+		// clear zBuffer
+		fb->clearZB(0.0f);
+
+		// rendere scene from projector perspective
+		ppc->positionAndOrient(
+			lightProjector->getPosition(),
+			tms[0]->getCenter(),
+			V3(0.0f, 1.0f, 0.0f));
+
+		// draw auditorium mesh in color interpolation mode
+		tms[1]->drawFilledFlatBarycentric(*fb, *ppc);
+		// move teapot
+		//tms[0]->drawFilledFlatBarycentric(*fb, *ppc);
+		tms[0]->translate(V3(delta, 0.0f, 0.0f));
+		fb->redraw();
+		Fl::check();
+#ifdef _MAKE_VIDEO_
+		pngFilename = string("movieFrame");
+		pngFilename += std::to_string(si) + ".png";
+		fb->saveAsPng(pngFilename);
+		si++;
+#endif
+	}
+
+	// reset camera
+	// set up initial camera view inside auditorium looking at seats
+	ppc->loadCameraFromFile("camera_saves/A4MagicTrickCamera.txt");
+
+	// reset position teapot tmesh at front of audience in auditorium
+	tms[0]->loadBin("geometry/teapot1K.bin");
+	tms[0]->scale(0.25f);
+	tms[0]->translate(V3(160.0f, 60.0f, -90.0f)); // starting point
+
+	// what audience sees with the effect
 	for (float step = 160.0f; step < 245.0f; step += delta) {
 		// clear screen
 		fb->set(0xFFFFFFFF);
@@ -1388,6 +1456,12 @@ void Scene::testA4DemoExtra(void)
 		tms[0]->translate(V3(delta, 0.0f, 0.0f));
 		fb->redraw();
 		Fl::check();
+#ifdef _MAKE_VIDEO_
+		pngFilename = string("movieFrame");
+		pngFilename += std::to_string(si) + ".png";
+		fb->saveAsPng(pngFilename);
+		si++;
+#endif
 	}
 	return;
 }
