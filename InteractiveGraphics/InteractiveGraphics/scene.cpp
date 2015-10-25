@@ -1056,8 +1056,8 @@ void Scene::testShadowMap(void)
 	else
 		fb->clearZB(0.0f);
 	// enable shadow mapping
-	drawTMesh(*tms[0], *fb, *ppc, false, true);
-	drawTMesh(*tms[1], *fb, *ppc, false, true);
+	drawTMesh(*tms[0], *fb, *ppc, false, true, false);
+	drawTMesh(*tms[1], *fb, *ppc, false, true, false);
 	fb->redraw();
 	return;
 }
@@ -1244,7 +1244,7 @@ void Scene::testA4Demo(void)
 		fb->redraw();
 		Fl::check();
 	}
-#if 0
+
 	// step 2) showcase projective texturing
 
 	// set up initial camera inside auditorium looking at seats
@@ -1286,7 +1286,7 @@ void Scene::testA4Demo(void)
 		fb->redraw();
 		Fl::check();
 	}
-#endif
+
 	return;
 }
 

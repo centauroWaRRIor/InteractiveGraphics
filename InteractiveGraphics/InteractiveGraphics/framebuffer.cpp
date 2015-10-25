@@ -1031,7 +1031,10 @@ void FrameBuffer::draw2DLitTriangle(
 				V3 pixel3dPoint = cam.unproject(V3(pixC[0], pixC[1], interpolatedDepth));
 				// do shadow mapping
 				if (isShadowMapOn && light.isPointInShadow(pixel3dPoint)) {
-						interpolatedColor = interpolatedColor * light.getAmbientK();					
+					if(texture == nullptr) // this works without texture
+						interpolatedColor = light.getMatColor() * light.getAmbientK(); 
+					else // this works with texture
+						interpolatedColor = interpolatedColor * light.getAmbientK();
 				}
 
 				// do projective texture mapping
