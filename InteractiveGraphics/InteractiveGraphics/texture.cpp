@@ -38,6 +38,39 @@ Texture::Texture(const string &filename)
 	}
 }
 
+Texture::Texture(const Texture & otherTexture, 
+	unsigned int beginS, unsigned int endS, 
+	unsigned int beginT, unsigned int endT)
+{
+	if((beginS > endS) || (beginT > endS))
+		cerr << "ERROR: Bad parameters supplied to Texture constructor..." << endl;
+	else {
+
+		texWidth = endS - beginS;
+		texHeight = endT - beginT;
+
+		unsigned int texelIndex;
+		unsigned char red, green, blue, alpha;
+		for (int i = beginT; i < endT; i++) {
+			for (int j = beginS; j < endS; j++) {
+
+				// grab pixel from other texture
+				texelIndex = (j * otherTexture.texWidth + i) * 4;
+				red = texels[texelIndex + 0];
+				green = texels[texelIndex + 1];
+				blue = texels[texelIndex + 2];
+				alpha = texels[texelIndex + 3];
+
+				// copy into tihs texture
+				texels.push_back(red);
+				texels.push_back(green);
+				texels.push_back(blue);
+				texels.push_back(alpha);
+			}
+		}
+	}
+}
+
 unsigned int Texture::sampleTexNearClamp(float floatS, float floatT) const
 {
 	// clamps [0-1] and then maps to [0, texWidth - 1]

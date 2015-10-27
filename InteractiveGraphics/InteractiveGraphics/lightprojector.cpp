@@ -12,7 +12,7 @@ LightProjector::~LightProjector()
 	if (texObject)
 		delete texObject;
 	// note to self:
-	// c++ automagically calls Light destructor
+	// c++ automagically calls Light (base class) destructor
 	// no need to explicitly call it here
 }
 

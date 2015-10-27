@@ -51,6 +51,9 @@
     <ClCompile Include="lightprojector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="cubemap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framebuffer.h">
@@ -90,6 +93,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="lightprojector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cubemap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

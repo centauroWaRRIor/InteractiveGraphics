@@ -15,6 +15,11 @@ private:
 	float clip(float n, float lower, float upper) const;
 public:
 	Texture(const string &filename);
+	// constructs a texture out of a sub section of 
+	// another texture. Useful for building env maps.
+	Texture(const Texture &otherTexture, 
+		unsigned int beginS, unsigned int endS,
+		unsigned int beginT, unsigned int endT);
 	//~Texture(); // automatic destructor should suffice
 
 	unsigned int getTexWidth(void) const { return texWidth; }
