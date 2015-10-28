@@ -24,7 +24,7 @@ CubeMap::CubeMap(const string & texFilename)
 		0.0f);
 
 	cubeMapFaces[1] = new Texture(masterTexObject,
-		1 * envMapResWidth, 2 * envMapResWidth,
+		0 * envMapResWidth, 1 * envMapResWidth,
 		1 * envMapResHeight, 2 * envMapResHeight);
 	cubeMapFacesCams[1]->positionRelativeToPoint(
 		V3(0.0f, 0.0f, 0.0f),
@@ -33,8 +33,8 @@ CubeMap::CubeMap(const string & texFilename)
 		0.0f);
 
 	cubeMapFaces[2] = new Texture(masterTexObject,
-		2 * envMapResWidth, 3 * envMapResWidth,
-		2 * envMapResHeight, 3 * envMapResHeight);
+		1 * envMapResWidth, 2 * envMapResWidth,
+		3 * envMapResHeight, 4 * envMapResHeight);
 	cubeMapFacesCams[2]->positionRelativeToPoint(
 		V3(0.0f, 0.0f, 0.0f),
 		V3(0.0f, 0.0f, -1.0f), // look at pos z direction

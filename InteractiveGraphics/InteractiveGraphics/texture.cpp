@@ -42,7 +42,7 @@ Texture::Texture(const Texture & otherTexture,
 	unsigned int beginS, unsigned int endS, 
 	unsigned int beginT, unsigned int endT)
 {
-	if((beginS > endS) || (beginT > endS))
+	if((beginS > endS) || (beginT > endT))
 		cerr << "ERROR: Bad parameters supplied to Texture constructor..." << endl;
 	else {
 

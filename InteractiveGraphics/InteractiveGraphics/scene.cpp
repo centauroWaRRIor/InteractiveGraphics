@@ -226,12 +226,10 @@ void Scene::dbgDraw() {
 		cleanForNewScene();
 		isDGBInit = true;
 	}
-	for (int i = 0; i < 6; i++) {
-		fb->loadFromTexture(*(cubeMap.getCubeFace(i)));
-		fb->redraw();
-		Fl::check();
-		Fl::wait(1.0);
-	}
+	static unsigned int i = 0;
+	fb->loadFromTexture(*(cubeMap.getCubeFace(i%6)));
+	fb->redraw();
+	i++;
 	return;
 }
 
