@@ -33,4 +33,6 @@ public:
 	// does not support alpha texture due to use of V3 to 
 	// do vector interpolation (alpha the 4 component gets lost)
 	unsigned int sampleTexBilinearTile(float s, float t) const;
+	// flips image upside down
+	void flipAboutY(void);
 };
