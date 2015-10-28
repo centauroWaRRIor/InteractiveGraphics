@@ -14,5 +14,6 @@ class CubeMap
 public:
 	CubeMap(const string & texFilename);
 	~CubeMap();
+	Texture *getCubeFace(unsigned int i);
 };
 

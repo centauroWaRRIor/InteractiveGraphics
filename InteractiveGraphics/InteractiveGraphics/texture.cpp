@@ -51,15 +51,15 @@ Texture::Texture(const Texture & otherTexture,
 
 		unsigned int texelIndex;
 		unsigned char red, green, blue, alpha;
-		for (int i = beginT; i < endT; i++) {
-			for (int j = beginS; j < endS; j++) {
+		for (unsigned int i = beginT; i < endT; i++) {
+			for (unsigned int j = beginS; j < endS; j++) {
 
 				// grab pixel from other texture
-				texelIndex = (j * otherTexture.texWidth + i) * 4;
-				red = texels[texelIndex + 0];
-				green = texels[texelIndex + 1];
-				blue = texels[texelIndex + 2];
-				alpha = texels[texelIndex + 3];
+				texelIndex = (i * otherTexture.texWidth + j) * 4;
+				red = otherTexture.texels[texelIndex + 0];
+				green = otherTexture.texels[texelIndex + 1];
+				blue = otherTexture.texels[texelIndex + 2];
+				alpha = otherTexture.texels[texelIndex + 3];
 
 				// copy into tihs texture
 				texels.push_back(red);

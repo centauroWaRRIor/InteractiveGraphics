@@ -148,6 +148,8 @@ public:
 	void saveAsPng(string fname) const;
 	// load from png image
 	void loadFromPng(string fname);
+	// load from texture object
+	void loadFromTexture(const Texture &texObj);
 };
 
 

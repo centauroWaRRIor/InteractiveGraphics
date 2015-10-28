@@ -1376,7 +1376,7 @@ void FrameBuffer::loadFromPng(string fname) {
 	//if there's an error, display it
 	if (error) std::cout << "decoder error " << error << ": " << lodepng_error_text(error) << std::endl;
 
-	//the pixels are now in the vector "image", 4 bytes per pixel, ordered RGBARGBA..., use it as texture, draw it, ...
+	//the pixels are now in the vector "image", 4 bytes per pixel, ordered RGBARGBA
 
 	// Only load if it fits in the framebuffer
 	if (width <= (unsigned int) w && height <= (unsigned int) h) {
@@ -1405,4 +1405,43 @@ void FrameBuffer::loadFromPng(string fname) {
 		std::cout << "decoder error : Image is larger than the framebuffer, please rescale.." << std::endl;
 	}
 
+}
+
+void FrameBuffer::loadFromTexture(const Texture & texObj)
+{
+	unsigned int width, height;
+	vector<unsigned char> image; //the raw pixels from texture
+
+	image = texObj.getTexels();
+	width = texObj.getTexWidth();
+	height = texObj.getTexHeight();
+	
+	//the pixels are now in the vector "image", 4 bytes per pixel, ordered RGBARGBA..., use it as texture, draw it, ...
+
+	// Only load if it fits in the framebuffer
+	if (width <= (unsigned int)w && height <= (unsigned int)h) {
+		unsigned char red, green, blue, alpha;
+		unsigned int color;
+
+		// copy image into framebuffer 
+		for (unsigned int i = 0, ii = 0; i < height; i++, ii += 4) {
+			for (unsigned int j = 0, jj = 0; j < width; j++, jj += 4) {
+
+				red = image[ii*width + jj + 0];
+				green = image[ii*width + jj + 1];
+				blue = image[ii*width + jj + 2];
+				alpha = image[ii*width + jj + 3];
+
+				((unsigned char*)(&color))[0] = red;
+				((unsigned char*)(&color))[1] = green;
+				((unsigned char*)(&color))[2] = blue;
+				((unsigned char*)(&color))[3] = alpha;
+
+				set(j, i, color);
+			}
+		}
+	}
+	else {
+		std::cout << "decoder error : texture image is larger than the framebuffer, please rescale.." << std::endl;
+	}
 }
