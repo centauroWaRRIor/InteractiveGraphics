@@ -115,7 +115,17 @@ class GUI {open
             }
             MenuItem A4DemoExtra {
               label {Test A4 Demo Extra}
-              callback {A4DemoExtra_cb()} selected
+              callback {A4DemoExtra_cb()}
+              xywh {0 0 30 20}
+            }
+          }
+          Submenu A5SubMenu {
+            label A5 open
+            xywh {0 0 62 20}
+          } {
+            MenuItem TestCubeMapFaces {
+              label {Test Cube Map Faces}
+              callback {TestCubeMapFaces_cb()}
               xywh {0 0 30 20}
             }
           }
@@ -265,5 +275,9 @@ scene->testA4Demo();} {}
   Function {A4DemoExtra_cb()} {open
   } {
     code {scene->testA4DemoExtra();} {}
+  }
+  Function {TestCubeMapFaces_cb()} {open
+  } {
+    code {scene->testCubeMapFaces();} {}
   }
 } 

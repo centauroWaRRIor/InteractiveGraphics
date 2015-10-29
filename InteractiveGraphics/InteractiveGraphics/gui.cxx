@@ -114,6 +114,13 @@ void GUI::cb_A4DemoExtra(Fl_Menu_* o, void* v) {
   ((GUI*)(o->parent()->user_data()))->cb_A4DemoExtra_i(o,v);
 }
 
+void GUI::cb_TestCubeMapFaces_i(Fl_Menu_*, void*) {
+  TestCubeMapFaces_cb();
+}
+void GUI::cb_TestCubeMapFaces(Fl_Menu_* o, void* v) {
+  ((GUI*)(o->parent()->user_data()))->cb_TestCubeMapFaces_i(o,v);
+}
+
 Fl_Menu_Item GUI::menu_Main[] = {
  {"Previous Assignments", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
  {"A1", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
@@ -139,6 +146,9 @@ Fl_Menu_Item GUI::menu_Main[] = {
  {"Test A4 Demo", 0,  (Fl_Callback*)GUI::cb_A4Demo, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Test A4 Demo Extra", 0,  (Fl_Callback*)GUI::cb_A4DemoExtra, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
+ {"A5", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Test Cube Map Faces", 0,  (Fl_Callback*)GUI::cb_TestCubeMapFaces, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {0,0,0,0,0,0,0,0,0},
  {0,0,0,0,0,0,0,0,0},
  {0,0,0,0,0,0,0,0,0}
 };
@@ -161,6 +171,8 @@ Fl_Menu_Item* GUI::TestShadowMap = GUI::menu_Main + 19;
 Fl_Menu_Item* GUI::TestTexProj = GUI::menu_Main + 20;
 Fl_Menu_Item* GUI::A4Demo = GUI::menu_Main + 21;
 Fl_Menu_Item* GUI::A4DemoExtra = GUI::menu_Main + 22;
+Fl_Menu_Item* GUI::A5SubMenu = GUI::menu_Main + 24;
+Fl_Menu_Item* GUI::TestCubeMapFaces = GUI::menu_Main + 25;
 
 void GUI::cb_SaveCameraButton_i(Fl_Button*, void*) {
   SaveCameraButton_cb();
@@ -1342,4 +1354,8 @@ scene->testA4Demo();
 
 void GUI::A4DemoExtra_cb() {
   scene->testA4DemoExtra();
+}
+
+void GUI::TestCubeMapFaces_cb() {
+  scene->testCubeMapFaces();
 }

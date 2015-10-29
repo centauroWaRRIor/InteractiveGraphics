@@ -1400,6 +1400,17 @@ void Scene::testA4DemoExtra(void)
 	return;
 }
 
+void Scene::testCubeMapFaces(void)
+{
+	CubeMap cubeMap("pngs\\uffizi_cross.png");
+	cleanForNewScene();
+	static unsigned int i = 0;
+	fb->loadFromTexture(*(cubeMap.getCubeFace(i % 6)));
+	fb->redraw();
+	i++;
+	return;
+}
+
 void Scene::saveCamera(void) const
 {
 	string filename = retrieveTimeDate();

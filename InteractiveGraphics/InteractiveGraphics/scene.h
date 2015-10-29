@@ -93,6 +93,7 @@ public:
 	void testTexProj(void);
 	void testA4Demo(void);
 	void testA4DemoExtra(void);
+	void testCubeMapFaces(void);
 
 	void saveCamera(void) const;
 	void saveThisFramebuffer(void) const;

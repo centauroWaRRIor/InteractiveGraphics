@@ -98,6 +98,12 @@ private:
   void cb_A4DemoExtra_i(Fl_Menu_*, void*);
   static void cb_A4DemoExtra(Fl_Menu_*, void*);
 public:
+  static Fl_Menu_Item *A5SubMenu;
+  static Fl_Menu_Item *TestCubeMapFaces;
+private:
+  void cb_TestCubeMapFaces_i(Fl_Menu_*, void*);
+  static void cb_TestCubeMapFaces(Fl_Menu_*, void*);
+public:
   Fl_Group *CameraFBSaveGroup;
   Fl_Button *SaveCameraButton;
 private:
@@ -165,5 +171,6 @@ public:
   void TestTexProj_cb();
   void A4Demo_cb();
   void A4DemoExtra_cb();
+  void TestCubeMapFaces_cb();
 };
 #endif
