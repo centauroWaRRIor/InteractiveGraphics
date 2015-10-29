@@ -11,7 +11,7 @@ using std::string;
 #include "light.h"
 #include "lightprojector.h"
 
-class FrameBuffer; // Forward declaration
+class CubeMap; // need forward declaration here
 
 // framebuffer + window class
 
@@ -143,6 +143,9 @@ public:
 
 	// draw 2D segment specified by 2 points, each with own color
 	void draw2DSegment(const V3 &v0, const V3 &c0, const V3 &v1, const V3 &c1);
+
+	// draws distant geometry using an environment map
+	void drawEnvironmentMap(CubeMap &cubeMap, const PPC &cam);
 
 	// save as png image
 	void saveAsPng(string fname) const;

@@ -3,6 +3,7 @@
 #include "scene.h"
 #include "scene.h"
 #include "ppc.h"
+#include "cubemap.h"
 #include <iostream>
 #include <math.h>
 #include <cfloat> // using FLT_MAX
@@ -1325,6 +1326,27 @@ void FrameBuffer::draw2DSegment(const V3 &v0, const V3 &c0, const V3 &v1, const 
 		
 		setIfOneOverWCloser(p, c);
 		//setSafe((int)p[0], (int)p[1], c.getColor()); // ignores z-buffer
+	}
+}
+
+void FrameBuffer::drawEnvironmentMap(CubeMap & cubeMap, const PPC & cam)
+{
+	V3 pixC, pixC_3D, dir, color;
+	// clear background to color provided by the environment map
+	for (int currPixV = 0; currPixV < h; currPixV++) {
+		for (int currPixU = 0; currPixU < w; currPixU++) {
+
+			// depth value assigned to this pixel is a not care as long as its not zero
+			// as zero means infinitely far away (1/w)
+			pixC = V3(.5f + (float)currPixU, .5f + (float)currPixV, 1.0f);
+			pixC_3D = cam.unproject(pixC);
+			// use 3d vector to find direction of ray from eye to pixel
+			dir = pixC_3D - cam.getEyePoint();
+			dir.normalize();
+			// use ray's direction to look up color in environament map
+			color = cubeMap.getColor(dir);
+			set(currPixU, currPixV, color.getColor());
+		}
 	}
 }
 
