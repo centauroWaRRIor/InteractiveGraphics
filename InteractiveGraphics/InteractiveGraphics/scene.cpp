@@ -226,10 +226,9 @@ void Scene::dbgDraw() {
 		cleanForNewScene();
 		isDGBInit = true;
 	}
-	static unsigned int i = 0;
-	fb->loadFromTexture(*(cubeMap.getCubeFace(i%6)));
+	//ppc->pan(45.0f);
+	fb->drawEnvironmentMap(cubeMap, *ppc);
 	fb->redraw();
-	i++;
 	return;
 }
 

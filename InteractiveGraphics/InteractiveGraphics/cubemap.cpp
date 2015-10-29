@@ -106,7 +106,7 @@ V3 CubeMap::getColor(const V3 & direction)
 	// to leverage locality principle.
 	while(!isProjValid) {
 
-		isProjValid = cubeMapFacesCams[currentLookAtFace]->project(lookAt3DPoint, projectedPoint);
+		isProjValid = cubeMapFacesCams[currentLookAtFace % 6]->project(lookAt3DPoint, projectedPoint);
 		// be very strict with the projection: no projection if:
 		// - point is left of view frustrum or is right of view frustrum
 		// - or is above view frustrum or is below of view frustrum
@@ -116,12 +116,16 @@ V3 CubeMap::getColor(const V3 & direction)
 
 			// go from x,y to s,t which ranges from [0,1]
 			float s = projectedPoint[0] / (envMapResWidth - 1.0f);
-			float t = projectedPoint[1] / (envMapResWidth - 1.0f);
-			returnColor = cubeMapFaces[currentLookAtFace]->sampleTexBilinearTile(s, t);
+			float t = projectedPoint[1] / (envMapResHeight - 1.0f);
+			// bilinear interpolation assumes t ranges [0,1] starting from the bottom of texture
+			// and since y screen goes from top to bottom we need to flip t here as well
+			t = (envMapResHeight - 1.0f) - t;
+			returnColor = cubeMapFaces[currentLookAtFace % 6]->sampleTexBilinearTile(s, t);
 			return V3(returnColor);
 		}
-		else
+		else {
 			currentLookAtFace++; // try with a different face of the cube
+		}
 	} 
 	// This should not ever happen. Any ray direction should be contained by a cubemap
 	return V3();
