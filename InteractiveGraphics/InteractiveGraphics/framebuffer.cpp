@@ -1397,6 +1397,7 @@ void FrameBuffer::draw2DReflectiveTriangle(
 	V3 currEELS; // edge expression values for the line start
 	V3 currEE; // edge expression value within a given line 
 	V3 interpolatedColor; // final raster parameter interpolated result
+	V3 pixel3dPoint, E, R; // used in environment map calculation of reflected vector
 	float interpolatedDepth; // final raster parameter interpolated result
 	float interpolatedS, interpolatedT; // final raster parameter interpolated result
 	unsigned int texelColor;
@@ -1444,8 +1445,28 @@ void FrameBuffer::draw2DReflectiveTriangle(
 				}
 
 				// get 3d point corresponding to this pixel
-				//V3 pixel3dPoint = cam.unproject(V3(pixC[0], pixC[1], interpolatedDepth));
+				pixel3dPoint = cam.unproject(V3(pixC[0], pixC[1], interpolatedDepth));
 
+				// calculate the reflected ray R that is incident with the surface normal
+				{
+					// proj a onto v = ((a * v) * v) / v.length
+					// if v is normalized -> proj a onto v = (a * v) v
+					// apply this formula to obtain vector B in figure 10.2 of MirrorReflectionVector.pdf
+					// the rest of the derivation is straightforward 
+					// R = E - 2 (E * N) N where E is the incident light ray coming from the camera
+
+					// find E
+
+					// TODO: To calculate R we will need the interpolated normal at this point. Normalized
+					// Therefore use persp correct interpolation in the same way you did for colors to obtain this
+					
+
+					// use 3d vector to find direction of ray from eye to pixel
+					E = pixel3dPoint - cam.getEyePoint();
+					R = E - (E * )
+					E.normalize();
+					// use ray's direction to look up color in environament map
+				}
 
 				// set pixel in color framebuffer as well as depth buffer if depth test passes
 				setIfOneOverWCloser(V3(pixC[0], pixC[1], interpolatedDepth), interpolatedColor);
