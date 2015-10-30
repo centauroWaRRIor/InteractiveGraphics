@@ -90,6 +90,15 @@ public:
 		const Texture *const texture,
 		bool isLightOn,
 		bool isTexturedOn);
+	// draws triangle mesh using reflections off of an environment map as if the mesh
+	// was constructed out of a highlhy reflective material such as metal.
+	// TODO: Add a light to generate specular highlights
+	void drawReflective(
+		CubeMap &cubeMap,
+		FrameBuffer &fb,
+		const PPC &ppc,
+		const Texture *const texture = nullptr,
+		bool isColorsOn = false);
 
 	// rotate about axis
 	void rotateAboutAxis(const V3 &aO, const V3 &adir, float theta);

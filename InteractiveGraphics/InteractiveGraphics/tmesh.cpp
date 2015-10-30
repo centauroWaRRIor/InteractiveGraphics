@@ -1020,6 +1020,132 @@ void TMesh::projectVertices(const PPC & ppc)
 	}
 }
 
+void TMesh::drawReflective(
+	CubeMap &cubeMap,
+	FrameBuffer & fb, 
+	const PPC & ppc, 
+	const Texture * 
+	const texture, 
+	bool isColorsOn)
+{
+	if ((vertsN == 0) || (trisN < 1)) {
+		cerr << "ERROR: Attempted to draw an empty mesh. "
+			<< "drawReflective() command was aborted." << endl;
+		return;
+	}
+	else if (normals == nullptr) {
+		cerr << "ERROR: Attempted to draw a mesh in lit mode without specifying normals. "
+			<< "drawReflective() command was aborted." << endl;
+		return;
+	}
+	else if (texture != nullptr && tcs == nullptr) {
+		cerr << "ERROR: Attempted to draw a mesh in lit texture mode without specifying s,t's. "
+			<< "drawReflective() command was aborted." << endl;
+		return;
+	}
+
+	// Matrix used for perspective correct linear 
+	// interpolation of raster parameters.
+	// (refer to slide 7 of RastParInterp.pdf for the math 
+	// derivation of Q matrix)
+	M33 perspCorrectMatQ, VMinC, abc;
+	abc.setColumn(ppc.getLowerCaseA(), 0);
+	abc.setColumn(ppc.getLowerCaseB(), 1);
+	abc.setColumn(ppc.getLowerCaseC(), 2);
+
+	// Draw textured triangles with s,t linearly
+	// interpolated in model space and depth linearly
+	// interpolated in screen space.
+	V3 tProjVerts[3];
+	V3 currvs[3];
+	V3 currcols[3];
+	V3 currnormals[3];
+	V3 sParameters, tParameters;
+	bool isVisible;
+
+	// optimization: project each vertex only once
+	projectVertices(ppc);
+
+	for (int tri = 0; tri < trisN; tri++) {
+
+		// grab current triangle vertices
+		currvs[0] = verts[tris[3 * tri + 0]];
+		currvs[1] = verts[tris[3 * tri + 1]];
+		currvs[2] = verts[tris[3 * tri + 2]];
+
+		// grab current projected triangle vertices
+		tProjVerts[0] = projVerts[tris[3 * tri + 0]];
+		tProjVerts[1] = projVerts[tris[3 * tri + 1]];
+		tProjVerts[2] = projVerts[tris[3 * tri + 2]];
+		isVisible = isVertProjVis[tris[3 * tri + 0]];
+		isVisible &= isVertProjVis[tris[3 * tri + 1]];
+		isVisible &= isVertProjVis[tris[3 * tri + 2]];
+
+		// grab current triangle vertex colors
+		currcols[0] = cols[tris[3 * tri + 0]];
+		currcols[1] = cols[tris[3 * tri + 1]];
+		currcols[2] = cols[tris[3 * tri + 2]];
+
+		// grab current normals
+		currnormals[0] = normals[tris[3 * tri + 0]];
+		currnormals[1] = normals[tris[3 * tri + 1]];
+		currnormals[2] = normals[tris[3 * tri + 2]];
+
+		if (texture != nullptr) {
+			// grab current triangle texture coordinates
+			sParameters[0] = tcs[tris[3 * tri + 0] * 2 + 0];
+			sParameters[1] = tcs[tris[3 * tri + 1] * 2 + 0];
+			sParameters[2] = tcs[tris[3 * tri + 2] * 2 + 0];
+			tParameters[0] = tcs[tris[3 * tri + 0] * 2 + 1];
+			tParameters[1] = tcs[tris[3 * tri + 1] * 2 + 1];
+			tParameters[2] = tcs[tris[3 * tri + 2] * 2 + 1];
+		}
+		else {
+			// make something up, they won't be used anyways
+			sParameters = V3(0.0f, 1.0f, 0.0f);
+			tParameters = V3(0.0f, 1.0f, 1.0f);
+		}
+
+		if (isVisible) {
+
+			// Rasterizer should reject triangles whose screen footprint is very small.
+			float projTriangleArea = compute2DTriangleArea(
+				tProjVerts[0],
+				tProjVerts[1],
+				tProjVerts[2]);
+
+			if (projTriangleArea > epsilonMinArea) {
+
+				// build model space linear interpolation for s and t
+				VMinC.setColumn(currvs[0] - ppc.getEyePoint(), 0);
+				VMinC.setColumn(currvs[1] - ppc.getEyePoint(), 1);
+				VMinC.setColumn(currvs[2] - ppc.getEyePoint(), 2);
+				VMinC.setInverted();
+				perspCorrectMatQ = VMinC * abc;
+
+				if (isColorsOn) {
+					fb.draw2DReflectiveTriangle(
+						cubeMap, ppc,
+						currvs, tProjVerts, currcols, currnormals,
+						perspCorrectMatQ,
+						sParameters, tParameters,
+						texture);
+				}
+				else {
+					fb.draw2DReflectiveTriangle(
+						cubeMap, ppc,
+						currvs, tProjVerts, nullptr, currnormals,
+						perspCorrectMatQ,
+						sParameters, tParameters,
+						texture);
+				}
+			}
+			else
+				cerr << "WARNING: Triangle screen footprint is stoo small, discarding..." << endl;
+		}
+	}
+}
+
 void TMesh::rotateAboutAxis(const V3 &aO, const V3 &adir, float theta)
 {
 	for (int vi = 0; vi < vertsN; vi++) {

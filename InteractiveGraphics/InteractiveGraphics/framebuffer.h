@@ -125,7 +125,7 @@ public:
 		V3 *const pvs,
 		unsigned int color);
 	// draws 2D textured triangle in stealth mode so that it gets cammouflaged 
-	// with its environment
+	// with its environment (by using projective texturing)
 	void draw2DStealthTriangle(
 		V3 *const vs,
 		V3 *const pvs,
@@ -140,6 +140,19 @@ public:
 		const Texture *const texture,
 		const PPC &cam,
 		const LightProjector & lightProj);
+	// draws a 2D triangle with metallic appereance that is reflective in nature
+	// by using an environment map.
+	void draw2DReflectiveTriangle(
+		CubeMap &cubeMap,
+		const PPC &cam,
+		V3 *const vs,
+		V3 *const pvs,
+		V3 *const cols,
+		const V3 *const normals,
+		M33 perspCorrectMatQ,
+		const V3 &sCoords,
+		const V3 &tCoords,
+		const Texture *const texture);
 
 	// draw 2D segment specified by 2 points, each with own color
 	void draw2DSegment(const V3 &v0, const V3 &c0, const V3 &v1, const V3 &c1);

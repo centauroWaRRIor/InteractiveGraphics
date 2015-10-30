@@ -224,10 +224,25 @@ void Scene::dbgDraw() {
 	if (!isDGBInit) {
 		
 		cleanForNewScene();
+
+		tms[0] = new TMesh();
+
+		// test environment mapping technique on teapot
+		tms[0]->loadBin("geometry/teapot1K.bin");
+		tms[0]->translate(V3(10.0f, -10.0f, 0.0f));
+		tms[0]->scale(1.0);
+
+		// set ppc with a HFOV big enough for env map
+		delete ppc;
+		ppc = nullptr;
+		ppc = new PPC(90.0f, K_W, K_H);
+
+		ppc->moveForward(-200.0f);
+
 		isDGBInit = true;
 	}
-	//ppc->pan(45.0f);
 	fb->drawEnvironmentMap(cubeMap, *ppc);
+	tms[0]->drawReflective(cubeMap, *fb, *ppc);
 	fb->redraw();
 	return;
 }
