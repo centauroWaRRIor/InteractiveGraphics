@@ -242,6 +242,7 @@ void Scene::dbgDraw() {
 		isDGBInit = true;
 	}
 	fb->drawEnvironmentMap(cubeMap, *ppc);
+	fb->clearZB(0.0f);
 	tms[0]->drawReflective(cubeMap, *fb, *ppc);
 	fb->redraw();
 	return;
@@ -361,7 +362,7 @@ void Scene::testRaster() {
 		// clear screen
 		fb->set(0xFFFFFFFF);
 		// draw rectangle
-		fb->draw2DRectangle(	lowerLeft[0], 
+		fb->draw2DRectangle(lowerLeft[0], 
 							lowerLeft[1] + steps,
 							rectangleWidth,
 							rectangleHeight,
