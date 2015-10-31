@@ -1413,7 +1413,7 @@ void FrameBuffer::draw2DReflectiveTriangle(
 	V3 currEE; // edge expression value within a given line 
 	V3 interpolatedColor; // final raster parameter interpolated result
 	V3 interpolatedNormal; // final raster parameter interpolated result
-	V3 pixel3dPoint, E, R; // used in environment map calculation of reflected vector
+	V3 pixel3dPoint, E, R, reflectiveColor; // used in environment map calculation of reflected vector
 	float interpolatedDepth; // final raster parameter interpolated result
 	float interpolatedS, interpolatedT; // final raster parameter interpolated result
 	unsigned int texelColor;
@@ -1457,14 +1457,6 @@ void FrameBuffer::draw2DReflectiveTriangle(
 				// 1/w is interpoalted in screen space
 				interpolatedDepth = depthABC * pixC; // 1/w at current pixel interpolated lin. in s s
 
-				if (texture != nullptr) {
-					// sample texture using lerped result of s,t raster parameters (in model space)
-					texelColor = texture->sampleTexBilinearTile(interpolatedS, interpolatedT);
-					V3 texelColorVec(texelColor);
-					texelColorVec.modulateBy(interpolatedColor); // however modulate texture color against pixel lit value
-					interpolatedColor = texelColorVec;
-				}
-
 				// get 3d point corresponding to this pixel
 				pixel3dPoint = cam.unproject(V3(pixC[0], pixC[1], interpolatedDepth));
 
@@ -1482,7 +1474,20 @@ void FrameBuffer::draw2DReflectiveTriangle(
 				R = E - (interpolatedNormal * (2 * (E * interpolatedNormal)));
 				R.normalize();
 				// use ray's direction to look up color in environament map
-				interpolatedColor = cubeMap.getColor(R);
+				reflectiveColor = cubeMap.getColor(R);
+
+				if (cols == nullptr)
+					interpolatedColor = reflectiveColor;
+				else
+					interpolatedColor.modulateBy(reflectiveColor);
+
+				if (texture != nullptr) {
+					// sample texture using lerped result of s,t raster parameters (in model space)
+					texelColor = texture->sampleTexBilinearTile(interpolatedS, interpolatedT);
+					V3 texelColorVec(texelColor);
+					//texelColorVec.modulateBy(interpolatedColor); // however modulate texture color against pixel lit value
+					interpolatedColor += texelColorVec;
+				}
 
 				// set pixel in color framebuffer as well as depth buffer if depth test passes
 				setIfOneOverWCloser(V3(pixC[0], pixC[1], interpolatedDepth), interpolatedColor);
