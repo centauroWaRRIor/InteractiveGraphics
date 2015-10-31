@@ -102,9 +102,10 @@ V3 CubeMap::getColor(const V3 & direction)
 	V3 projectedPoint;
 	unsigned int returnColor;
 	bool isProjValid = false;
+	int timesTried = 0;
 	// find the face that sees this point but start by the one used last time
 	// to leverage locality principle.
-	while(!isProjValid) {
+	while(timesTried < 6) {
 
 		isProjValid = cubeMapFacesCams[currentLookAtFace % 6]->project(lookAt3DPoint, projectedPoint);
 		// be very strict with the projection: no projection if:
@@ -125,10 +126,11 @@ V3 CubeMap::getColor(const V3 & direction)
 		}
 		else {
 			currentLookAtFace++; // try with a different face of the cube
+			timesTried++;
 		}
 	} 
 	// This should not ever happen. Any ray direction should be contained by a cubemap
-	return V3();
+	return V3(255.0f/255.0f, 0.0f/255.0f, 128.0f/255.0f); // bright pink so its easy to spot if it ever happens (debug)
 }
 
 V3 CubeMap::getSpecularReflectionColor(const V3 & normal) const
