@@ -1357,6 +1357,9 @@ void FrameBuffer::draw2DReflectiveTriangle(
 	V3 redParameters(colors[0].getX(), colors[1].getX(), colors[2].getX());
 	V3 greenParameters(colors[0].getY(), colors[1].getY(), colors[2].getY());
 	V3 blueParameters(colors[0].getZ(), colors[1].getZ(), colors[2].getZ());
+	V3 normalXParameters(normals[0].getX(), normals[1].getX(), normals[2].getX());
+	V3 normalYParameters(normals[0].getY(), normals[1].getY(), normals[2].getY());
+	V3 normalZarameters(normals[0].getZ(), normals[1].getZ(), normals[2].getZ());
 	// refer to slide 7 of RastParInterp.pdf for the math 
 	// derivation of the persp correct coefficients
 	V3 denDEF = Q[0] + Q[1] + Q[2];
@@ -1372,6 +1375,18 @@ void FrameBuffer::draw2DReflectiveTriangle(
 		Q.getColumn(0) * blueParameters,
 		Q.getColumn(1) * blueParameters,
 		Q.getColumn(2) * blueParameters);
+	V3 normalXNumABC = V3(
+		Q.getColumn(0) * normalXParameters,
+		Q.getColumn(1) * normalXParameters,
+		Q.getColumn(2) * normalXParameters);
+	V3 normalYNumABC = V3(
+		Q.getColumn(0) * normalYParameters,
+		Q.getColumn(1) * normalYParameters,
+		Q.getColumn(2) * normalYParameters);
+	V3 normalZNumABC = V3(
+		Q.getColumn(0) * normalZarameters,
+		Q.getColumn(1) * normalZarameters,
+		Q.getColumn(2) * normalZarameters);
 	V3 sNumABC = V3(
 		Q.getColumn(0) * sCoords,
 		Q.getColumn(1) * sCoords,
@@ -1397,6 +1412,7 @@ void FrameBuffer::draw2DReflectiveTriangle(
 	V3 currEELS; // edge expression values for the line start
 	V3 currEE; // edge expression value within a given line 
 	V3 interpolatedColor; // final raster parameter interpolated result
+	V3 interpolatedNormal; // final raster parameter interpolated result
 	V3 pixel3dPoint, E, R; // used in environment map calculation of reflected vector
 	float interpolatedDepth; // final raster parameter interpolated result
 	float interpolatedS, interpolatedT; // final raster parameter interpolated result
@@ -1431,6 +1447,11 @@ void FrameBuffer::draw2DReflectiveTriangle(
 				interpolatedColor[0] = (redNumABC * pixC) / denFactor;
 				interpolatedColor[1] = (greenNumABC * pixC) / denFactor;
 				interpolatedColor[2] = (blueNumABC * pixC) / denFactor;
+				interpolatedNormal[0] = (normalXNumABC * pixC) / denFactor;
+				interpolatedNormal[1] = (normalYNumABC * pixC) / denFactor;
+				interpolatedNormal[2] = (normalZNumABC * pixC) / denFactor;
+				// need to renormalize normal at this point
+				interpolatedNormal.normalize();
 				interpolatedS = (sNumABC * pixC) / denFactor;
 				interpolatedT = (tNumABC * pixC) / denFactor;
 				// 1/w is interpoalted in screen space
@@ -1448,25 +1469,20 @@ void FrameBuffer::draw2DReflectiveTriangle(
 				pixel3dPoint = cam.unproject(V3(pixC[0], pixC[1], interpolatedDepth));
 
 				// calculate the reflected ray R that is incident with the surface normal
-				{
-					// proj a onto v = ((a * v) * v) / v.length
-					// if v is normalized -> proj a onto v = (a * v) v
-					// apply this formula to obtain vector B in figure 10.2 of MirrorReflectionVector.pdf
-					// the rest of the derivation is straightforward 
-					// R = E - 2 (E * N) N where E is the incident light ray coming from the camera
+	
+				// proj a onto v = ((a * v) * v) / v.length
+				// if v is normalized -> proj a onto v = (a * v) v
+				// apply this formula to obtain vector B in figure 10.2 of MirrorReflectionVector.pdf
+				// the rest of the derivation is straightforward 
+				// R = E - 2 (E * N) N where E is the incident light ray coming from the camera
 
-					// find E
-
-					// TODO: To calculate R we will need the interpolated normal at this point. Normalized
-					// Therefore use persp correct interpolation in the same way you did for colors to obtain this
-					
-
-					// use 3d vector to find direction of ray from eye to pixel
-					E = pixel3dPoint - cam.getEyePoint();
-					R = E - (E * )
-					E.normalize();
-					// use ray's direction to look up color in environament map
-				}
+		 		// use 3d pixel to find direction of incident ray of light from eye to pixel
+				E = pixel3dPoint - cam.getEyePoint();
+				// Use incident ray direction and normal to find reflected ray direction
+				R = E - (interpolatedNormal * (2 * (E * interpolatedNormal)));
+				R.normalize();
+				// use ray's direction to look up color in environament map
+				interpolatedColor = cubeMap.getColor(R);
 
 				// set pixel in color framebuffer as well as depth buffer if depth test passes
 				setIfOneOverWCloser(V3(pixC[0], pixC[1], interpolatedDepth), interpolatedColor);
