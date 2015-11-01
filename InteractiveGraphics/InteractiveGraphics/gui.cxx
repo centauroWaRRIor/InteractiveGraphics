@@ -121,6 +121,27 @@ void GUI::cb_TestCubeMapFaces(Fl_Menu_* o, void* v) {
   ((GUI*)(o->parent()->user_data()))->cb_TestCubeMapFaces_i(o,v);
 }
 
+void GUI::cb_TestCubeMapReflection_i(Fl_Menu_*, void*) {
+  TestCubeMapReflection_cb();
+}
+void GUI::cb_TestCubeMapReflection(Fl_Menu_* o, void* v) {
+  ((GUI*)(o->parent()->user_data()))->cb_TestCubeMapReflection_i(o,v);
+}
+
+void GUI::cb_TestCubeMapRefraction_i(Fl_Menu_*, void*) {
+  TestCubeMapRefraction_cb();
+}
+void GUI::cb_TestCubeMapRefraction(Fl_Menu_* o, void* v) {
+  ((GUI*)(o->parent()->user_data()))->cb_TestCubeMapRefraction_i(o,v);
+}
+
+void GUI::cb_A5Demo_i(Fl_Menu_*, void*) {
+  A5Demo_cb();
+}
+void GUI::cb_A5Demo(Fl_Menu_* o, void* v) {
+  ((GUI*)(o->parent()->user_data()))->cb_A5Demo_i(o,v);
+}
+
 Fl_Menu_Item GUI::menu_Main[] = {
  {"Previous Assignments", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
  {"A1", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
@@ -148,6 +169,9 @@ Fl_Menu_Item GUI::menu_Main[] = {
  {0,0,0,0,0,0,0,0,0},
  {"A5", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
  {"Test Cube Map Faces", 0,  (Fl_Callback*)GUI::cb_TestCubeMapFaces, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Test CM Reflection", 0,  (Fl_Callback*)GUI::cb_TestCubeMapReflection, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Test CM Refraction", 0,  (Fl_Callback*)GUI::cb_TestCubeMapRefraction, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"A5 Demo", 0,  (Fl_Callback*)GUI::cb_A5Demo, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
  {0,0,0,0,0,0,0,0,0},
  {0,0,0,0,0,0,0,0,0}
@@ -173,6 +197,9 @@ Fl_Menu_Item* GUI::A4Demo = GUI::menu_Main + 21;
 Fl_Menu_Item* GUI::A4DemoExtra = GUI::menu_Main + 22;
 Fl_Menu_Item* GUI::A5SubMenu = GUI::menu_Main + 24;
 Fl_Menu_Item* GUI::TestCubeMapFaces = GUI::menu_Main + 25;
+Fl_Menu_Item* GUI::TestCubeMapReflection = GUI::menu_Main + 26;
+Fl_Menu_Item* GUI::TestCubeMapRefraction = GUI::menu_Main + 27;
+Fl_Menu_Item* GUI::A5Demo = GUI::menu_Main + 28;
 
 void GUI::cb_SaveCameraButton_i(Fl_Button*, void*) {
   SaveCameraButton_cb();
@@ -1358,4 +1385,18 @@ void GUI::A4DemoExtra_cb() {
 
 void GUI::TestCubeMapFaces_cb() {
   scene->testCubeMapFaces();
+}
+
+void GUI::TestCubeMapReflection_cb() {
+  scene->regFuncForKbRedraw(Scenes::REFLECTEST);
+scene->testCubeMapReflection();
+}
+
+void GUI::TestCubeMapRefraction_cb() {
+  scene->regFuncForKbRedraw(Scenes::REFRACTEST);
+scene->testCubeMapRefraction();
+}
+
+void GUI::A5Demo_cb() {
+  scene->a5Demo();
 }

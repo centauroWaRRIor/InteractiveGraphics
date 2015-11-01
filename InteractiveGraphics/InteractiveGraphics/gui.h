@@ -104,6 +104,21 @@ private:
   void cb_TestCubeMapFaces_i(Fl_Menu_*, void*);
   static void cb_TestCubeMapFaces(Fl_Menu_*, void*);
 public:
+  static Fl_Menu_Item *TestCubeMapReflection;
+private:
+  void cb_TestCubeMapReflection_i(Fl_Menu_*, void*);
+  static void cb_TestCubeMapReflection(Fl_Menu_*, void*);
+public:
+  static Fl_Menu_Item *TestCubeMapRefraction;
+private:
+  void cb_TestCubeMapRefraction_i(Fl_Menu_*, void*);
+  static void cb_TestCubeMapRefraction(Fl_Menu_*, void*);
+public:
+  static Fl_Menu_Item *A5Demo;
+private:
+  void cb_A5Demo_i(Fl_Menu_*, void*);
+  static void cb_A5Demo(Fl_Menu_*, void*);
+public:
   Fl_Group *CameraFBSaveGroup;
   Fl_Button *SaveCameraButton;
 private:
@@ -172,5 +187,8 @@ public:
   void A4Demo_cb();
   void A4DemoExtra_cb();
   void TestCubeMapFaces_cb();
+  void TestCubeMapReflection_cb();
+  void TestCubeMapRefraction_cb();
+  void A5Demo_cb();
 };
 #endif

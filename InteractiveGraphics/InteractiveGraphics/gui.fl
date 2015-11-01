@@ -128,6 +128,21 @@ class GUI {open
               callback {TestCubeMapFaces_cb()}
               xywh {0 0 30 20}
             }
+            MenuItem TestCubeMapReflection {
+              label {Test CM Reflection}
+              callback {TestCubeMapReflection_cb()}
+              xywh {0 0 30 20}
+            }
+            MenuItem TestCubeMapRefraction {
+              label {Test CM Refraction}
+              callback {TestCubeMapRefraction_cb()}
+              xywh {0 0 30 20}
+            }
+            MenuItem A5Demo {
+              label {A5 Demo}
+              callback {A5Demo_cb()}
+              xywh {0 0 30 20}
+            }
           }
         }
       }
@@ -190,94 +205,88 @@ class GUI {open
   Function {show()} {} {
     code {uiw->show();} {}
   }
-  Function {DBG_cb()} {open
-  } {
+  Function {DBG_cb()} {} {
     code {scene->regFuncForKbRedraw(Scenes::DBG);
 scene->dbgDraw();} {}
   }
-  Function {TestRot_cb()} {open
-  } {
+  Function {TestRot_cb()} {} {
     code {scene->testRot();} {}
   }
-  Function {TestRaster_cb()} {open
-  } {
+  Function {TestRaster_cb()} {} {
     code {scene->testRaster();} {}
   }
-  Function {DrawMode_cb(int mode)} {open
-  } {
+  Function {DrawMode_cb(int mode)} {} {
     code {scene->setDrawMode(mode);} {}
   }
-  Function {SaveCameraButton_cb()} {open
-  } {
+  Function {SaveCameraButton_cb()} {} {
     code {scene->saveCamera();} {}
   }
-  Function {SaveFB_cb()} {open
-  } {
+  Function {SaveFB_cb()} {} {
     code {scene->saveThisFramebuffer();} {}
   }
-  Function {A2Button_cb()} {open
-  } {
+  Function {A2Button_cb()} {} {
     code {scene->regFuncForKbRedraw(Scenes::A2);
 scene->a2Demo();} {}
   }
-  Function {TestCamLerp_cb()} {open
-  } {
+  Function {TestCamLerp_cb()} {} {
     code {scene->regFuncForKbRedraw(Scenes::CAMLERP);
 scene->testCameraLerp();} {}
   }
-  Function {TestCamControls_cb()} {open
-  } {
+  Function {TestCamControls_cb()} {} {
     code {scene->regFuncForKbRedraw(Scenes::CAMCONTROL);
 scene->testCameraControl();} {}
   }
-  Function {TestCamVis_cb()} {open
-  } {
+  Function {TestCamVis_cb()} {} {
     code {scene->testCameraVis();} {}
   }
-  Function {TestTexture_cb()} {open
-  } {
+  Function {TestTexture_cb()} {} {
     code {scene->regFuncForKbRedraw(Scenes::TEXTURE);
 scene->testTexture();} {}
   }
-  Function {TestSprites_cb()} {open
-  } {
+  Function {TestSprites_cb()} {} {
     code {scene->regFuncForKbRedraw(Scenes::SPRITETEST);
 scene->testSprites();} {}
   }
-  Function {A3Demo_cb()} {open
-  } {
+  Function {A3Demo_cb()} {} {
     code {scene->regFuncForKbRedraw(Scenes::A3);
 scene->a3Demo();} {}
   }
-  Function {TestBilTexLookup_cb()} {open
-  } {
+  Function {TestBilTexLookup_cb()} {} {
     code {scene->testBilTexLookup();} {}
   }
-  Function {TestFBAs3DCloud_cb()} {open
-  } {
+  Function {TestFBAs3DCloud_cb()} {} {
     code {scene->renderFBAs3DPointCloud();} {}
   }
-  Function {TestShadowMap_cb()} {open
-  } {
+  Function {TestShadowMap_cb()} {} {
     code {scene->regFuncForKbRedraw(Scenes::SHADOWTEST);
 scene->testShadowMap();} {}
   }
-  Function {TestTexProj_cb()} {open
-  } {
+  Function {TestTexProj_cb()} {} {
     code {scene->regFuncForKbRedraw(Scenes::TEXPROJTEST);
 scene->testTexProj();} {}
   }
-  Function {A4Demo_cb()} {open
-  } {
+  Function {A4Demo_cb()} {} {
     code {scene->regFuncForKbRedraw(Scenes::A4);
 scene->testA4Demo();} {}
   }
-  Function {A4DemoExtra_cb()} {open
-  } {
+  Function {A4DemoExtra_cb()} {} {
     code {scene->testA4DemoExtra();} {}
   }
-  Function {TestCubeMapFaces_cb()} {open
-  } {
+  Function {TestCubeMapFaces_cb()} {} {
     code {scene->testCubeMapFaces();} {}
+  }
+  Function {TestCubeMapReflection_cb()} {} {
+    code {scene->regFuncForKbRedraw(Scenes::REFLECTEST);
+scene->testCubeMapReflection();} {}
+  }
+  Function {TestCubeMapRefraction_cb()} {open
+  } {
+    code {scene->regFuncForKbRedraw(Scenes::REFRACTEST);
+scene->testCubeMapRefraction();} {}
+  }
+  Function {A5Demo_cb()} {open
+  } {
+    code {scene->a5Demo();} {selected
+    }
   }
 } 

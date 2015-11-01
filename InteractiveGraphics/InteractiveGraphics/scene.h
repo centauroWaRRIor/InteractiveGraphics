@@ -20,7 +20,10 @@ enum class Scenes {
 	SHADOWTEST,
 	TEXPROJTEST,
 	A4,
-	A4EXTRA};
+	A4EXTRA,
+	REFLECTEST,
+	REFRACTEST};
+
 enum class DrawModes { 
 	DOTS, 
 	WIREFRAME, 
@@ -49,7 +52,8 @@ private:
 	bool isA2Init, isDGBInit, isTestCamControlsInit,
 		isTextureInit, isA3Init, isSpriteTestInit, 
 		isTestBilTexLookupInit, isShadowMapTestInit,
-		isTexProjectTestInit, isA4DemoInit, isA4DemoExtraInit; 
+		isTexProjectTestInit, isA4DemoInit, isA4DemoExtraInit,
+		isTestCMReflectInit, isTestCMRefractInit;
 	
 	static const int u0, v0; // initial window coordinates
 
@@ -94,6 +98,9 @@ public:
 	void testA4Demo(void);
 	void testA4DemoExtra(void);
 	void testCubeMapFaces(void);
+	void testCubeMapReflection(void);
+	void testCubeMapRefraction(void);
+	void a5Demo(void);
 
 	void saveCamera(void) const;
 	void saveThisFramebuffer(void) const;

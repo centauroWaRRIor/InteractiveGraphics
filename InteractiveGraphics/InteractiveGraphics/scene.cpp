@@ -133,6 +133,8 @@ void Scene::cleanForNewScene(void)
 	this->isTexProjectTestInit = false;
 	this->isA4DemoInit = false;
 	this->isA4DemoExtraInit = false;
+	this->isTestCMReflectInit = false;
+	this->isTestCMRefractInit = false;
 }
 
 Scene::Scene():
@@ -191,6 +193,8 @@ Scene::Scene():
   this->isTestBilTexLookupInit = false;
   this->isShadowMapTestInit = false;
   this->isTexProjectTestInit = false;
+  this->isTestCMReflectInit = false;
+  this->isTestCMRefractInit = false;
 }
 
 Scene::~Scene()
@@ -251,7 +255,7 @@ void Scene::dbgDraw() {
 	fb->drawEnvironmentMap(cubeMap, *ppc);
 	fb->clearZB(0.0f);
 	tms[0]->drawReflective(cubeMap, *fb, *ppc, nullptr, true);
-	tms[1]->drawReflective(cubeMap, *fb, *ppc, texObjects[0], false);
+	//tms[1]->drawReflective(cubeMap, *fb, *ppc, texObjects[0], false);
 	fb->redraw();
 	return;
 }
@@ -1434,6 +1438,86 @@ void Scene::testCubeMapFaces(void)
 	return;
 }
 
+void Scene::testCubeMapReflection(void)
+{
+	CubeMap cubeMap("pngs\\uffizi_cross.png");
+	if (!isTestCMReflectInit) {
+
+		cleanForNewScene();
+
+		tms[0] = new TMesh();
+		tms[1] = new TMesh();
+
+		// load texture
+		texObjects[0] = new Texture("pngs\\Alloy_diamond_plate_pxr128.png");
+
+		// test environment mapping technique on teapot
+		tms[0]->loadBin("geometry/teapot1K.bin");
+		tms[0]->translate(V3(10.0f, -10.0f, 0.0f));
+		tms[0]->scale(1.0);
+		tms[1]->createQuadTestTMesh(true);
+		tms[1]->scale(2.5);
+		tms[1]->translate(V3(-50.0f, -40.0f, 0.0f));
+
+		// set ppc with a HFOV big enough for env map
+		delete ppc;
+		ppc = nullptr;
+		ppc = new PPC(90.0f, K_W, K_H);
+
+		ppc->moveForward(-200.0f);
+
+		isTestCMReflectInit = true;
+	}
+	fb->drawEnvironmentMap(cubeMap, *ppc);
+	fb->clearZB(0.0f);
+	tms[0]->drawReflective(cubeMap, *fb, *ppc, nullptr, true);
+	tms[1]->drawReflective(cubeMap, *fb, *ppc, texObjects[0], false);
+	fb->redraw();
+	return;
+}
+
+void Scene::testCubeMapRefraction(void)
+{
+	CubeMap cubeMap("pngs\\uffizi_cross.png");
+	if (!isTestCMRefractInit) {
+
+		cleanForNewScene();
+
+		tms[0] = new TMesh();
+		tms[1] = new TMesh();
+
+		// load texture
+		texObjects[0] = new Texture("pngs\\Alloy_diamond_plate_pxr128.png");
+
+		// test environment mapping technique on teapot
+		tms[0]->loadBin("geometry/teapot1K.bin");
+		tms[0]->translate(V3(10.0f, -10.0f, 0.0f));
+		tms[0]->scale(1.0);
+		tms[1]->createQuadTestTMesh(true);
+		tms[1]->scale(2.5);
+		tms[1]->translate(V3(-50.0f, -40.0f, 0.0f));
+
+		// set ppc with a HFOV big enough for env map
+		delete ppc;
+		ppc = nullptr;
+		ppc = new PPC(90.0f, K_W, K_H);
+
+		ppc->moveForward(-200.0f);
+
+		isTestCMRefractInit = true;
+	}
+	fb->drawEnvironmentMap(cubeMap, *ppc);
+	fb->clearZB(0.0f);
+	tms[0]->drawReflective(cubeMap, *fb, *ppc, nullptr, true);
+	tms[1]->drawReflective(cubeMap, *fb, *ppc, texObjects[0], false);
+	fb->redraw();
+	return;
+}
+
+void Scene::a5Demo(void)
+{
+}
+
 void Scene::saveCamera(void) const
 {
 	string filename = retrieveTimeDate();
@@ -1487,6 +1571,12 @@ void Scene::currentSceneRedraw(void)
 		break;
 	case Scenes::TEXPROJTEST:
 		this->testTexProj();
+		break;
+	case Scenes::REFLECTEST:
+		this->testCubeMapReflection();
+		break;
+	case Scenes::REFRACTEST:
+		this->testCubeMapRefraction();
 		break;
 	case Scenes::A4:
 	case Scenes::A4EXTRA:
