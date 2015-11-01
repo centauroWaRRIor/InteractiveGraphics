@@ -1513,8 +1513,8 @@ void Scene::testCubeMapRefraction(void)
 	fb->drawEnvironmentMap(cubeMap, *ppc);
 	fb->clearZB(0.0f);
 	tms[0]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, nullptr, false);
-	//tms[1]->drawReflective(cubeMap, *fb, *ppc, texObjects[0], false);
-	tms[1]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, nullptr, false);
+	//tms[1]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, texObjects[0], false);
+	//tms[1]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, nullptr, false);
 	fb->redraw();
 	return;
 }

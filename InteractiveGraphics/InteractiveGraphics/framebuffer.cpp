@@ -1473,7 +1473,7 @@ void FrameBuffer::draw2DReflectiveTriangle(
 				// Use incident ray direction and normal to find reflected ray direction
 				R = E - (interpolatedNormal * (2 * (E * interpolatedNormal)));
 				R.normalize();
-				// use ray's direction to look up color in environament map
+				// use ray's direction to look up reflective color in environament map
 				reflectiveColor = cubeMap.getColor(R);
 
 				if (cols == nullptr)
@@ -1509,6 +1509,7 @@ void FrameBuffer::draw2DRefractiveTriangle(
 	const V3 & tCoords, 
 	const Texture * const texture)
 {
+	const float fresnelPowerExpTerm = 11.0f;
 	// compute screen axes-aligned bounding box for triangle 
 	// clipping against framebuffer
 	AABB aabb(pvs[0]);
@@ -1607,7 +1608,8 @@ void FrameBuffer::draw2DRefractiveTriangle(
 	V3 currEE; // edge expression value within a given line 
 	V3 interpolatedColor; // final raster parameter interpolated result
 	V3 interpolatedNormal; // final raster parameter interpolated result
-	V3 pixel3dPoint, E, T, refractiveColor; // used in environment map calculation of reflected vector
+	V3 pixel3dPoint, E, T, R; // used in environment map calculation of reflected/refracted vector
+	V3 reflectiveColor, refractiveColor, refMixColor; // used in environment map calculation of reflected/refracted vector
 	float N = nt / nl; // indices of refraction ratio
 	float interpolatedDepth; // final raster parameter interpolated result
 	float interpolatedS, interpolatedT; // final raster parameter interpolated result
@@ -1655,32 +1657,48 @@ void FrameBuffer::draw2DRefractiveTriangle(
 				// get 3d point corresponding to this pixel
 				pixel3dPoint = cam.unproject(V3(pixC[0], pixC[1], interpolatedDepth));
 
+				E = pixel3dPoint - cam.getEyePoint();
+				E.normalize();
+
+				// calculate the reflected ray R that is incident with the surface normal	
+				R = E - (interpolatedNormal * (2 * (E * interpolatedNormal)));
+				R.normalize();
+				// use ray's direction to look up reflective color in environament map
+				reflectiveColor = cubeMap.getColor(R);
+
 				// calculate the transmission ray T that is transmitted through the material 
 				// (refracted). Formula employed here was derived in chapter 13.1 of Interactive
 				// Fundamentals of Computer Graphics by Peter Shirley, et. al. which in turn is derived 
 				// from Snell's Law:
 				// T = (nl/nt) * ( E - N (E * N) ) - nl * sqrt(1 - (pow(nl/nt,2) * (1 - pow(E*N, 2) )
 				// Note: E and n are assumed to be unit length vectors
-				E = pixel3dPoint - cam.getEyePoint();
-				E.normalize();
 				float tempDotProduct = E * interpolatedNormal;
-				// If number under sqrt is negative then all the energy is relfected and none refracted
+				// If number under sqrt is negative then all the energy is reflected and none refracted
 				float tempBeforeSqrResult = 1 - (((nl * nl) * (1 - (tempDotProduct * tempDotProduct))) / (nt * nt) );
 				if (tempBeforeSqrResult >= 0) {
 					T = ( (E - (interpolatedNormal * tempDotProduct)) * (nl / nt) ) -
 						( interpolatedNormal * sqrt(tempBeforeSqrResult));
 					T.normalize();
-					// use ray's direction to look up color in environament map
+					// use ray's direction to look up refractive color in environament map
 					refractiveColor = cubeMap.getColor(T);
-					if (cols == nullptr)
-						interpolatedColor = refractiveColor;
-					else
-						interpolatedColor.modulateBy(refractiveColor);
+				}
+				else { // all energy was reflected and none refracted
+					refractiveColor = reflectiveColor;
+				}
 
-				}
-				else {
-					interpolatedColor = V3(1.0f, 1.0f, 1.0f);
-				}
+				// approximate Fresnel equation to approximate how much is reflected and how
+				// much is refracted due to wavelenth and polarization of the light: 
+				V3 l = cam.getEyePoint() - pixel3dPoint;
+				l.normalize();
+				float fresnelCoeff = max(0.0f, pow(l*interpolatedNormal, fresnelPowerExpTerm));
+				refMixColor = (reflectiveColor * fresnelCoeff) + (refractiveColor * (1 - fresnelCoeff));
+
+				if (cols == nullptr)
+					//interpolatedColor = refractiveColor;
+					interpolatedColor = refMixColor;
+				else
+					//interpolatedColor.modulateBy(refractiveColor);
+					interpolatedColor.modulateBy(refMixColor);
 
 				if (texture != nullptr) {
 					// sample texture using lerped result of s,t raster parameters (in model space)
