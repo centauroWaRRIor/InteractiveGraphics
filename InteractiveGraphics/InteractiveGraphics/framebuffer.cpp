@@ -1460,8 +1460,7 @@ void FrameBuffer::draw2DReflectiveTriangle(
 				// get 3d point corresponding to this pixel
 				pixel3dPoint = cam.unproject(V3(pixC[0], pixC[1], interpolatedDepth));
 
-				// calculate the reflected ray R that is incident with the surface normal
-	
+				// calculate the reflected ray R that is incident with the surface normal	
 				// proj a onto v = ((a * v) * v) / v.length
 				// if v is normalized -> proj a onto v = (a * v) v
 				// apply this formula to obtain vector B in figure 10.2 of MirrorReflectionVector.pdf
@@ -1470,6 +1469,7 @@ void FrameBuffer::draw2DReflectiveTriangle(
 
 		 		// use 3d pixel to find direction of incident ray of light from eye to pixel
 				E = pixel3dPoint - cam.getEyePoint();
+				E.normalize();
 				// Use incident ray direction and normal to find reflected ray direction
 				R = E - (interpolatedNormal * (2 * (E * interpolatedNormal)));
 				R.normalize();
@@ -1494,6 +1494,208 @@ void FrameBuffer::draw2DReflectiveTriangle(
 			}
 		}
 	}
+}
+
+void FrameBuffer::draw2DRefractiveTriangle(
+	float nl, float nt,
+	CubeMap & cubeMap, 
+	const PPC & cam, 
+	V3 * const vs, 
+	V3 * const pvs, 
+	V3 * const cols, 
+	const V3 * const normals, 
+	M33 Q, 
+	const V3 & sCoords, 
+	const V3 & tCoords, 
+	const Texture * const texture)
+{
+	// compute screen axes-aligned bounding box for triangle 
+	// clipping against framebuffer
+	AABB aabb(pvs[0]);
+	aabb.AddPoint(pvs[1]);
+	aabb.AddPoint(pvs[2]);
+
+	if (!aabb.clipWithFrame(0.0f, 0.0f, (float)w, (float)h))
+		return;
+
+	int left, right, top, bottom;
+	aabb.setPixelRectangle(left, right, top, bottom);
+
+	// set edge equations
+	V3 eeqs[3]; // eeqs[0] = (A, B, C), where Au + Bv + C
+	for (int ei = 0; ei < 3; ei++) {
+		int e1 = (ei + 1) % 3;
+		eeqs[ei][0] = pvs[e1][1] - pvs[ei][1];
+		eeqs[ei][1] = pvs[ei][0] - pvs[e1][0];
+		eeqs[ei][2] = -pvs[ei][1] * eeqs[ei][1] - pvs[ei][0] * eeqs[ei][0];
+		int e2 = (e1 + 1) % 3;
+		// plug third vertex into edge equation to establish
+		// correct sidedness
+		V3 pv3(pvs[e2][0], pvs[e2][1], 1.0f); // (u2, v2, 1)
+		if (eeqs[ei] * pv3 < 0.0f)
+			eeqs[ei] = eeqs[ei] * -1.0f;
+	}
+	V3 colors[3];
+	if (cols == nullptr) {
+		colors[0] = V3(0.7f, 0.0f, 0.0f);
+		colors[1] = V3(0.7f, 0.0f, 0.0f);
+		colors[2] = V3(0.7f, 0.0f, 0.0f);
+	}
+	else {
+		colors[0] = cols[0];
+		colors[1] = cols[1];
+		colors[2] = cols[2];
+	}
+	// set model space interpolation
+	// build rasterization parameters to be lerped in screen space
+	V3 redParameters(colors[0].getX(), colors[1].getX(), colors[2].getX());
+	V3 greenParameters(colors[0].getY(), colors[1].getY(), colors[2].getY());
+	V3 blueParameters(colors[0].getZ(), colors[1].getZ(), colors[2].getZ());
+	V3 normalXParameters(normals[0].getX(), normals[1].getX(), normals[2].getX());
+	V3 normalYParameters(normals[0].getY(), normals[1].getY(), normals[2].getY());
+	V3 normalZarameters(normals[0].getZ(), normals[1].getZ(), normals[2].getZ());
+	// refer to slide 7 of RastParInterp.pdf for the math 
+	// derivation of the persp correct coefficients
+	V3 denDEF = Q[0] + Q[1] + Q[2];
+	V3 redNumABC = V3(
+		Q.getColumn(0) * redParameters,
+		Q.getColumn(1) * redParameters,
+		Q.getColumn(2) * redParameters);
+	V3 greenNumABC = V3(
+		Q.getColumn(0) * greenParameters,
+		Q.getColumn(1) * greenParameters,
+		Q.getColumn(2) * greenParameters);
+	V3 blueNumABC = V3(
+		Q.getColumn(0) * blueParameters,
+		Q.getColumn(1) * blueParameters,
+		Q.getColumn(2) * blueParameters);
+	V3 normalXNumABC = V3(
+		Q.getColumn(0) * normalXParameters,
+		Q.getColumn(1) * normalXParameters,
+		Q.getColumn(2) * normalXParameters);
+	V3 normalYNumABC = V3(
+		Q.getColumn(0) * normalYParameters,
+		Q.getColumn(1) * normalYParameters,
+		Q.getColumn(2) * normalYParameters);
+	V3 normalZNumABC = V3(
+		Q.getColumn(0) * normalZarameters,
+		Q.getColumn(1) * normalZarameters,
+		Q.getColumn(2) * normalZarameters);
+	V3 sNumABC = V3(
+		Q.getColumn(0) * sCoords,
+		Q.getColumn(1) * sCoords,
+		Q.getColumn(2) * sCoords);
+	V3 tNumABC = V3(
+		Q.getColumn(0) * tCoords,
+		Q.getColumn(1) * tCoords,
+		Q.getColumn(2) * tCoords);
+
+	// set screen space interpolation
+	M33 baryMatrixInverse;
+	baryMatrixInverse[0] = pvs[0];
+	baryMatrixInverse[1] = pvs[1];
+	baryMatrixInverse[2] = pvs[2];
+	baryMatrixInverse.setColumn(V3(1.0f, 1.0f, 1.0f), 2);
+	baryMatrixInverse.setInverted();
+	// linear expression for screen space interpolation of 1/w
+	V3 depthABC = baryMatrixInverse*V3(pvs[0][2], pvs[1][2], pvs[2][2]);
+
+	int currPixU, currPixV; // current pixel considered
+	V3 pixC; // current pixel center
+	V3 topLeftPixC(left + 0.5f, top + 0.5f, 1.0f); // top left pixel center
+	V3 currEELS; // edge expression values for the line start
+	V3 currEE; // edge expression value within a given line 
+	V3 interpolatedColor; // final raster parameter interpolated result
+	V3 interpolatedNormal; // final raster parameter interpolated result
+	V3 pixel3dPoint, E, T, refractiveColor; // used in environment map calculation of reflected vector
+	float N = nt / nl; // indices of refraction ratio
+	float interpolatedDepth; // final raster parameter interpolated result
+	float interpolatedS, interpolatedT; // final raster parameter interpolated result
+	unsigned int texelColor;
+
+	// rasterize triangle
+	for (currPixV = top,
+		currEELS[0] = topLeftPixC * eeqs[0],
+		currEELS[1] = topLeftPixC * eeqs[1],
+		currEELS[2] = topLeftPixC * eeqs[2];
+		currPixV <= bottom;
+		currPixV++,
+		currEELS[0] += eeqs[0][1] /*+=b[0]*/,
+		currEELS[1] += eeqs[1][1] /*+=b[1]*/,
+		currEELS[2] += eeqs[2][1] /*+=b[2]*/) {
+		for (currPixU = left,
+			currEE = currEELS;
+			currPixU <= right;
+			currPixU++,
+			currEE[0] += eeqs[0][0] /*+=a[0]*/,
+			currEE[1] += eeqs[1][0] /*+=a[1]*/,
+			currEE[2] += eeqs[2][0] /*+=a[2]*/) {
+
+			if (currEE[0] < 0 || currEE[1] < 0 || currEE[2] < 0) {
+				continue; // outside triangle
+			}
+			else { // found pixel inside of triangle; set it to right color
+
+				pixC = V3(.5f + (float)currPixU, .5f + (float)currPixV, 1.0f);
+				// r,g,b, s, and t are interpolated in model space
+				float denFactor = denDEF * pixC;
+				interpolatedColor[0] = (redNumABC * pixC) / denFactor;
+				interpolatedColor[1] = (greenNumABC * pixC) / denFactor;
+				interpolatedColor[2] = (blueNumABC * pixC) / denFactor;
+				interpolatedNormal[0] = (normalXNumABC * pixC) / denFactor;
+				interpolatedNormal[1] = (normalYNumABC * pixC) / denFactor;
+				interpolatedNormal[2] = (normalZNumABC * pixC) / denFactor;
+				// need to renormalize normal at this point
+				interpolatedNormal.normalize();
+				interpolatedS = (sNumABC * pixC) / denFactor;
+				interpolatedT = (tNumABC * pixC) / denFactor;
+				// 1/w is interpoalted in screen space
+				interpolatedDepth = depthABC * pixC; // 1/w at current pixel interpolated lin. in s s
+
+				// get 3d point corresponding to this pixel
+				pixel3dPoint = cam.unproject(V3(pixC[0], pixC[1], interpolatedDepth));
+
+				// calculate the transmission ray T that is transmitted through the material 
+				// (refracted). Formula employed here was derived in chapter 13.1 of Interactive
+				// Fundamentals of Computer Graphics by Peter Shirley, et. al. which in turn is derived 
+				// from Snell's Law:
+				// T = (nl/nt) * ( E - N (E * N) ) - nl * sqrt(1 - (pow(nl/nt,2) * (1 - pow(E*N, 2) )
+				// Note: E and n are assumed to be unit length vectors
+				E = pixel3dPoint - cam.getEyePoint();
+				E.normalize();
+				float tempDotProduct = E * interpolatedNormal;
+				// If number under sqrt is negative then all the energy is relfected and none refracted
+				float tempSqrResult = sqrt( pow(nl / nt, 2) * (1 - pow(tempDotProduct, 2)));
+				if (tempSqrResult >= 0) {
+					T = (nl / nt)*(E - interpolatedNormal * (tempDotProduct)) -
+						interpolatedNormal * tempSqrResult;
+					T.normalize();
+					// use ray's direction to look up color in environament map
+					refractiveColor = cubeMap.getColor(T);
+					if (cols == nullptr)
+						interpolatedColor = refractiveColor;
+					else
+						interpolatedColor.modulateBy(refractiveColor);
+
+				}
+				else {
+					interpolatedColor = V3(1.0f, 1.0f, 1.0f);
+				}
+
+				if (texture != nullptr) {
+					// sample texture using lerped result of s,t raster parameters (in model space)
+					texelColor = texture->sampleTexBilinearTile(interpolatedS, interpolatedT);
+					V3 texelColorVec(texelColor);
+					//texelColorVec.modulateBy(interpolatedColor); // however modulate texture color against pixel lit value
+					interpolatedColor += texelColorVec;
+				}
+
+				// set pixel in color framebuffer as well as depth buffer if depth test passes
+				setIfOneOverWCloser(V3(pixC[0], pixC[1], interpolatedDepth), interpolatedColor);
+			}
+		}
+	}
+
 }
 
 void FrameBuffer::draw2DSegment(const V3 &v0, const V3 &c0, const V3 &v1, const V3 &c1) {

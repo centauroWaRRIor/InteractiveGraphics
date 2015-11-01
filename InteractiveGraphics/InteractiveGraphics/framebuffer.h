@@ -153,6 +153,20 @@ public:
 		const V3 &sCoords,
 		const V3 &tCoords,
 		const Texture *const texture);
+	// draws a 2D triangle with glassy appereance that is refractive in nature
+	// by using an environment map.
+	void draw2DRefractiveTriangle(
+		float nl, float nt, // nl = refractive index for medium, nt = refractive index of TMesh material
+		CubeMap &cubeMap,
+		const PPC &cam,
+		V3 *const vs,
+		V3 *const pvs,
+		V3 *const cols,
+		const V3 *const normals,
+		M33 perspCorrectMatQ,
+		const V3 &sCoords,
+		const V3 &tCoords,
+		const Texture *const texture);
 
 	// draw 2D segment specified by 2 points, each with own color
 	void draw2DSegment(const V3 &v0, const V3 &c0, const V3 &v1, const V3 &c1);

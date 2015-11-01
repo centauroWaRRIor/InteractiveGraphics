@@ -90,10 +90,19 @@ public:
 		const Texture *const texture,
 		bool isLightOn,
 		bool isTexturedOn);
-	// draws triangle mesh using reflections off of an environment map as if the mesh
+	// draws triangle mesh using reflections with an environment map as if the mesh
 	// was constructed out of a highlhy reflective material such as metal.
 	// TODO: Add a light to generate specular highlights
 	void drawReflective(
+		CubeMap &cubeMap,
+		FrameBuffer &fb,
+		const PPC &ppc,
+		const Texture *const texture = nullptr,
+		bool isColorsOn = false);
+	// draws triangle mesh using refractions with an environment map as if the mesh
+	// was constructed out of a glass like material
+	void drawRefractive(
+		float nl, float nt, // nl = refractive index for medium, nt = refractive index of TMesh material
 		CubeMap &cubeMap,
 		FrameBuffer &fb,
 		const PPC &ppc,

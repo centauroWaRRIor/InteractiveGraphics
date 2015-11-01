@@ -254,7 +254,7 @@ void Scene::dbgDraw() {
 	}
 	fb->drawEnvironmentMap(cubeMap, *ppc);
 	fb->clearZB(0.0f);
-	tms[0]->drawReflective(cubeMap, *fb, *ppc, nullptr, true);
+	//tms[0]->drawReflective(cubeMap, *fb, *ppc, nullptr, true);
 	//tms[1]->drawReflective(cubeMap, *fb, *ppc, texObjects[0], false);
 	fb->redraw();
 	return;
@@ -1508,8 +1508,8 @@ void Scene::testCubeMapRefraction(void)
 	}
 	fb->drawEnvironmentMap(cubeMap, *ppc);
 	fb->clearZB(0.0f);
-	tms[0]->drawReflective(cubeMap, *fb, *ppc, nullptr, true);
-	tms[1]->drawReflective(cubeMap, *fb, *ppc, texObjects[0], false);
+	tms[0]->drawRefractive(1.0f, 1.0f, cubeMap, *fb, *ppc, nullptr, false);
+	//tms[1]->drawReflective(cubeMap, *fb, *ppc, texObjects[0], false);
 	fb->redraw();
 	return;
 }
