@@ -1665,10 +1665,10 @@ void FrameBuffer::draw2DRefractiveTriangle(
 				E.normalize();
 				float tempDotProduct = E * interpolatedNormal;
 				// If number under sqrt is negative then all the energy is relfected and none refracted
-				float tempSqrResult = sqrt( pow(nl / nt, 2) * (1 - pow(tempDotProduct, 2)));
-				if (tempSqrResult >= 0) {
-					T = (nl / nt)*(E - interpolatedNormal * (tempDotProduct)) -
-						interpolatedNormal * tempSqrResult;
+				float tempBeforeSqrResult = 1 - (((nl * nl) * (1 - (tempDotProduct * tempDotProduct))) / (nt * nt) );
+				if (tempBeforeSqrResult >= 0) {
+					T = ( (E - (interpolatedNormal * tempDotProduct)) * (nl / nt) ) -
+						( interpolatedNormal * sqrt(tempBeforeSqrResult));
 					T.normalize();
 					// use ray's direction to look up color in environament map
 					refractiveColor = cubeMap.getColor(T);

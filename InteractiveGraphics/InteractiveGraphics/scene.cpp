@@ -1478,6 +1478,10 @@ void Scene::testCubeMapReflection(void)
 
 void Scene::testCubeMapRefraction(void)
 {
+	const float nl = 1.0f; // refraction index of air
+	const float nt = 1.51f; // refraction index of window glass
+	//const float nt = 2.42f; // refraction index of diamond
+	//const float nt = 1.33f; // refraction index of water
 	CubeMap cubeMap("pngs\\uffizi_cross.png");
 	if (!isTestCMRefractInit) {
 
@@ -1508,8 +1512,9 @@ void Scene::testCubeMapRefraction(void)
 	}
 	fb->drawEnvironmentMap(cubeMap, *ppc);
 	fb->clearZB(0.0f);
-	tms[0]->drawRefractive(1.0f, 1.0f, cubeMap, *fb, *ppc, nullptr, false);
+	tms[0]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, nullptr, false);
 	//tms[1]->drawReflective(cubeMap, *fb, *ppc, texObjects[0], false);
+	tms[1]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, nullptr, false);
 	fb->redraw();
 	return;
 }
