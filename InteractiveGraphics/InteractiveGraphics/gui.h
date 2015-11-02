@@ -161,10 +161,10 @@ private:
   void cb_TextureRadialButton_i(Fl_Round_Button*, void*);
   static void cb_TextureRadialButton(Fl_Round_Button*, void*);
 public:
-  Fl_Button *A4Button;
+  Fl_Button *A5Button;
 private:
-  void cb_A4Button_i(Fl_Button*, void*);
-  static void cb_A4Button(Fl_Button*, void*);
+  void cb_A5Button_i(Fl_Button*, void*);
+  static void cb_A5Button(Fl_Button*, void*);
 public:
   void show();
   void DBG_cb();

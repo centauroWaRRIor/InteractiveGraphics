@@ -9,7 +9,7 @@ class GUI {open
   } {
     Fl_Window uiw {
       label GUI open
-      xywh {381 183 258 437} type Double visible
+      xywh {756 258 258 437} type Double visible
     } {
       Fl_Button dbgButton {
         label DBG
@@ -192,9 +192,9 @@ class GUI {open
           xywh {30 289 140 15} type Radio down_box ROUND_DOWN_BOX
         }
       }
-      Fl_Button A4Button {
-        label {A4 Demo}
-        callback {A3Demo_cb()}
+      Fl_Button A5Button {
+        label {A5 Demo}
+        callback {A5Demo_cb()} selected
         xywh {15 92 225 40} selection_color 72
       }
     }
@@ -286,7 +286,6 @@ scene->testCubeMapRefraction();} {}
   }
   Function {A5Demo_cb()} {open
   } {
-    code {scene->a5Demo();} {selected
-    }
+    code {scene->a5Demo();} {}
   }
 } 

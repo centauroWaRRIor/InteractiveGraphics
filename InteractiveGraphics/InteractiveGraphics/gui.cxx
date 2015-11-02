@@ -1215,11 +1215,11 @@ void GUI::cb_TextureRadialButton(Fl_Round_Button* o, void* v) {
   ((GUI*)(o->parent()->parent()->user_data()))->cb_TextureRadialButton_i(o,v);
 }
 
-void GUI::cb_A4Button_i(Fl_Button*, void*) {
-  A3Demo_cb();
+void GUI::cb_A5Button_i(Fl_Button*, void*) {
+  A5Demo_cb();
 }
-void GUI::cb_A4Button(Fl_Button* o, void* v) {
-  ((GUI*)(o->parent()->user_data()))->cb_A4Button_i(o,v);
+void GUI::cb_A5Button(Fl_Button* o, void* v) {
+  ((GUI*)(o->parent()->user_data()))->cb_A5Button_i(o,v);
 }
 #include "scene.h"
 
@@ -1280,10 +1280,10 @@ GUI::GUI() {
       } // Fl_Round_Button* TextureRadialButton
       RenderingOptionsGroup->end();
     } // Fl_Group* RenderingOptionsGroup
-    { A4Button = new Fl_Button(15, 92, 225, 40, "A4 Demo");
-      A4Button->selection_color(FL_DARK_RED);
-      A4Button->callback((Fl_Callback*)cb_A4Button);
-    } // Fl_Button* A4Button
+    { A5Button = new Fl_Button(15, 92, 225, 40, "A5 Demo");
+      A5Button->selection_color(FL_DARK_RED);
+      A5Button->callback((Fl_Callback*)cb_A5Button);
+    } // Fl_Button* A5Button
     uiw->end();
   } // Fl_Double_Window* uiw
 }

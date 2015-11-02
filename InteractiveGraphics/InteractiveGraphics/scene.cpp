@@ -1521,6 +1521,124 @@ void Scene::testCubeMapRefraction(void)
 
 void Scene::a5Demo(void)
 {
+	const float nl = 1.0f; // refraction index of air
+	const float nt = 1.51f; // refraction index of window glass
+	CubeMap cubeMap("pngs\\uffizi_cross.png");
+	cleanForNewScene();
+	tms[0] = new TMesh();
+	tms[1] = new TMesh();
+
+	// load texture
+	texObjects[0] = new Texture("pngs\\Alloy_diamond_plate_pxr128.png");
+
+	// test environment mapping technique on teapot
+	tms[0]->loadBin("geometry/teapot1K.bin");
+	tms[0]->translate(V3(10.0f, -10.0f, 0.0f));
+	tms[0]->scale(1.0);
+	tms[1]->createQuadTestTMesh(true);
+	tms[1]->scale(2.5);
+	tms[1]->translate(V3(-50.0f, -60.0f, 0.0f));
+	tms[1]->rotateAboutAxis(tms[1]->getCenter(), V3(1.0f, 0.0f, 0.0f), 90.0f);
+
+	// set ppc with a HFOV big enough for env map
+	delete ppc;
+	ppc = nullptr;
+	ppc = new PPC(90.0f, K_W, K_H);
+
+	//ppc->moveForward(-200.0f);
+	const V3 lookAtPoint(tms[0]->getCenter()); // teapot centroid
+	const V3 up(0.0f, 1.0f, 0.0f);
+	V3 viewDirection = ppc->getViewDir();
+
+	for (float steps = 0.0f; steps < 90.0f; steps += 1.2f) {
+
+		// rotate view direction
+		V3 rotVD = viewDirection;
+		rotVD.rotateThisVectorAboutDirection(V3(0.0f, 1.0f, 0.0f), steps);
+	//	rotVD.rotateThisVectorAboutDirection(V3(0.0f, 1.0f, 0.0f), 0.0f);
+
+		// set up the look at cube camera (dolly camera setup)
+		ppc->positionRelativeToPoint(lookAtPoint, rotVD, up, 180.0f);
+
+		fb->drawEnvironmentMap(cubeMap, *ppc);
+		fb->clearZB(0.0f);
+		tms[0]->drawReflective(cubeMap, *fb, *ppc, nullptr, true);
+		//tms[1]->drawReflective(cubeMap, *fb, *ppc, texObjects[0], false);
+		//tms[0]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, nullptr, false);
+		//tms[1]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, texObjects[0], false);
+		//tms[1]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, nullptr, false);
+		fb->redraw();
+		Fl::check();
+	}
+
+	for (float steps = 0.0f; steps < 90.0f; steps += 1.2f) {
+
+		// rotate view direction
+		V3 rotVD = viewDirection;
+		rotVD.rotateThisVectorAboutDirection(V3(1.0f, 0.0f, 0.0f), steps);
+		//	rotVD.rotateThisVectorAboutDirection(V3(0.0f, 1.0f, 0.0f), 0.0f);
+
+		// set up the look at cube camera (dolly camera setup)
+		ppc->positionRelativeToPoint(lookAtPoint, rotVD, up, 180.0f);
+
+		fb->drawEnvironmentMap(cubeMap, *ppc);
+		fb->clearZB(0.0f);
+		tms[0]->drawReflective(cubeMap, *fb, *ppc, nullptr, false);
+		//tms[1]->drawReflective(cubeMap, *fb, *ppc, texObjects[0], false);
+		//tms[0]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, nullptr, false);
+		//tms[1]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, texObjects[0], false);
+		//tms[1]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, nullptr, false);
+		fb->redraw();
+		Fl::check();
+	}
+
+	for (float steps = 0.0f; steps < 90.0f; steps += 1.2f) {
+
+		// rotate view direction
+		V3 rotVD = viewDirection;
+		rotVD.rotateThisVectorAboutDirection(V3(1.0f, 0.0f, 0.0f), -steps);
+		//	rotVD.rotateThisVectorAboutDirection(V3(0.0f, 1.0f, 0.0f), 0.0f);
+
+		// set up the look at cube camera (dolly camera setup)
+		ppc->positionRelativeToPoint(lookAtPoint, rotVD, up, 180.0f);
+
+		fb->drawEnvironmentMap(cubeMap, *ppc);
+		fb->clearZB(0.0f);
+		tms[0]->drawReflective(cubeMap, *fb, *ppc, nullptr, true);
+		tms[1]->drawReflective(cubeMap, *fb, *ppc, texObjects[0], false);
+		//tms[0]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, nullptr, false);
+		//tms[1]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, texObjects[0], false);
+		//tms[1]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, nullptr, false);
+		fb->redraw();
+		Fl::check();
+	}
+
+	//viewDirection = ppc->getViewDir();
+	ppc->positionRelativeToPoint(lookAtPoint, viewDirection, up, 180.0f);
+
+	for (float steps = 0.0f; steps < 45.0f; steps += 2.2f) {
+
+		// rotate view direction
+		V3 rotVD = viewDirection;
+		//rotVD.rotateThisVectorAboutDirection(V3(0.0f, 0.0f, 1.0f), steps);
+		//	rotVD.rotateThisVectorAboutDirection(V3(0.0f, 1.0f, 0.0f), 0.0f);
+
+		// set up the look at cube camera (dolly camera setup)
+		//ppc->positionRelativeToPoint(lookAtPoint, rotVD, up, 180.0f);
+		ppc->roll(1.2f);
+
+		fb->drawEnvironmentMap(cubeMap, *ppc);
+		fb->clearZB(0.0f);
+		tms[0]->drawReflective(cubeMap, *fb, *ppc, nullptr, false);
+		//tms[1]->drawReflective(cubeMap, *fb, *ppc, texObjects[0], false);
+		//tms[0]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, nullptr, false);
+		//tms[1]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, texObjects[0], false);
+		//tms[1]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, nullptr, false);
+		fb->redraw();
+		Fl::check();
+	}
+
+	return;
 }
 
 void Scene::saveCamera(void) const
