@@ -20,7 +20,5 @@ public:
 
 	Texture *getCubeFace(unsigned int i) const;
 	V3 getColor(const V3 &direction);
-	V3 getSpecularReflectionColor(const V3 &normal) const;
-	V3 getFirstSurfaceRefraction(const V3 &direction) const;
 };
 

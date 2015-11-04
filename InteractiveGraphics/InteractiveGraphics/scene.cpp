@@ -1550,90 +1550,103 @@ void Scene::a5Demo(void)
 	const V3 up(0.0f, 1.0f, 0.0f);
 	V3 viewDirection = ppc->getViewDir();
 
+	// pans horizontally showcasing reflections with color tMesh
 	for (float steps = 0.0f; steps < 90.0f; steps += 1.2f) {
 
 		// rotate view direction
 		V3 rotVD = viewDirection;
 		rotVD.rotateThisVectorAboutDirection(V3(0.0f, 1.0f, 0.0f), steps);
-	//	rotVD.rotateThisVectorAboutDirection(V3(0.0f, 1.0f, 0.0f), 0.0f);
-
 		// set up the look at cube camera (dolly camera setup)
 		ppc->positionRelativeToPoint(lookAtPoint, rotVD, up, 180.0f);
-
+		// draw distant geometry
 		fb->drawEnvironmentMap(cubeMap, *ppc);
 		fb->clearZB(0.0f);
+		// draw teapot
 		tms[0]->drawReflective(cubeMap, *fb, *ppc, nullptr, true);
-		//tms[1]->drawReflective(cubeMap, *fb, *ppc, texObjects[0], false);
-		//tms[0]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, nullptr, false);
-		//tms[1]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, texObjects[0], false);
-		//tms[1]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, nullptr, false);
 		fb->redraw();
 		Fl::check();
 	}
 
+	// tilts vertically showcasing reflections at bottom of chromed teapot
 	for (float steps = 0.0f; steps < 90.0f; steps += 1.2f) {
 
 		// rotate view direction
 		V3 rotVD = viewDirection;
 		rotVD.rotateThisVectorAboutDirection(V3(1.0f, 0.0f, 0.0f), steps);
-		//	rotVD.rotateThisVectorAboutDirection(V3(0.0f, 1.0f, 0.0f), 0.0f);
-
 		// set up the look at cube camera (dolly camera setup)
 		ppc->positionRelativeToPoint(lookAtPoint, rotVD, up, 180.0f);
-
+		// draw distant geometry
 		fb->drawEnvironmentMap(cubeMap, *ppc);
 		fb->clearZB(0.0f);
+		// draw teapot
 		tms[0]->drawReflective(cubeMap, *fb, *ppc, nullptr, false);
-		//tms[1]->drawReflective(cubeMap, *fb, *ppc, texObjects[0], false);
-		//tms[0]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, nullptr, false);
-		//tms[1]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, texObjects[0], false);
-		//tms[1]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, nullptr, false);
 		fb->redraw();
 		Fl::check();
 	}
 
+	// tilts vertically showcasing reflections at top of chromed teapot
 	for (float steps = 0.0f; steps < 90.0f; steps += 1.2f) {
 
 		// rotate view direction
 		V3 rotVD = viewDirection;
 		rotVD.rotateThisVectorAboutDirection(V3(1.0f, 0.0f, 0.0f), -steps);
-		//	rotVD.rotateThisVectorAboutDirection(V3(0.0f, 1.0f, 0.0f), 0.0f);
-
 		// set up the look at cube camera (dolly camera setup)
 		ppc->positionRelativeToPoint(lookAtPoint, rotVD, up, 180.0f);
-
+		// draw distant geometry
 		fb->drawEnvironmentMap(cubeMap, *ppc);
 		fb->clearZB(0.0f);
+		// draw teapot
 		tms[0]->drawReflective(cubeMap, *fb, *ppc, nullptr, true);
-		tms[1]->drawReflective(cubeMap, *fb, *ppc, texObjects[0], false);
-		//tms[0]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, nullptr, false);
-		//tms[1]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, texObjects[0], false);
-		//tms[1]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, nullptr, false);
+		//tms[1]->drawReflective(cubeMap, *fb, *ppc, texObjects[0], false);
+		fb->redraw();
+		Fl::check();
+	} 
+
+	// rolls to the right showcasing reflections on colored teapot
+	ppc->positionRelativeToPoint(lookAtPoint, viewDirection, up, 180.0f);
+	for (float steps = 0.0f; steps < 45.0f; steps += 2.2f) {
+
+		// roll the camera
+		ppc->roll(1.2f);
+		// draw distant geometry
+		fb->drawEnvironmentMap(cubeMap, *ppc);
+		fb->clearZB(0.0f);
+		// draw teapot
+		tms[0]->drawReflective(cubeMap, *fb, *ppc, nullptr, false);
 		fb->redraw();
 		Fl::check();
 	}
 
-	//viewDirection = ppc->getViewDir();
-	ppc->positionRelativeToPoint(lookAtPoint, viewDirection, up, 180.0f);
-
+	// rolls to the left showcasing reflections on colored teapot
 	for (float steps = 0.0f; steps < 45.0f; steps += 2.2f) {
+
+		// roll the camera
+		V3 rotVD = viewDirection;
+		ppc->roll(-1.2f);
+		// draw distant geometry
+		fb->drawEnvironmentMap(cubeMap, *ppc);
+		fb->clearZB(0.0f);
+		// draw teapot
+		tms[0]->drawReflective(cubeMap, *fb, *ppc, nullptr, false);
+		fb->redraw();
+		Fl::check();
+	}
+
+	// rotates around an axis showcasing refractions on a glass teapot
+	for (float steps = 0.0f; steps < 180.0f; steps += 1.2f) {
 
 		// rotate view direction
 		V3 rotVD = viewDirection;
-		//rotVD.rotateThisVectorAboutDirection(V3(0.0f, 0.0f, 1.0f), steps);
-		//	rotVD.rotateThisVectorAboutDirection(V3(0.0f, 1.0f, 0.0f), 0.0f);
-
+		V3 dir = V3(-1.0f, 1.0f, 0.0f);
+		dir.normalize();
+		rotVD.rotateThisVectorAboutDirection(dir, steps);
 		// set up the look at cube camera (dolly camera setup)
-		//ppc->positionRelativeToPoint(lookAtPoint, rotVD, up, 180.0f);
-		ppc->roll(1.2f);
-
+		ppc->positionRelativeToPoint(lookAtPoint, rotVD, up, 180.0f);
+		// draw distant geometry
 		fb->drawEnvironmentMap(cubeMap, *ppc);
 		fb->clearZB(0.0f);
-		tms[0]->drawReflective(cubeMap, *fb, *ppc, nullptr, false);
-		//tms[1]->drawReflective(cubeMap, *fb, *ppc, texObjects[0], false);
-		//tms[0]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, nullptr, false);
-		//tms[1]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, texObjects[0], false);
-		//tms[1]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, nullptr, false);
+		// draw teapot
+		tms[0]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, nullptr, false);
 		fb->redraw();
 		Fl::check();
 	}

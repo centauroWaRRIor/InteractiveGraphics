@@ -132,13 +132,3 @@ V3 CubeMap::getColor(const V3 & direction)
 	// This should not ever happen. Any ray direction should be contained by a cubemap
 	return V3(255.0f/255.0f, 0.0f/255.0f, 128.0f/255.0f); // bright pink so its easy to spot if it ever happens (debug)
 }
-
-V3 CubeMap::getSpecularReflectionColor(const V3 & normal) const
-{
-	return V3();
-}
-
-V3 CubeMap::getFirstSurfaceRefraction(const V3 & direction) const
-{
-	return V3();
-}
