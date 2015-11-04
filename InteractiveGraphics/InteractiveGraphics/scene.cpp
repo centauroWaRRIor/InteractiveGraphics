@@ -1521,6 +1521,10 @@ void Scene::testCubeMapRefraction(void)
 
 void Scene::a5Demo(void)
 {
+#ifdef _MAKE_VIDEO_
+	string pngFilename;
+	int si = 0;
+#endif
 	const float nl = 1.0f; // refraction index of air
 	const float nt = 1.51f; // refraction index of window glass
 	CubeMap cubeMap("pngs\\uffizi_cross.png");
@@ -1533,6 +1537,7 @@ void Scene::a5Demo(void)
 
 	// test environment mapping technique on teapot
 	tms[0]->loadBin("geometry/teapot1K.bin");
+	//tms[0]->loadBin("geometry/teapot57K.bin"); // HD model
 	tms[0]->translate(V3(10.0f, -10.0f, 0.0f));
 	tms[0]->scale(1.0);
 	tms[1]->createQuadTestTMesh(true);
@@ -1545,13 +1550,13 @@ void Scene::a5Demo(void)
 	ppc = nullptr;
 	ppc = new PPC(90.0f, K_W, K_H);
 
-	//ppc->moveForward(-200.0f);
 	const V3 lookAtPoint(tms[0]->getCenter()); // teapot centroid
 	const V3 up(0.0f, 1.0f, 0.0f);
 	V3 viewDirection = ppc->getViewDir();
 
 	// pans horizontally showcasing reflections with color tMesh
-	for (float steps = 0.0f; steps < 90.0f; steps += 1.2f) {
+	// takes 5 seconds -> 30*5 = 150 frames -> 90/150 = 0.6
+	for (float steps = 0.0f; steps < 90.0f; steps += 0.6f) {
 
 		// rotate view direction
 		V3 rotVD = viewDirection;
@@ -1565,10 +1570,17 @@ void Scene::a5Demo(void)
 		tms[0]->drawReflective(cubeMap, *fb, *ppc, nullptr, true);
 		fb->redraw();
 		Fl::check();
+#ifdef _MAKE_VIDEO_
+		pngFilename = string("movieFrame");
+		pngFilename += std::to_string(si) + ".png";
+		fb->saveAsPng(pngFilename);
+		si++;
+#endif
 	}
 
 	// tilts vertically showcasing reflections at bottom of chromed teapot
-	for (float steps = 0.0f; steps < 90.0f; steps += 1.2f) {
+	// takes 5 seconds -> 30*5 = 150 frames -> 90/150 = 0.6
+	for (float steps = 0.0f; steps < 90.0f; steps += 0.6f) {
 
 		// rotate view direction
 		V3 rotVD = viewDirection;
@@ -1582,10 +1594,17 @@ void Scene::a5Demo(void)
 		tms[0]->drawReflective(cubeMap, *fb, *ppc, nullptr, false);
 		fb->redraw();
 		Fl::check();
+#ifdef _MAKE_VIDEO_
+		pngFilename = string("movieFrame");
+		pngFilename += std::to_string(si) + ".png";
+		fb->saveAsPng(pngFilename);
+		si++;
+#endif
 	}
 
 	// tilts vertically showcasing reflections at top of chromed teapot
-	for (float steps = 0.0f; steps < 90.0f; steps += 1.2f) {
+	// takes 5 seconds -> 30*5 = 150 frames -> 90/150 = 0.6
+	for (float steps = 0.0f; steps < 90.0f; steps += 0.6f) {
 
 		// rotate view direction
 		V3 rotVD = viewDirection;
@@ -1597,17 +1616,25 @@ void Scene::a5Demo(void)
 		fb->clearZB(0.0f);
 		// draw teapot
 		tms[0]->drawReflective(cubeMap, *fb, *ppc, nullptr, true);
+		// draw textured quad (useful when implementing billboard reflection raytracing)
 		//tms[1]->drawReflective(cubeMap, *fb, *ppc, texObjects[0], false);
 		fb->redraw();
 		Fl::check();
-	} 
+#ifdef _MAKE_VIDEO_
+		pngFilename = string("movieFrame");
+		pngFilename += std::to_string(si) + ".png";
+		fb->saveAsPng(pngFilename);
+		si++;
+#endif
+	}
 
 	// rolls to the right showcasing reflections on colored teapot
+	// takes 2.5 seconds -> 30*2.5 = 75 frames -> 45/75 = 0.6
 	ppc->positionRelativeToPoint(lookAtPoint, viewDirection, up, 180.0f);
-	for (float steps = 0.0f; steps < 45.0f; steps += 2.2f) {
+	for (float steps = 0.0f; steps < 45.0f; steps += 0.6f) {
 
 		// roll the camera
-		ppc->roll(1.2f);
+		ppc->roll(0.6f);
 		// draw distant geometry
 		fb->drawEnvironmentMap(cubeMap, *ppc);
 		fb->clearZB(0.0f);
@@ -1615,14 +1642,21 @@ void Scene::a5Demo(void)
 		tms[0]->drawReflective(cubeMap, *fb, *ppc, nullptr, false);
 		fb->redraw();
 		Fl::check();
+#ifdef _MAKE_VIDEO_
+		pngFilename = string("movieFrame");
+		pngFilename += std::to_string(si) + ".png";
+		fb->saveAsPng(pngFilename);
+		si++;
+#endif
 	}
 
 	// rolls to the left showcasing reflections on colored teapot
-	for (float steps = 0.0f; steps < 45.0f; steps += 2.2f) {
+	// takes 2.5 seconds -> 30*2.5 = 75 frames -> 45/75 = 0.6
+	for (float steps = 0.0f; steps < 45.0f; steps += 0.6f) {
 
 		// roll the camera
 		V3 rotVD = viewDirection;
-		ppc->roll(-1.2f);
+		ppc->roll(-0.6f);
 		// draw distant geometry
 		fb->drawEnvironmentMap(cubeMap, *ppc);
 		fb->clearZB(0.0f);
@@ -1630,11 +1664,18 @@ void Scene::a5Demo(void)
 		tms[0]->drawReflective(cubeMap, *fb, *ppc, nullptr, false);
 		fb->redraw();
 		Fl::check();
+#ifdef _MAKE_VIDEO_
+		pngFilename = string("movieFrame");
+		pngFilename += std::to_string(si) + ".png";
+		fb->saveAsPng(pngFilename);
+		si++;
+#endif
 	}
 
 	// rotates around an axis showcasing refractions on a glass teapot
-	for (float steps = 0.0f; steps < 180.0f; steps += 1.2f) {
-
+	// takes 20 seconds -> 30*20 = 600 frames -> 0.3
+	for (float steps = 0.0f; steps < 180.0f; steps += 0.6f) {
+		
 		// rotate view direction
 		V3 rotVD = viewDirection;
 		V3 dir = V3(-1.0f, 1.0f, 0.0f);
@@ -1649,6 +1690,12 @@ void Scene::a5Demo(void)
 		tms[0]->drawRefractive(nl, nt, cubeMap, *fb, *ppc, nullptr, false);
 		fb->redraw();
 		Fl::check();
+#ifdef _MAKE_VIDEO_
+		pngFilename = string("movieFrame");
+		pngFilename += std::to_string(si) + ".png";
+		fb->saveAsPng(pngFilename);
+		si++;
+#endif
 	}
 
 	return;
