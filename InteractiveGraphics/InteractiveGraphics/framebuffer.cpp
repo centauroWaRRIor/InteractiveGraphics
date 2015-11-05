@@ -71,16 +71,24 @@ int FrameBuffer::handle(int event)  {
 				mouseLeftClickDragHandle(FL_PUSH);
 				return 1;
 			}
+			else if (Fl::event_button3()) {
+				mouseRightClickDragHandle(FL_PUSH);
+				return 1;
+			}
 			return 0;
 		// In order to receive the FL_RELEASE event, the widget must return non - zero when handling FL_PUSH.
 		case FL_RELEASE:
-			if (Fl::event_button1()) {
+			if (Fl::event_button1() || Fl::event_button3()) {
 				return 1;
 			}
 			return 0;
 		case FL_DRAG:
 			if (Fl::event_button1()) {
 				mouseLeftClickDragHandle(FL_DRAG);
+				return 1;
+			}
+			else if (Fl::event_button3()) {
+				mouseRightClickDragHandle(FL_DRAG);
 				return 1;
 			}
 			return 0;
@@ -188,6 +196,32 @@ void FrameBuffer::mouseLeftClickDragHandle(int event)
 		scene->currentSceneRedraw();
 		// reset deltas
 		scene->setMouseDelta(0, 0);
+		break;
+	default: // never used
+		break;
+	}
+}
+
+void FrameBuffer::mouseRightClickDragHandle(int event)
+{
+	static int prevMouseX = 0;
+	int mouseCurrentX;
+	int deltaMouseX;
+
+	mouseCurrentX = Fl::event_x();
+
+	switch (event)
+	{
+	case FL_PUSH:
+		prevMouseX = mouseCurrentX;
+		break;
+	case FL_DRAG:
+		deltaMouseX = -(mouseCurrentX - prevMouseX);
+		prevMouseX = mouseCurrentX;
+		scene->setMouseRoll(deltaMouseX);
+		scene->currentSceneRedraw();
+		// reset delta
+		scene->setMouseRoll(0);
 		break;
 	default: // never used
 		break;

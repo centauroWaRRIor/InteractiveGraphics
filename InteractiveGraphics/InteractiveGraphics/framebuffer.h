@@ -39,6 +39,7 @@ public:
 	int handle(int event);
 	void keyboardHandle(void);
 	void mouseLeftClickDragHandle(int event);
+	void mouseRightClickDragHandle(int event);
 
 	// clear to background color
 	void set(unsigned int color);

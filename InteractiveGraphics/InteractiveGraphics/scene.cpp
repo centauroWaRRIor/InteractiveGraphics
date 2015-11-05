@@ -30,7 +30,8 @@ Scene::Scene() :
 	tms(nullptr),
 	texObjects(nullptr),
 	mouseDeltaX(0),
-	mouseDeltaY(0)
+	mouseDeltaY(0),
+	mouseDeltaZ(0)
 {
 
 	// create user interface
@@ -1409,7 +1410,7 @@ void Scene::testCubeMapFaces(void)
 
 void Scene::testCubeMapReflection(void)
 {
-	const float speedFactor = 0.01;
+	const float speedFactor = 0.01f;
 	CubeMap cubeMap("pngs\\uffizi_cross.png");
 	if (!isTestCMReflectInit) {
 
@@ -1448,6 +1449,8 @@ void Scene::testCubeMapReflection(void)
 	rotVD.rotateThisVectorAboutDirection(V3(1.0f, 0.0f, 0.0f), mouseDeltaY * speedFactor);
 	// set up the look at cube camera (dolly camera setup)
 	ppc->positionRelativeToPoint(lookAtPoint, rotVD, up, 180.0f);
+	// roll needs to be done independently from cam dolly at the end
+	ppc->roll(-(mouseDeltaZ * speedFactor));
 
 	fb->drawEnvironmentMap(cubeMap, *ppc);
 	fb->clearZB(0.0f);
@@ -1791,4 +1794,9 @@ void Scene::setMouseDelta(int mouseDeltaX, int mouseDeltaY)
 {
 	this->mouseDeltaX = mouseDeltaX;
 	this->mouseDeltaY = mouseDeltaY;
+}
+
+void Scene::setMouseRoll(int mouseRoll)
+{
+	this->mouseDeltaZ = mouseRoll;
 }

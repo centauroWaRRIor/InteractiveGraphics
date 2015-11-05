@@ -46,7 +46,7 @@ private:
 	Texture **texObjects; // and array of pointers to Texture objects
 
 	// use for camera dolly with the mouse in REFLECTEST
-	int mouseDeltaX, mouseDeltaY;
+	int mouseDeltaX, mouseDeltaY, mouseDeltaZ;
 
 	Scenes currentScene; // used for keyboard callback to invokate the correct redraw
 	DrawModes currentDrawMode; // controls how to draw current scene
@@ -112,6 +112,7 @@ public:
 	void currentSceneRedraw(void);
 	void setDrawMode(int mode);
 	void setMouseDelta(int mouseDeltaX, int mouseDeltaY);
+	void setMouseRoll(int mouseRoll);
 
 	PPC* getCamera(void) { return ppc; }
 
