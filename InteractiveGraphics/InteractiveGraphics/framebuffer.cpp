@@ -176,12 +176,9 @@ void FrameBuffer::mouseLeftClickDragHandle(int event)
 		prevMouseY = mouseCurrentY;
 		//cout << "Dragging Mouse BEGIN..." << endl;
 		break;
-//	case FL_RELEASE:
-//		cout << "Dragging Mouse END..." << endl;
-//		break;
 	case FL_DRAG:
-		deltaMouseX = abs(mouseCurrentX - prevMouseX);
-		deltaMouseY = abs(mouseCurrentY - prevMouseY);
+		deltaMouseX = -(mouseCurrentX - prevMouseX);
+		deltaMouseY = -(mouseCurrentY - prevMouseY);
 		//cout << "Dragging Mouse..." << "(" <<
 			//mouseCurrentX << ", " << mouseCurrentY << ")" << 
 			//"[" << deltaMouseX << ", " << deltaMouseY << "]" << endl;
@@ -189,6 +186,8 @@ void FrameBuffer::mouseLeftClickDragHandle(int event)
 		prevMouseY = mouseCurrentY;
 		scene->setMouseDelta(deltaMouseX, deltaMouseY);
 		scene->currentSceneRedraw();
+		// reset deltas
+		scene->setMouseDelta(0, 0);
 		break;
 	default: // never used
 		break;

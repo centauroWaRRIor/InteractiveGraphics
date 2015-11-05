@@ -1409,6 +1409,7 @@ void Scene::testCubeMapFaces(void)
 
 void Scene::testCubeMapReflection(void)
 {
+	const float speedFactor = 0.01;
 	CubeMap cubeMap("pngs\\uffizi_cross.png");
 	if (!isTestCMReflectInit) {
 
@@ -1443,7 +1444,8 @@ void Scene::testCubeMapReflection(void)
 	V3 viewDirection = ppc->getViewDir();
 	// rotate view direction
 	V3 rotVD = viewDirection;
-	rotVD.rotateThisVectorAboutDirection(V3(0.0f, 1.0f, 0.0f), (float) mouseDeltaX);
+	rotVD.rotateThisVectorAboutDirection(V3(0.0f, 1.0f, 0.0f), mouseDeltaX * speedFactor);
+	rotVD.rotateThisVectorAboutDirection(V3(1.0f, 0.0f, 0.0f), mouseDeltaY * speedFactor);
 	// set up the look at cube camera (dolly camera setup)
 	ppc->positionRelativeToPoint(lookAtPoint, rotVD, up, 180.0f);
 
