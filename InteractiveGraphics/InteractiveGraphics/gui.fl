@@ -12,8 +12,8 @@ class GUI {open
       xywh {756 258 258 437} type Double visible
     } {
       Fl_Button dbgButton {
-        label DBG
-        callback {DBG_cb()}
+        label {Reflection Camera Dolly}
+        callback {TestCubeMapReflection_cb()} selected
         xywh {15 40 225 40} selection_color 72
       }
       Fl_Menu_Bar {} {
@@ -194,7 +194,7 @@ class GUI {open
       }
       Fl_Button A5Button {
         label {A5 Demo}
-        callback {A5Demo_cb()} selected
+        callback {A5Demo_cb()}
         xywh {15 92 225 40} selection_color 72
       }
     }
@@ -275,7 +275,8 @@ scene->testA4Demo();} {}
   Function {TestCubeMapFaces_cb()} {} {
     code {scene->testCubeMapFaces();} {}
   }
-  Function {TestCubeMapReflection_cb()} {} {
+  Function {TestCubeMapReflection_cb()} {open
+  } {
     code {scene->regFuncForKbRedraw(Scenes::REFLECTEST);
 scene->testCubeMapReflection();} {}
   }

@@ -3,7 +3,7 @@
 #include "gui.h"
 
 void GUI::cb_dbgButton_i(Fl_Button*, void*) {
-  DBG_cb();
+  TestCubeMapReflection_cb();
 }
 void GUI::cb_dbgButton(Fl_Button* o, void* v) {
   ((GUI*)(o->parent()->user_data()))->cb_dbgButton_i(o,v);
@@ -1226,7 +1226,7 @@ void GUI::cb_A5Button(Fl_Button* o, void* v) {
 GUI::GUI() {
   { uiw = new Fl_Double_Window(258, 437, "GUI");
     uiw->user_data((void*)(this));
-    { dbgButton = new Fl_Button(15, 40, 225, 40, "DBG");
+    { dbgButton = new Fl_Button(15, 40, 225, 40, "Reflection Camera Dolly");
       dbgButton->selection_color(FL_DARK_RED);
       dbgButton->callback((Fl_Callback*)cb_dbgButton);
     } // Fl_Button* dbgButton
