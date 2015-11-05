@@ -57,21 +57,40 @@ float FrameBuffer::getZbAt(unsigned int index) const
 // function called automatically on event within window (callback)
 int FrameBuffer::handle(int event)  {  
 
-  switch(event) 
-  {   
-  case FL_KEYBOARD: {
-    KeyboardHandle();
-    return 0;
-  }
-  default:
-    break;
-  }
-  return 0;
-
+	// from users guide:
+	// You must return non - zero if your handle() method uses the event.
+	// If you return zero, the parent widget will try sending the event to another widget.
+	switch (event)
+	{
+		case FL_KEYBOARD: 
+			keyboardHandle();
+			return 1;
+		// In order to receive FL_DRAG events, the widget must return non-zero when handling FL_PUSH.
+		case FL_PUSH:
+			if (Fl::event_button1()) {
+				mouseLeftClickDragHandle(FL_PUSH);
+				return 1;
+			}
+			return 0;
+		// In order to receive the FL_RELEASE event, the widget must return non - zero when handling FL_PUSH.
+		case FL_RELEASE:
+			if (Fl::event_button1()) {
+				return 1;
+			}
+			return 0;
+		case FL_DRAG:
+			if (Fl::event_button1()) {
+				mouseLeftClickDragHandle(FL_DRAG);
+				return 1;
+			}
+			return 0;
+		default:
+			return 0;
+	}
 }
 
 
-void FrameBuffer::KeyboardHandle() {
+void FrameBuffer::keyboardHandle(void) {
 
 	float tiltAmount = 1.0f;
 	float rollAmount = 1.0f;
@@ -137,6 +156,42 @@ void FrameBuffer::KeyboardHandle() {
 		default:
 			cerr << "INFO: do not understand keypress" << endl;
 		}
+	}
+}
+
+void FrameBuffer::mouseLeftClickDragHandle(int event)
+{
+	static int prevMouseX = 0;
+	static int prevMouseY = 0;
+	int mouseCurrentX, mouseCurrentY;
+	int deltaMouseX, deltaMouseY;
+
+	mouseCurrentX = Fl::event_x();
+	mouseCurrentY = Fl::event_y();
+
+	switch (event)
+	{
+	case FL_PUSH:
+		prevMouseX = mouseCurrentX;
+		prevMouseY = mouseCurrentY;
+		//cout << "Dragging Mouse BEGIN..." << endl;
+		break;
+//	case FL_RELEASE:
+//		cout << "Dragging Mouse END..." << endl;
+//		break;
+	case FL_DRAG:
+		deltaMouseX = abs(mouseCurrentX - prevMouseX);
+		deltaMouseY = abs(mouseCurrentY - prevMouseY);
+		//cout << "Dragging Mouse..." << "(" <<
+			//mouseCurrentX << ", " << mouseCurrentY << ")" << 
+			//"[" << deltaMouseX << ", " << deltaMouseY << "]" << endl;
+		prevMouseX = mouseCurrentX;
+		prevMouseY = mouseCurrentY;
+		scene->setMouseDelta(deltaMouseX, deltaMouseY);
+		scene->currentSceneRedraw();
+		break;
+	default: // never used
+		break;
 	}
 }
 

@@ -37,7 +37,8 @@ public:
 
 	// function called back when event occurs (mouse, keyboard, etc)
 	int handle(int event);
-	void KeyboardHandle();
+	void keyboardHandle(void);
+	void mouseLeftClickDragHandle(int event);
 
 	// clear to background color
 	void set(unsigned int color);

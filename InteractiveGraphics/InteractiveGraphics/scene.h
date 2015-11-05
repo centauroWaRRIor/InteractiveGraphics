@@ -45,6 +45,9 @@ private:
 	TMesh **tms; // an array of pointers to TMesh objects
 	Texture **texObjects; // and array of pointers to Texture objects
 
+	// use for camera dolly with the mouse in REFLECTEST
+	int mouseDeltaX, mouseDeltaY;
+
 	Scenes currentScene; // used for keyboard callback to invokate the correct redraw
 	DrawModes currentDrawMode; // controls how to draw current scene
 	// helps initializnig the different demo functions
@@ -104,9 +107,12 @@ public:
 
 	void saveCamera(void) const;
 	void saveThisFramebuffer(void) const;
+
 	void regFuncForKbRedraw(Scenes newScene);
 	void currentSceneRedraw(void);
 	void setDrawMode(int mode);
+	void setMouseDelta(int mouseDeltaX, int mouseDeltaY);
+
 	PPC* getCamera(void) { return ppc; }
 
 	static const float K_HFOV; // field of view

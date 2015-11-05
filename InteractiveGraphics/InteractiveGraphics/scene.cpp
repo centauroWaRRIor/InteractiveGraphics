@@ -20,6 +20,92 @@ const float Scene::K_HFOV = 55.0f;
 const int Scene::K_W = 1280;
 const int Scene::K_H = 720;
 
+Scene::Scene() :
+	fb(nullptr),
+	fbAux(nullptr),
+	gui(nullptr),
+	ppc(nullptr),
+	light(nullptr),
+	lightProjector(nullptr),
+	tms(nullptr),
+	texObjects(nullptr),
+	mouseDeltaX(0),
+	mouseDeltaY(0)
+{
+
+	// create user interface
+	gui = new GUI();
+	gui->show();
+
+	// create SW framebuffer
+	fb = new FrameBuffer(u0, v0, K_W, K_H);
+	fb->label("SW Framebuffer");
+
+	// create camera
+	ppc = new PPC(K_HFOV, K_W, K_H);
+	ppcLerp0 = nullptr;
+	ppcLerp1 = nullptr;
+
+	// create scene's light
+	light = new Light();
+
+	// allocate pointer of TMesh objects
+	// and allocate pointer of Texture objects
+	// tmsN is used as a bound for the maximum
+	// number of Texture objects that can be at once
+	tmsN = 6;
+	tms = new TMesh*[tmsN];
+	texObjects = new Texture*[tmsN];
+	for (int i = 0; i < tmsN; i++) {
+		tms[i] = nullptr;
+		texObjects[i] = nullptr;
+	}
+	fb->show();
+
+	// position UI window
+	gui->uiw->position(fb->getWidth() + u0 + 2 * 20, v0);
+
+	// set default draw mode wireframe
+	currentDrawMode = DrawModes::WIREFRAME;
+
+	this->isDGBInit = false;
+	this->isTestCamControlsInit = false;
+	this->isA2Init = false;
+	this->isTestCamControlsInit = false;
+	this->isTextureInit = false;
+	this->isSpriteTestInit = false;
+	this->isA3Init = false;
+	this->isTestBilTexLookupInit = false;
+	this->isShadowMapTestInit = false;
+	this->isTexProjectTestInit = false;
+	this->isTestCMReflectInit = false;
+	this->isTestCMRefractInit = false;
+}
+
+Scene::~Scene()
+{
+	delete fb;
+	if (fbAux)
+		delete fbAux;
+	delete gui;
+	delete ppc;
+	delete light;
+	// delete array of pointers
+	for (int i = 0; i < tmsN; i++) {
+		delete tms[i];
+		delete texObjects[i];
+	}
+	if (lightProjector) {
+		delete lightProjector;
+	}
+	delete[] tms;
+	delete[] texObjects;
+	if (ppcLerp0)
+		delete ppcLerp0;
+	if (ppcLerp1)
+		delete ppcLerp1;
+}
+
 string Scene::retrieveTimeDate(void) const
 {
 	stringstream returnString;
@@ -137,127 +223,10 @@ void Scene::cleanForNewScene(void)
 	this->isTestCMRefractInit = false;
 }
 
-Scene::Scene():
-	fb(nullptr), 
-	fbAux(nullptr),
-    gui(nullptr),
-    ppc(nullptr),
-	light(nullptr),
-	lightProjector(nullptr),
-	tms(nullptr),
-	texObjects(nullptr)
-{
-
-  // create user interface
-  gui = new GUI();
-  gui->show();
-
-  // create SW framebuffer
-  fb = new FrameBuffer(u0, v0, K_W, K_H);
-  fb->label("SW Framebuffer");
-
-  // create camera
-  ppc = new PPC(K_HFOV, K_W, K_H);
-  ppcLerp0 = nullptr;
-  ppcLerp1 = nullptr;
-
-  // create scene's light
-  light = new Light();
-
-  // allocate pointer of TMesh objects
-  // and allocate pointer of Texture objects
-  // tmsN is used as a bound for the maximum
-  // number of Texture objects that can be at once
-  tmsN = 6;
-  tms = new TMesh*[tmsN];
-  texObjects = new Texture*[tmsN];
-  for (int i = 0; i < tmsN; i++) {
-	  tms[i] = nullptr;
-	  texObjects[i] = nullptr;
-  }
-  fb->show();
-  
-  // position UI window
-  gui->uiw->position(fb->getWidth()+u0 + 2*20, v0);
-
-  // set default draw mode wireframe
-  currentDrawMode = DrawModes::WIREFRAME;
-
-  this->isDGBInit = false;
-  this->isTestCamControlsInit = false;
-  this->isA2Init = false;
-  this->isTestCamControlsInit = false;
-  this->isTextureInit = false;
-  this->isSpriteTestInit = false;
-  this->isA3Init = false;
-  this->isTestBilTexLookupInit = false;
-  this->isShadowMapTestInit = false;
-  this->isTexProjectTestInit = false;
-  this->isTestCMReflectInit = false;
-  this->isTestCMRefractInit = false;
-}
-
-Scene::~Scene()
-{
-	delete fb;
-	if (fbAux)
-		delete fbAux;
-	delete gui;
-	delete ppc;
-	delete light;
-	// delete array of pointers
-	for (int i = 0; i < tmsN; i++) {
-		delete tms[i];
-		delete texObjects[i];
-	}
-	if (lightProjector) {
-		delete lightProjector;
-	}
-	delete[] tms;
-	delete[] texObjects;
-	if (ppcLerp0)
-		delete ppcLerp0;
-	if (ppcLerp1)
-		delete ppcLerp1;
-}
-
 // function linked to the DBG GUI button for testing new features
 void Scene::dbgDraw() {
 
-	CubeMap cubeMap("pngs\\uffizi_cross.png");
-	if (!isDGBInit) {
-		
-		cleanForNewScene();
 
-		tms[0] = new TMesh();
-		tms[1] = new TMesh();
-
-		// load texture
-		texObjects[0] = new Texture("pngs\\Alloy_diamond_plate_pxr128.png");
-
-		// test environment mapping technique on teapot
-		tms[0]->loadBin("geometry/teapot1K.bin");
-		tms[0]->translate(V3(10.0f, -10.0f, 0.0f));
-		tms[0]->scale(1.0);
-		tms[1]->createQuadTestTMesh(true);
-		tms[1]->scale(2.5);
-		tms[1]->translate(V3(-50.0f, -40.0f, 0.0f));
-
-		// set ppc with a HFOV big enough for env map
-		delete ppc;
-		ppc = nullptr;
-		ppc = new PPC(90.0f, K_W, K_H);
-
-		ppc->moveForward(-200.0f);
-
-		isDGBInit = true;
-	}
-	fb->drawEnvironmentMap(cubeMap, *ppc);
-	fb->clearZB(0.0f);
-	//tms[0]->drawReflective(cubeMap, *fb, *ppc, nullptr, true);
-	//tms[1]->drawReflective(cubeMap, *fb, *ppc, texObjects[0], false);
-	fb->redraw();
-	return;
 }
 
 void Scene::testRot() {
@@ -1468,6 +1437,16 @@ void Scene::testCubeMapReflection(void)
 
 		isTestCMReflectInit = true;
 	}
+
+	const V3 lookAtPoint(tms[0]->getCenter()); // teapot centroid
+	const V3 up(0.0f, 1.0f, 0.0f);
+	V3 viewDirection = ppc->getViewDir();
+	// rotate view direction
+	V3 rotVD = viewDirection;
+	rotVD.rotateThisVectorAboutDirection(V3(0.0f, 1.0f, 0.0f), (float) mouseDeltaX);
+	// set up the look at cube camera (dolly camera setup)
+	ppc->positionRelativeToPoint(lookAtPoint, rotVD, up, 180.0f);
+
 	fb->drawEnvironmentMap(cubeMap, *ppc);
 	fb->clearZB(0.0f);
 	tms[0]->drawReflective(cubeMap, *fb, *ppc, nullptr, true);
@@ -1673,7 +1652,7 @@ void Scene::a5Demo(void)
 	}
 
 	// rotates around an axis showcasing refractions on a glass teapot
-	// takes 20 seconds -> 30*20 = 600 frames -> 0.3
+	// takes 10 seconds -> 30*10 = 300 frames -> 0.6
 	for (float steps = 0.0f; steps < 180.0f; steps += 0.6f) {
 		
 		// rotate view direction
@@ -1804,4 +1783,10 @@ void Scene::setDrawMode(int mode)
 		currentScene == Scenes::A4EXTRA) {
 		currentSceneRedraw();
 	}
+}
+
+void Scene::setMouseDelta(int mouseDeltaX, int mouseDeltaY)
+{
+	this->mouseDeltaX = mouseDeltaX;
+	this->mouseDeltaY = mouseDeltaY;
 }
