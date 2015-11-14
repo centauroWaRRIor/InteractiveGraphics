@@ -90,6 +90,10 @@ public:
 	// draw camera frustum in wireframe, adapt focal length to visF
 	void visualizeCamera(const PPC &visCam, FrameBuffer &fb, float visF);
 
+	// add optional support for HW rendering through OpenGL
+	void setGLIntrinsics(float nearValue, float farValue) const;
+	void setGLExtrinsics(void) const;
+
 	// save load from text file
 	void saveCameraToFile(string fName) const;
 	void loadCameraFromFile(string fName);

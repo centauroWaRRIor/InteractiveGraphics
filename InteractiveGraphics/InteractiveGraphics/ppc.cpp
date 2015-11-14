@@ -328,6 +328,97 @@ void PPC::visualizeCamera(const PPC & visCam, FrameBuffer & fb, float visF)
 	fb.draw2DSegment(projv0, c0, projv1, c1);
 }
 
+void PPC::setGLIntrinsics(float nearValue, float farValue) const
+{
+	glViewport(0, 0, w, h);
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	float f = getFocalLength();
+	float scalef = nearValue / f;
+	float wf = getLowerCaseA().length() * (float) w;
+	float hf = getLowerCaseB().length() * (float)h;
+	glFrustum(
+		-wf / 2.0f * scalef, wf / 2.0f * scalef, // left - right
+		-hf / 2.0f * scalef, hf / 2.0f * scalef,  // down - top
+		nearValue, farValue);
+	glMatrixMode(GL_MODELVIEW);
+}
+
+// I couldn't link to gl utility library and I need gluLookAt 
+// for PPC::setGLExtrinsics so I copy pasted to this file scope only
+// the mesa3d implementation (with slight modifications to make it work 
+// in my framework)
+static void gluLookAt(
+	float eyex, float eyey, float eyez,
+	float centerx, float centery, float centerz,
+	float upx, float upy, float upz)
+{
+	V3 center, eye;
+	V3 forward, side, up;
+	GLfloat m[4][4];
+
+	center[0] = centerx;
+	center[1] = centery;
+	center[2] = centerz;
+
+	eye[0] = eyex;
+	eye[1] = eyey;
+	eye[2] = eyez;
+
+	forward = center - eye;
+
+	up[0] = upx;
+	up[1] = upy;
+	up[2] = upz;
+
+	forward.normalize();
+
+	// Side = forward x up
+	side = forward ^ up;
+	side.normalize();
+
+	// Recompute up as: up = side x forward
+	up = side ^ forward;
+
+	// Set up transformation matrix
+	m[0][0] = side[0];
+	m[1][0] = side[1];
+	m[2][0] = side[2];
+	m[3][0] = 0.0f;
+
+	m[0][1] = up[0];
+	m[1][1] = up[1];
+	m[2][1] = up[2];
+	m[3][1] = 0.0f;
+
+	m[0][2] = -forward[0];
+	m[1][2] = -forward[1];
+	m[2][2] = -forward[2];
+	m[3][3] = 0.0f;
+
+	m[0][3] = 0.0f;
+	m[1][3] = 0.0f;
+	m[2][3] = 0.0f;
+	m[3][3] = 1.0f;
+
+	glMultMatrixf(&m[0][0]);
+	glTranslatef(-eyex, -eyey, -eyez);
+}
+
+void PPC::setGLExtrinsics(void) const
+{
+	const float lapFactor = 100.0f;
+	V3 lap = C + getViewDir() * lapFactor;
+	V3 up =  getLowerCaseB().getNormalized() * -1.0f;
+	// assuming current matrix mode is GL_MODELVIEW
+	glLoadIdentity();
+	gluLookAt(
+		C.getX(), C.getY(), C.getZ(), 
+		lap[0], lap[1], lap[2], 
+		up[0], up[1], up[2]);
+}
+
 // projects given point, returns false if point behind head
 bool PPC::project(const V3 &P, V3& projP) const {
 	
