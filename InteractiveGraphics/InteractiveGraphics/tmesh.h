@@ -23,6 +23,11 @@ private:
 	int trisN; // number of triangle (not number of indices in array)
 	AABB *aabb; // keeps track of current axis aligned box
 
+	// optional hardware rendering support
+	GLuint vertexBuffer;
+	GLuint indexBuffer;
+	GLuint vao; // vertex array object
+
 	void cleanUp(void); // helper function for destructor
 	AABB computeAABB(void) const; // computes a bounding box of the centers
 	void projectVertices(const PPC &ppc); // optimization: project each vertex only once
@@ -111,8 +116,10 @@ public:
 		const Texture *const texture = nullptr,
 		bool isColorsOn = false);
 
-	// drawing functionality using HW Framebuffer
+	// hardware accelerated drawing support
 	void hardwareDraw(HWFrameBuffer &fb, const PPC &ppc);
+	void createGL_VAO(void);
+	GLuint getGL_VAO() const { return vao; }
 
 	// rotate about axis
 	void rotateAboutAxis(const V3 &aO, const V3 &adir, float theta);
