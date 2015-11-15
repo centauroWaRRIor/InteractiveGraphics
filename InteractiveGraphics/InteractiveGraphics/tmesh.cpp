@@ -276,7 +276,7 @@ void TMesh::loadBin(const char * fname)
 }
 
 
-void TMesh::drawWireframe(FrameBuffer &fb, const PPC &ppc) {
+void TMesh::drawWireframe(SWFrameBuffer &fb, const PPC &ppc) {
 
 	if ((vertsN == 0) || (trisN < 1)) {
 		cerr << "ERROR: Attempted to draw an empty mesh. "
@@ -321,7 +321,7 @@ void TMesh::drawWireframe(FrameBuffer &fb, const PPC &ppc) {
 	}
 }
 
-void TMesh::drawVertexDots(FrameBuffer &fb, const PPC &ppc, float dotSize) {
+void TMesh::drawVertexDots(SWFrameBuffer &fb, const PPC &ppc, float dotSize) {
 
 	if ((vertsN == 0) || (trisN < 1)) {
 		cerr << "ERROR: Attempted to draw an empty mesh. "
@@ -340,7 +340,7 @@ void TMesh::drawVertexDots(FrameBuffer &fb, const PPC &ppc, float dotSize) {
 	}
 }
 
-void TMesh::drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color)
+void TMesh::drawFilledFlat(SWFrameBuffer &fb, const PPC &ppc, unsigned int color)
 {
 	if ((vertsN == 0) || (trisN < 1)) {
 		cerr << "ERROR: Attempted to draw an empty mesh. "
@@ -382,7 +382,7 @@ void TMesh::drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color)
 	}
 }
 
-void TMesh::drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc) {
+void TMesh::drawFilledFlatBarycentric(SWFrameBuffer &fb, const PPC &ppc) {
 
 	if ((vertsN == 0) || (trisN < 1)) {
 		cerr << "ERROR: Attempted to draw an empty mesh. "
@@ -437,7 +437,7 @@ void TMesh::drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc) {
 	}
 }
 
-void TMesh::drawFilledFlatPerspCorrect(FrameBuffer & fb, const PPC & ppc)
+void TMesh::drawFilledFlatPerspCorrect(SWFrameBuffer & fb, const PPC & ppc)
 {
 	if ((vertsN == 0) || (trisN < 1)) {
 		cerr << "ERROR: Attempted to draw an empty mesh. "
@@ -509,7 +509,7 @@ void TMesh::drawFilledFlatPerspCorrect(FrameBuffer & fb, const PPC & ppc)
 	}
 }
 
-void TMesh::drawTextured(FrameBuffer & fb, const PPC & ppc, const Texture & texture)
+void TMesh::drawTextured(SWFrameBuffer & fb, const PPC & ppc, const Texture & texture)
 {
 	if ((vertsN == 0) || (trisN < 1)) {
 		cerr << "ERROR: Attempted to draw an empty mesh. "
@@ -602,7 +602,7 @@ void TMesh::drawTextured(FrameBuffer & fb, const PPC & ppc, const Texture & text
 }
 
 void TMesh::drawSprite(
-	FrameBuffer & fb, 
+	SWFrameBuffer & fb, 
 	const PPC & ppc, 
 	const Texture & texture,
 	unsigned int subSIndex, 
@@ -719,7 +719,7 @@ void TMesh::drawSprite(
 }
 
 void TMesh::drawLit(
-	FrameBuffer &fb,
+	SWFrameBuffer &fb,
 	const PPC &ppc,
 	const Light &light,
 	const LightProjector *const lightProj,
@@ -852,7 +852,7 @@ void TMesh::drawLit(
 	}
 }
 
-void TMesh::drawFilledFlatWithDepth(FrameBuffer & fb, const PPC & ppc, unsigned int color)
+void TMesh::drawFilledFlatWithDepth(SWFrameBuffer & fb, const PPC & ppc, unsigned int color)
 {
 	if ((vertsN == 0) || (trisN < 1)) {
 		cerr << "ERROR: Attempted to draw an empty mesh. "
@@ -895,7 +895,7 @@ void TMesh::drawFilledFlatWithDepth(FrameBuffer & fb, const PPC & ppc, unsigned 
 }
 
 void TMesh::drawStealth(
-	FrameBuffer & fb, 
+	SWFrameBuffer & fb, 
 	const PPC & ppc, 
 	const Light & light, 
 	const LightProjector & lightProj,
@@ -1022,7 +1022,7 @@ void TMesh::projectVertices(const PPC & ppc)
 
 void TMesh::drawReflective(
 	CubeMap &cubeMap,
-	FrameBuffer & fb, 
+	SWFrameBuffer & fb, 
 	const PPC & ppc, 
 	const Texture * 
 	const texture, 
@@ -1149,7 +1149,7 @@ void TMesh::drawReflective(
 void TMesh::drawRefractive(
 	float nl, float nt, 
 	CubeMap & cubeMap, 
-	FrameBuffer & fb, 
+	SWFrameBuffer & fb, 
 	const PPC & ppc, 
 	const Texture * const texture, 
 	bool isColorsOn)
@@ -1304,7 +1304,7 @@ AABB TMesh::computeAABB(void) const
 	}
 }
 
-void TMesh::drawAABB(FrameBuffer & fb, const PPC & ppc, unsigned int colorNear, unsigned int colorFar) const
+void TMesh::drawAABB(SWFrameBuffer & fb, const PPC & ppc, unsigned int colorNear, unsigned int colorFar) const
 {
 
 

@@ -2,7 +2,7 @@
 
 #include "v3.h"
 #include "m33.h"
-#include "framebuffer.h"
+#include "sw_framebuffer.h"
 #include <string>
 using std::string;
 
@@ -88,7 +88,7 @@ public:
 	void setByInterpolation(PPC &ppc0, PPC &ppc1, int i, int n);
 
 	// draw camera frustum in wireframe, adapt focal length to visF
-	void visualizeCamera(const PPC &visCam, FrameBuffer &fb, float visF);
+	void visualizeCamera(const PPC &visCam, SWFrameBuffer &fb, float visF);
 
 	// add optional support for HW rendering through OpenGL
 	void setGLIntrinsics(float nearValue, float farValue) const;

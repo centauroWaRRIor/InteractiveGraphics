@@ -3,7 +3,7 @@
 using std::vector;
 #include "v3.h"
 // Forward delcarations
-class FrameBuffer;
+class SWFrameBuffer;
 class PPC;
 class TMesh;
 
@@ -18,7 +18,7 @@ protected:
 	V3 matColor;
 	float ambientK;
 
-	FrameBuffer **shadowMapCube;
+	SWFrameBuffer **shadowMapCube;
 	PPC **shadowMapCams;
 	unsigned int shadowMapsN;
 	unsigned int shadowMapResWidth;
@@ -46,7 +46,7 @@ public:
 		bool isDbgShowShadowMaps = false,
 		bool isDrawModeFlat = true);
 	// draws itself for visual debug
-	void draw(FrameBuffer &fb, const PPC &ppc, V3 &color) const;
+	void draw(SWFrameBuffer &fb, const PPC &ppc, V3 &color) const;
 
 	// getters
 	bool getIsPointLight(void) const { return isPointLgiht; }

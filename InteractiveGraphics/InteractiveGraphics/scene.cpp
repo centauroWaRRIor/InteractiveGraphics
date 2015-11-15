@@ -39,7 +39,7 @@ Scene::Scene() :
 	gui->show();
 
 	// create SW framebuffer
-	fb = new FrameBuffer(u0, v0, K_W, K_H);
+	fb = new SWFrameBuffer(u0, v0, K_W, K_H);
 	fb->label("SW Framebuffer");
 
 	// create camera
@@ -124,7 +124,7 @@ string Scene::retrieveTimeDate(void) const
 
 void Scene::drawTMesh(
 	TMesh & tMesh, 
-	FrameBuffer & frameBuffer, 
+	SWFrameBuffer & frameBuffer, 
 	const PPC & planarPinholeCamera,
 	bool isAABBDrawn,
 	bool isShadowsEnabled,
@@ -893,7 +893,7 @@ void Scene::testSprites(void)
 void Scene::renderFBAs3DPointCloud(void)
 {
 	// fbToRender and fbPPC could by parameters passed in 
-	const FrameBuffer *const fbToRender = this->fb;
+	const SWFrameBuffer *const fbToRender = this->fb;
 	const PPC *const fbPPC = this->ppc;
 
 	// 3D point cloud is rendered using this camera and
@@ -906,7 +906,7 @@ void Scene::renderFBAs3DPointCloud(void)
 		delete fbAux;
 		fbAux = nullptr;
 	}
-	fbAux = new FrameBuffer(u0 + 200, v0 + 200, K_W, K_H);
+	fbAux = new SWFrameBuffer(u0 + 200, v0 + 200, K_W, K_H);
 	fbAux->label("Third person FB");
 	fbAux->show();
 	fbAux->clearZB(0.0f);

@@ -3,7 +3,7 @@
 #include <string>
 using std::string;
 #include "gui.h"
-#include "framebuffer.h"
+#include "sw_framebuffer.h"
 #include "tmesh.h"
 
 // Only those function that actually require a TMesh slot are 
@@ -35,8 +35,8 @@ enum class DrawModes {
 
 class Scene {
 private:
-	FrameBuffer *fb; // SW framebuffer
-	FrameBuffer *fbAux; // currently used for rendering a FB as a 3D point cloud
+	SWFrameBuffer *fb; // SW framebuffer
+	SWFrameBuffer *fbAux; // currently used for rendering a FB as a 3D point cloud
 	GUI * gui; // graphical user interface
 	PPC *ppc; // camera used to render the scene from views chosen by user
 	Light *light; // light used to render models in lit mode
@@ -69,7 +69,7 @@ private:
 	// utility function to centralize all triangle mesh drawing options
 	void drawTMesh(
 		TMesh &tMesh, 
-		FrameBuffer &fB, 
+		SWFrameBuffer &fB, 
 		const PPC &ppc,
 		bool isAABBDrawn,
 		bool isShadowsEnabled = false,

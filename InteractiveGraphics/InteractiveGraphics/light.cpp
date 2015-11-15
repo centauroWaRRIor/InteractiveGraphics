@@ -43,12 +43,12 @@ Light::Light(bool isPointLight, float hfov) :
 		isUsingCubemap = false;
 	}
 
-	shadowMapCube = new FrameBuffer*[shadowMapsN];
+	shadowMapCube = new SWFrameBuffer*[shadowMapsN];
 	shadowMapCams = new PPC*[shadowMapsN];
 
 	for (unsigned int i = 0; i < shadowMapsN; i++) {
 		// set up shadow maps
-		shadowMapCube[i] = new FrameBuffer(0, 0,
+		shadowMapCube[i] = new SWFrameBuffer(0, 0,
 			shadowMapResWidth, shadowMapResHeight);
 		// set up shadow maps aux cameras
 		shadowMapCams[i] = new PPC(
@@ -215,7 +215,7 @@ void Light::buildShadowMaps(
 	}
 }
 
-void Light::draw(FrameBuffer & fb, const PPC & ppc, V3 & color) const
+void Light::draw(SWFrameBuffer & fb, const PPC & ppc, V3 & color) const
 {
 	const float lightDotSize = 10.0f;
 	V3 projLightPos;

@@ -269,7 +269,7 @@ void PPC::setByInterpolation(PPC  &ppc0, PPC &ppc1, int i, int n)
 	buildProjM();
 }
 
-void PPC::visualizeCamera(const PPC & visCam, FrameBuffer & fb, float visF)
+void PPC::visualizeCamera(const PPC & visCam, SWFrameBuffer & fb, float visF)
 {
 	float scf = visF / getFocalLength();
 	V3 c0(0.0f, 0.2f, 1.0f);

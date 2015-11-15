@@ -1,7 +1,7 @@
 #pragma once
 
 #include "v3.h"
-#include "framebuffer.h"
+#include "sw_framebuffer.h"
 #include "ppc.h"
 
 // axis aligned bounding box small class
@@ -14,7 +14,7 @@ private:
 		const V3 &c0,
 		const V3 &v1,
 		const V3 &c1,
-		FrameBuffer &fb,
+		SWFrameBuffer &fb,
 		const PPC &ppc) const;
 public:
 	AABB(const V3 &firstPoint);
@@ -30,7 +30,7 @@ public:
 	void setPixelRectangle(int& left, int& right, int& top, int& bottom);
 
 	void draw(
-		FrameBuffer & fb, 
+		SWFrameBuffer & fb,
 		const PPC & ppc, 
 		unsigned int colorNear, 
 		unsigned int colorFar) const;

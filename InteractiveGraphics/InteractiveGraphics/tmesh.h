@@ -3,7 +3,7 @@
 #include "ppc.h"
 #include "aabb.h"
 #include "texture.h"
-#include "framebuffer.h"
+#include "sw_framebuffer.h"
 
 // Implements a triangle mesh class that stores shared vertices and triangle 
 // connectivity data.
@@ -49,28 +49,28 @@ public:
 
 	// drawing functionality
 	// draws the triangle mesh vertices as dots
-	void drawVertexDots(FrameBuffer &fb, const PPC &ppc, float dotSize);
+	void drawVertexDots(SWFrameBuffer &fb, const PPC &ppc, float dotSize);
 	// draws triangle mesh in wireframe mode
-	void drawWireframe(FrameBuffer &fb, const PPC &ppc);
+	void drawWireframe(SWFrameBuffer &fb, const PPC &ppc);
 	// draws triangle mesh in filled mode using a single color
-	void drawFilledFlat(FrameBuffer &fb, const PPC &ppc, unsigned int color);
+	void drawFilledFlat(SWFrameBuffer &fb, const PPC &ppc, unsigned int color);
 	// draws triangle mesh in filled mode using screen space interpolation of colors
-	void drawFilledFlatBarycentric(FrameBuffer &fb, const PPC &ppc);
+	void drawFilledFlatBarycentric(SWFrameBuffer &fb, const PPC &ppc);
 	// draws triangle mesh in filled mode using model space interpolation of colors
-	void drawFilledFlatPerspCorrect(FrameBuffer &fb, const PPC &ppc);
+	void drawFilledFlatPerspCorrect(SWFrameBuffer &fb, const PPC &ppc);
 	// draws triangle mesh in texture mode using model space for s,t linear interpolation 
 	// and screen space for depth linear interpolation
-	void drawTextured(FrameBuffer &fb, const PPC &ppc, const Texture &texture);
+	void drawTextured(SWFrameBuffer &fb, const PPC &ppc, const Texture &texture);
 	// same as drawTextured but fragments are discarded based on alpha value. If animated = true
 	// then this function iterates over the sprite atlas texture using time as an input
-	void drawSprite(FrameBuffer &fb, const PPC &ppc, const Texture &texture,
+	void drawSprite(SWFrameBuffer &fb, const PPC &ppc, const Texture &texture,
 		unsigned int subSIndex = 0, unsigned int subTIndex = 0,
 		unsigned int subSTotal = 1, unsigned int subTTotal = 1);
 	// draws triangle mesh in lit mode using screen space interpolation for 1/w and model
 	// space interpolation for color and s,t parameters. Uses texture if available and uses
 	// texture maps if requested.
 	void drawLit(
-		FrameBuffer &fb, 
+		SWFrameBuffer &fb, 
 		const PPC &ppc, 
 		const Light &light,
 		const LightProjector *const lightProj = nullptr,
@@ -80,10 +80,10 @@ public:
 		bool isLightProjOn = false);
 	// draws triangle mesh in filled mode using a single color and depth 1/w in screen
 	// coordinates mainly for shadow mapping purposes
-	void drawFilledFlatWithDepth(FrameBuffer &fb, const PPC &ppc, unsigned int color);
+	void drawFilledFlatWithDepth(SWFrameBuffer &fb, const PPC &ppc, unsigned int color);
 	// draws triangle mesh in stealth mode to support David Copperfiled magic trick
 	void drawStealth(
-		FrameBuffer &fb,
+		SWFrameBuffer &fb,
 		const PPC &ppc,
 		const Light &light,
 		const LightProjector &lightProj,
@@ -95,7 +95,7 @@ public:
 	// TODO: Add a light to generate specular highlights
 	void drawReflective(
 		CubeMap &cubeMap,
-		FrameBuffer &fb,
+		SWFrameBuffer &fb,
 		const PPC &ppc,
 		const Texture *const texture = nullptr,
 		bool isColorsOn = false);
@@ -104,7 +104,7 @@ public:
 	void drawRefractive(
 		float nl, float nt, // nl = refractive index for medium, nt = refractive index of TMesh material
 		CubeMap &cubeMap,
-		FrameBuffer &fb,
+		SWFrameBuffer &fb,
 		const PPC &ppc,
 		const Texture *const texture = nullptr,
 		bool isColorsOn = false);
@@ -116,7 +116,7 @@ public:
 	AABB getAABB(void) const { return computeAABB(); }
 	// draw this triangle mesh's AABB
 	void drawAABB(
-		FrameBuffer &fb,
+		SWFrameBuffer &fb,
 		const PPC &ppc,
 		unsigned int colorNear,
 		unsigned int colorFar) const;

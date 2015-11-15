@@ -66,7 +66,7 @@ void AABB::draw3DSegment(
 	const V3 &c0, 
 	const V3 &v1, 
 	const V3 &c1,
-	FrameBuffer &fb,
+	SWFrameBuffer &fb,
 	const PPC &ppc) const {
 
 	V3 projv0, projv1;
@@ -79,7 +79,7 @@ void AABB::draw3DSegment(
 }
 
 void AABB::draw(
-	FrameBuffer & fb, 
+	SWFrameBuffer & fb, 
 	const PPC & ppc, 
 	unsigned int colorNear, 
 	unsigned int colorFar) const
