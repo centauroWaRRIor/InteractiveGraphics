@@ -12,12 +12,12 @@ class GUI {open
       xywh {756 258 258 437} type Double visible
     } {
       Fl_Button dbgButton {
-        label {Reflection Camera Dolly}
-        callback {TestCubeMapReflection_cb()} selected
+        label Debug
+        callback {DBG_cb()}
         xywh {15 40 225 40} selection_color 72
       }
       Fl_Menu_Bar {} {
-        label {Main Menu} open
+        label {Main Menu} open selected
         xywh {0 0 315 30}
       } {
         Submenu {} {
@@ -144,6 +144,15 @@ class GUI {open
               xywh {0 0 30 20}
             }
           }
+          Submenu A6SubMenu {
+            label A6 open
+            xywh {0 0 62 20}
+          } {
+            MenuItem {} {
+              label {Fixed Pipeline HW Acceleration}
+              xywh {0 0 30 20}
+            }
+          }
         }
       }
       Fl_Group CameraFBSaveGroup {
@@ -193,7 +202,7 @@ class GUI {open
         }
       }
       Fl_Button A5Button {
-        label {A5 Demo}
+        label {Dummy Button}
         callback {A5Demo_cb()}
         xywh {15 92 225 40} selection_color 72
       }

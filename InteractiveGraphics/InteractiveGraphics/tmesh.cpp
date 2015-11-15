@@ -1272,6 +1272,21 @@ void TMesh::drawRefractive(
 	}
 }
 
+void TMesh::hardwareDraw(HWFrameBuffer & fb, const PPC & ppc)
+{
+	glEnable(GL_DEPTH_TEST);
+
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+	glVertexPointer(3, GL_FLOAT, 0, (float*)verts);
+	glColorPointer(3, GL_FLOAT, 0, (float*)cols);
+
+	glDrawElements(GL_TRIANGLES, 3 * trisN, GL_UNSIGNED_INT, tris);
+
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
+}
+
 void TMesh::rotateAboutAxis(const V3 &aO, const V3 &adir, float theta)
 {
 	for (int vi = 0; vi < vertsN; vi++) {

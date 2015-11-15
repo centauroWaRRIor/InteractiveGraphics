@@ -3,7 +3,7 @@
 #include "gui.h"
 
 void GUI::cb_dbgButton_i(Fl_Button*, void*) {
-  TestCubeMapReflection_cb();
+  DBG_cb();
 }
 void GUI::cb_dbgButton(Fl_Button* o, void* v) {
   ((GUI*)(o->parent()->user_data()))->cb_dbgButton_i(o,v);
@@ -173,6 +173,9 @@ Fl_Menu_Item GUI::menu_Main[] = {
  {"Test CM Refraction", 0,  (Fl_Callback*)GUI::cb_TestCubeMapRefraction, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"A5 Demo", 0,  (Fl_Callback*)GUI::cb_A5Demo, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
+ {"A6", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Fixed Pipeline HW Acceleration", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {0,0,0,0,0,0,0,0,0},
  {0,0,0,0,0,0,0,0,0},
  {0,0,0,0,0,0,0,0,0}
 };
@@ -200,6 +203,7 @@ Fl_Menu_Item* GUI::TestCubeMapFaces = GUI::menu_Main + 25;
 Fl_Menu_Item* GUI::TestCubeMapReflection = GUI::menu_Main + 26;
 Fl_Menu_Item* GUI::TestCubeMapRefraction = GUI::menu_Main + 27;
 Fl_Menu_Item* GUI::A5Demo = GUI::menu_Main + 28;
+Fl_Menu_Item* GUI::A6SubMenu = GUI::menu_Main + 30;
 
 void GUI::cb_SaveCameraButton_i(Fl_Button*, void*) {
   SaveCameraButton_cb();
@@ -1226,7 +1230,7 @@ void GUI::cb_A5Button(Fl_Button* o, void* v) {
 GUI::GUI() {
   { uiw = new Fl_Double_Window(258, 437, "GUI");
     uiw->user_data((void*)(this));
-    { dbgButton = new Fl_Button(15, 40, 225, 40, "Reflection Camera Dolly");
+    { dbgButton = new Fl_Button(15, 40, 225, 40, "Debug");
       dbgButton->selection_color(FL_DARK_RED);
       dbgButton->callback((Fl_Callback*)cb_dbgButton);
     } // Fl_Button* dbgButton
@@ -1280,7 +1284,7 @@ GUI::GUI() {
       } // Fl_Round_Button* TextureRadialButton
       RenderingOptionsGroup->end();
     } // Fl_Group* RenderingOptionsGroup
-    { A5Button = new Fl_Button(15, 92, 225, 40, "A5 Demo");
+    { A5Button = new Fl_Button(15, 92, 225, 40, "Dummy Button");
       A5Button->selection_color(FL_DARK_RED);
       A5Button->callback((Fl_Callback*)cb_A5Button);
     } // Fl_Button* A5Button

@@ -119,6 +119,7 @@ private:
   void cb_A5Demo_i(Fl_Menu_*, void*);
   static void cb_A5Demo(Fl_Menu_*, void*);
 public:
+  static Fl_Menu_Item *A6SubMenu;
   Fl_Group *CameraFBSaveGroup;
   Fl_Button *SaveCameraButton;
 private:

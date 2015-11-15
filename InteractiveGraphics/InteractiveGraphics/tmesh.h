@@ -4,6 +4,7 @@
 #include "aabb.h"
 #include "texture.h"
 #include "sw_framebuffer.h"
+#include "hw_framebuffer.h"
 
 // Implements a triangle mesh class that stores shared vertices and triangle 
 // connectivity data.
@@ -47,7 +48,8 @@ public:
 	// returns triangle index at index i or -1 when initialized
 	int getTriangleIndex(int i) const;
 
-	// drawing functionality
+	// drawing functionality using SW Framebuffer
+
 	// draws the triangle mesh vertices as dots
 	void drawVertexDots(SWFrameBuffer &fb, const PPC &ppc, float dotSize);
 	// draws triangle mesh in wireframe mode
@@ -108,6 +110,9 @@ public:
 		const PPC &ppc,
 		const Texture *const texture = nullptr,
 		bool isColorsOn = false);
+
+	// drawing functionality using HW Framebuffer
+	void hardwareDraw(HWFrameBuffer &fb, const PPC &ppc);
 
 	// rotate about axis
 	void rotateAboutAxis(const V3 &aO, const V3 &adir, float theta);
