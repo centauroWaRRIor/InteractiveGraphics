@@ -34,6 +34,9 @@ TMesh::TMesh(const char * fname)
 TMesh::~TMesh()
 {
 	cleanUp();
+	glDeleteVertexArrays(1, &vao);
+	glDeleteBuffers(1, &vertexBuffer);
+	glDeleteBuffers(1, &indexBuffer);
 }
 
 void TMesh::cleanUp(void)
@@ -276,6 +279,9 @@ void TMesh::loadBin(const char * fname)
 
 	// recompute AABB
 	aabb = new AABB(computeAABB());
+
+	// add support for HW rendering 
+	createGL_VAO();
 }
 
 
@@ -1275,8 +1281,10 @@ void TMesh::drawRefractive(
 	}
 }
 
-void TMesh::hardwareDraw(HWFrameBuffer & fb, const PPC & ppc)
+//void TMesh::hardwareDraw(HWFrameBuffer & fb, const PPC & ppc)
+void TMesh::hardwareDraw(void) const
 {
+	// Professor's way (does not use vertex buffer objects)
 	glEnable(GL_DEPTH_TEST);
 
 	glEnableClientState(GL_VERTEX_ARRAY);
@@ -1288,65 +1296,46 @@ void TMesh::hardwareDraw(HWFrameBuffer & fb, const PPC & ppc)
 
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_COLOR_ARRAY);
+
+	/* My way using VBOs (not working) 
+	glBindVertexArray(vao);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer); //do we not need this? 
+	
+	//To render, we can either use glDrawElements or glDrawRangeElements
+	//The is the number of indices. 3 indices needed to make a single triangle
+	glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, NULL);   //The starting point of the IBO
+
+	/// consider changing the indices from unsigned int to unsigned shorts*/
 }
 
 void TMesh::createGL_VAO(void)
 {
-	//glewInit();
+/*	glewInit();
 	glGenBuffers(1, &vertexBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-	glBufferData(GL_ARRAY_BUFFER, vertex_data_chunk->data_size, data + vertex_data_chunk->data_offset, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertsN * sizeof(float), (float *)verts, GL_STATIC_DRAW);
 
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
-	/*
-	for (i = 0; i < vertex_attrib_chunk->attrib_count; i++)
-	{
-		SB6M_VERTEX_ATTRIB_DECL &attrib_decl = vertex_attrib_chunk->attrib_data[i];
-		glVertexAttribPointer(i,
-			attrib_decl.size,
-			attrib_decl.type,
-			attrib_decl.flags & SB6M_VERTEX_ATTRIB_FLAG_NORMALIZED ? GL_TRUE : GL_FALSE,
-			attrib_decl.stride,
-			(GLvoid *)(uintptr_t)attrib_decl.data_offset);
-		glEnableVertexAttribArray(i);
-	}
+	
+	//for (i = 0; i < vertex_attrib_chunk->attrib_count; i++)
+	//{
+		//SB6M_VERTEX_ATTRIB_DECL &attrib_decl = vertex_attrib_chunk->attrib_data[i];
+		//
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	glEnableVertexAttribArray(0);
+	//}
 
-	if (index_data_chunk != NULL)
-	{
-		glGenBuffers(1, &index_buffer);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-			index_data_chunk->index_count * (index_data_chunk->index_type == GL_UNSIGNED_SHORT ? sizeof(GLushort) : sizeof(GLubyte)),
-			data + index_data_chunk->index_data_offset, GL_STATIC_DRAW);
-		num_indices = index_data_chunk->index_count;
-		index_type = index_data_chunk->index_type;
-	}
-	else
-	{
-		num_indices = vertex_data_chunk->total_vertices;
-	}
-
-	delete[] data;
-
-	fclose(infile);
+//	if (index_data_chunk != NULL)
+	//{
+	glGenBuffers(1, &indexBuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3 * trisN * sizeof(unsigned int), tris, GL_STATIC_DRAW);
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	
-}
-
-void object::free()
-{
-	glDeleteVertexArrays(1, &vao);
-	glDeleteBuffers(1, &vertex_buffer);
-	glDeleteBuffers(1, &index_buffer);
-
-	vao = 0;
-	vertex_buffer = 0;
-	index_buffer = 0;
-	num_indices = 0;*/
-	
+	*/
 }
 
 void TMesh::rotateAboutAxis(const V3 &aO, const V3 &adir, float theta)

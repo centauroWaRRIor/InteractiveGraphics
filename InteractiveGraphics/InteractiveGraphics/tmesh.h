@@ -117,7 +117,8 @@ public:
 		bool isColorsOn = false);
 
 	// hardware accelerated drawing support
-	void hardwareDraw(HWFrameBuffer &fb, const PPC &ppc);
+	//void hardwareDraw(HWFrameBuffer &fb, const PPC &ppc) const;
+	void hardwareDraw(void) const;
 	void createGL_VAO(void);
 	GLuint getGL_VAO() const { return vao; }
 

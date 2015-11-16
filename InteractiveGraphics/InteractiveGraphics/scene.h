@@ -4,6 +4,7 @@
 using std::string;
 #include "gui.h"
 #include "sw_framebuffer.h"
+#include "hw_framebuffer.h"
 #include "tmesh.h"
 
 // Only those function that actually require a TMesh slot are 
@@ -37,6 +38,7 @@ class Scene {
 private:
 	SWFrameBuffer *fb; // SW framebuffer
 	SWFrameBuffer *fbAux; // currently used for rendering a FB as a 3D point cloud
+	HWFrameBuffer *hWFb; // HW framebuffer
 	GUI * gui; // graphical user interface
 	PPC *ppc; // camera used to render the scene from views chosen by user
 	Light *light; // light used to render models in lit mode

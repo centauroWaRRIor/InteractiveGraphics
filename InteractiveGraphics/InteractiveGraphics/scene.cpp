@@ -23,6 +23,7 @@ const int Scene::K_H = 720;
 Scene::Scene() :
 	fb(nullptr),
 	fbAux(nullptr),
+	hWFb(nullptr),
 	gui(nullptr),
 	ppc(nullptr),
 	light(nullptr),
@@ -37,6 +38,10 @@ Scene::Scene() :
 	// create user interface
 	gui = new GUI();
 	gui->show();
+
+	// create HW framebuffer (behind SW so its not initially visible)
+	hWFb = new HWFrameBuffer(u0, v0, K_W, K_H);
+	hWFb->label("HW Framebuffer");
 
 	// create SW framebuffer
 	fb = new SWFrameBuffer(u0, v0, K_W, K_H);
@@ -61,7 +66,9 @@ Scene::Scene() :
 		tms[i] = nullptr;
 		texObjects[i] = nullptr;
 	}
+
 	fb->show();
+	hWFb->show();
 
 	// position UI window
 	gui->uiw->position(fb->getWidth() + u0 + 2 * 20, v0);
@@ -86,6 +93,7 @@ Scene::Scene() :
 Scene::~Scene()
 {
 	delete fb;
+	delete hWFb;
 	if (fbAux)
 		delete fbAux;
 	delete gui;
@@ -227,7 +235,40 @@ void Scene::cleanForNewScene(void)
 // function linked to the DBG GUI button for testing new features
 void Scene::dbgDraw() {
 
+	if (!isDGBInit) {
 
+		cleanForNewScene();
+		tms[0] = new TMesh();
+		tms[0]->loadBin("geometry/teapot1K.bin");
+		hWFb->registerTMesh(tms[0]);
+
+		V3 center = tms[0]->getCenter();
+		ppc->moveForward(-200.0f);
+		ppc->positionAndOrient(ppc->getEyePoint(), center, V3(0.0f, 1.0f, 0.0f));
+		hWFb->registerPPC(ppc);
+
+		// set view intrinsics
+		//float nearPlaneValue = 10.0f;
+		//float farPlaneValue = 1000.0f;
+		//ppc->setGLIntrinsics(nearPlaneValue, farPlaneValue);
+		// set view extrinsics
+		//ppc->setGLExtrinsics();
+
+		isDGBInit = true;
+		
+	}
+	// clear screen
+	fb->set(0xFFFFFFFF);
+	// clear zBuffer
+	if (currentDrawMode == DrawModes::MODELSPACELERP)
+		fb->clearZB(FLT_MAX);
+	else
+		fb->clearZB(0.0f);
+	drawTMesh(*tms[0], *fb, *ppc, true);
+	
+	fb->redraw();
+	hWFb->redraw();
+	return;
 }
 
 void Scene::testRot() {

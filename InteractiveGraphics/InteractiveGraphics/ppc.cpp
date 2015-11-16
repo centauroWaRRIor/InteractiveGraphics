@@ -9,6 +9,8 @@ using std::ofstream;
 using std::ifstream;
 #include <cstdlib>
 using std::exit;
+#include <GL\glut.h> // needed for GLU.h inclusion
+#include <GL\GLU.h> // needed for glLookAt definition
 #include "ppc.h"
 
 void PPC::buildProjM(void)
@@ -345,10 +347,8 @@ void PPC::setGLIntrinsics(float nearValue, float farValue) const
 	glMatrixMode(GL_MODELVIEW);
 }
 
-// I couldn't link to gl utility library and I need gluLookAt 
-// for PPC::setGLExtrinsics so I copy pasted to this file scope only
-// the mesa3d implementation (with slight modifications to make it work 
-// in my framework)
+#if 0
+//This is how glLookAt could be implemented (tested and works fine)
 static void gluLookAt(
 	float eyex, float eyey, float eyez,
 	float centerx, float centery, float centerz,
@@ -395,7 +395,7 @@ static void gluLookAt(
 	m[0][2] = -forward[0];
 	m[1][2] = -forward[1];
 	m[2][2] = -forward[2];
-	m[3][3] = 0.0f;
+	m[3][2] = 0.0f;
 
 	m[0][3] = 0.0f;
 	m[1][3] = 0.0f;
@@ -405,6 +405,7 @@ static void gluLookAt(
 	glMultMatrixf(&m[0][0]);
 	glTranslatef(-eyex, -eyey, -eyez);
 }
+#endif
 
 void PPC::setGLExtrinsics(void) const
 {
