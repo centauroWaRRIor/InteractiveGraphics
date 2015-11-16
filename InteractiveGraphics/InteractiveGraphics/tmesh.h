@@ -121,7 +121,7 @@ public:
 	//void hardwareDraw(HWFrameBuffer &fb, const PPC &ppc) const;
 	void hardwareDraw(void) const;
 	void createGL_VAO(void);
-	GLuint getGL_VAO() const { return vao; }
+	bool getisHwSupportEnabled(void) const;
 
 	// rotate about axis
 	void rotateAboutAxis(const V3 &aO, const V3 &adir, float theta);

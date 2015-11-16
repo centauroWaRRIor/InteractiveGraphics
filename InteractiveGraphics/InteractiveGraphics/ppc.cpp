@@ -348,7 +348,7 @@ void PPC::setGLIntrinsics(float nearValue, float farValue) const
 }
 
 #if 0
-//This is how glLookAt could be implemented (tested and works fine)
+//This is how glLookAt could be implemented (tested it and worked fine)
 static void gluLookAt(
 	float eyex, float eyey, float eyez,
 	float centerx, float centery, float centerz,

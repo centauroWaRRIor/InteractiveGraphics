@@ -247,15 +247,7 @@ void Scene::dbgDraw() {
 		ppc->positionAndOrient(ppc->getEyePoint(), center, V3(0.0f, 1.0f, 0.0f));
 		hWFb->registerPPC(ppc);
 
-		// set view intrinsics
-		//float nearPlaneValue = 10.0f;
-		//float farPlaneValue = 1000.0f;
-		//ppc->setGLIntrinsics(nearPlaneValue, farPlaneValue);
-		// set view extrinsics
-		//ppc->setGLExtrinsics();
-
-		isDGBInit = true;
-		
+		isDGBInit = true;		
 	}
 	// clear screen
 	fb->set(0xFFFFFFFF);

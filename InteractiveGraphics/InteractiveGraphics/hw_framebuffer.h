@@ -10,6 +10,7 @@ class HWFrameBuffer :
 {
 	vector<TMesh *> tMeshArray;
 	PPC *camera;
+	bool isGlewInit; // opengl extension wrangler utility
 public:
 	// function that is always called back by system and never called directly by programmer
 	// programmer triggers framebuffer update by calling FrameBuffer::redraw(), which makes

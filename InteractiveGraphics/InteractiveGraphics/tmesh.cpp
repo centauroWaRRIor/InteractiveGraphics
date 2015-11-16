@@ -1285,30 +1285,14 @@ void TMesh::drawRefractive(
 //void TMesh::hardwareDraw(HWFrameBuffer & fb, const PPC & ppc)
 void TMesh::hardwareDraw(void) const
 {
-	// Professor's way (does not use vertex buffer objects)
-	/*glEnable(GL_DEPTH_TEST);
-
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
-	glVertexPointer(3, GL_FLOAT, 0, (float*)verts);
-	glColorPointer(3, GL_FLOAT, 0, (float*)cols);
-
-	glDrawElements(GL_TRIANGLES, 3 * trisN, GL_UNSIGNED_INT, tris);
-
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);*/
-
-	// My way using VBOs
+	// Draw using new OpenGL API (VBOs as opposed to deprecated functionality)
 	glBindVertexArray(vao);
 
-	//glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer); //do we not need this? 
-	
-	//To render, we can either use glDrawElements or glDrawRangeElements
-	//The is the number of indices. 3 indices needed to make a single triangle
-	glDrawElements(GL_TRIANGLES, 3 * trisN, GL_UNSIGNED_INT, NULL);   //The starting point of the IBO
+	//glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer); // not needed ?
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer); // not needed ?
 
-	/// consider changing the indices from unsigned int to unsigned shorts*/
+	//The is the number of indices. 3 indices needed to make a single triangle
+	glDrawElements(GL_TRIANGLES, 3 * trisN, GL_UNSIGNED_INT, NULL);
 }
 
 void TMesh::createGL_VAO(void)
@@ -1320,8 +1304,6 @@ void TMesh::createGL_VAO(void)
 	// designed to hold information about vertices. VBOs could describes the coordinates of our vertices
 	// and describes the color associated with each vertex. VBOs can also store information such as normals, 
 	// texcoords, indices, etc.
-
-	glewInit(); // only need to be done once I believe
 
 	// VAO
 	glGenVertexArrays(1, &vao);
@@ -1345,9 +1327,15 @@ void TMesh::createGL_VAO(void)
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * 3 * trisN, tris, GL_STATIC_DRAW);
 
 	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	isHwSupportEnabled = true;
+}
+
+bool TMesh::getisHwSupportEnabled(void) const
+{
+	return isHwSupportEnabled;
 }
 
 void TMesh::rotateAboutAxis(const V3 &aO, const V3 &adir, float theta)
