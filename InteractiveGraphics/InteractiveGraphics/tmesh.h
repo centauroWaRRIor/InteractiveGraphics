@@ -24,7 +24,8 @@ private:
 	AABB *aabb; // keeps track of current axis aligned box
 
 	// optional hardware rendering support
-	GLuint vertexBuffer;
+	bool isHwSupportEnabled;
+	GLuint vertexBuffer[4] = { 0, 0, 0, 0 };
 	GLuint indexBuffer;
 	GLuint vao; // vertex array object
 

@@ -10,7 +10,7 @@ void HWFrameBuffer::draw()
 	}
 	*/
 	// clear framebuffer
-	glClearColor(0.0f, 0.0f, 0.0, 0.0f);
+	glClearColor(0.0f, 0.0f, 1.0, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	const float nearPlaneValue = 10.0f;
@@ -26,6 +26,7 @@ void HWFrameBuffer::draw()
 	vector<TMesh *>::const_iterator it;
 	for (it = tMeshArray.begin(); it != tMeshArray.end(); ++it) {
 		TMesh *tMeshPtr = *it;
+		tMeshPtr->createGL_VAO();
 		tMeshPtr->hardwareDraw();
 	}
 }

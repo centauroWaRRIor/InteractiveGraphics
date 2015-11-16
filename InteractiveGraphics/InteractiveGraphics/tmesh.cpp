@@ -19,9 +19,9 @@ TMesh::TMesh():
 	normals(nullptr),
 	tris(nullptr),
 	aabb(nullptr),
-	vertexBuffer(0),
 	indexBuffer(0),
-	vao(0)
+	vao(0),
+	isHwSupportEnabled(false)
 {
 
 }
@@ -34,9 +34,13 @@ TMesh::TMesh(const char * fname)
 TMesh::~TMesh()
 {
 	cleanUp();
-	glDeleteVertexArrays(1, &vao);
-	glDeleteBuffers(1, &vertexBuffer);
-	glDeleteBuffers(1, &indexBuffer);
+	if (isHwSupportEnabled) {
+		glDeleteVertexArrays(1, &vao);
+		glDeleteBuffers(1, &vertexBuffer[0]);
+		glDeleteBuffers(1, &vertexBuffer[1]);
+		// replace with glDeleteBuffers(4, vertexBuffer) when using the 4 slots
+		glDeleteBuffers(1, &indexBuffer);
+	}
 }
 
 void TMesh::cleanUp(void)
@@ -279,9 +283,6 @@ void TMesh::loadBin(const char * fname)
 
 	// recompute AABB
 	aabb = new AABB(computeAABB());
-
-	// add support for HW rendering 
-	createGL_VAO();
 }
 
 
@@ -1285,7 +1286,7 @@ void TMesh::drawRefractive(
 void TMesh::hardwareDraw(void) const
 {
 	// Professor's way (does not use vertex buffer objects)
-	glEnable(GL_DEPTH_TEST);
+	/*glEnable(GL_DEPTH_TEST);
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
@@ -1295,47 +1296,58 @@ void TMesh::hardwareDraw(void) const
 	glDrawElements(GL_TRIANGLES, 3 * trisN, GL_UNSIGNED_INT, tris);
 
 	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);*/
 
-	/* My way using VBOs (not working) 
+	// My way using VBOs
 	glBindVertexArray(vao);
 
+	//glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer); //do we not need this? 
 	
 	//To render, we can either use glDrawElements or glDrawRangeElements
 	//The is the number of indices. 3 indices needed to make a single triangle
-	glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, NULL);   //The starting point of the IBO
+	glDrawElements(GL_TRIANGLES, 3 * trisN, GL_UNSIGNED_INT, NULL);   //The starting point of the IBO
 
 	/// consider changing the indices from unsigned int to unsigned shorts*/
 }
 
 void TMesh::createGL_VAO(void)
 {
-/*	glewInit();
-	glGenBuffers(1, &vertexBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-	glBufferData(GL_ARRAY_BUFFER, vertsN * sizeof(float), (float *)verts, GL_STATIC_DRAW);
+	// A Vertex Array Object(VAO) is an object which contains one or more Vertex Buffer Objects 
+	// and is designed to store the information for a complete rendered object.
+	
+	// A Vertex Buffer Object(VBO) is a memory buffer in the high speed memory of your video card
+	// designed to hold information about vertices. VBOs could describes the coordinates of our vertices
+	// and describes the color associated with each vertex. VBOs can also store information such as normals, 
+	// texcoords, indices, etc.
 
+	glewInit(); // only need to be done once I believe
+
+	// VAO
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
-	
-	//for (i = 0; i < vertex_attrib_chunk->attrib_count; i++)
-	//{
-		//SB6M_VERTEX_ATTRIB_DECL &attrib_decl = vertex_attrib_chunk->attrib_data[i];
-		//
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-	glEnableVertexAttribArray(0);
-	//}
 
-//	if (index_data_chunk != NULL)
-	//{
+	// VBOs
+	glGenBuffers(4, vertexBuffer);
+	// vertex data
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer[0]);
+	glBufferData(GL_ARRAY_BUFFER, (sizeof(float) * 3) * vertsN, (float *)verts, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);// todo: comment on meaning of each parameter here
+	glEnableVertexAttribArray(0);
+	// color data
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer[1]);
+	glBufferData(GL_ARRAY_BUFFER, (sizeof(float) * 3) * vertsN, (float *)cols, GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);// todo: comment on meaning of each parameter here
+	glEnableVertexAttribArray(1);
+
 	glGenBuffers(1, &indexBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3 * trisN * sizeof(unsigned int), tris, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * 3 * trisN, tris, GL_STATIC_DRAW);
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	*/
+
+	isHwSupportEnabled = true;
 }
 
 void TMesh::rotateAboutAxis(const V3 &aO, const V3 &adir, float theta)
