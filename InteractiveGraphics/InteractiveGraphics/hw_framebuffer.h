@@ -13,6 +13,7 @@ class HWFrameBuffer :
 	bool isGlewInit; // opengl extension wrangler utility
 
 	void loadShaders(void);
+	unsigned int fixedPipelineProgram;
 
 public:
 	// function that is always called back by system and never called directly by programmer

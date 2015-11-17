@@ -6,11 +6,25 @@ using std::endl;
 #include "hw_framebuffer.h"
 
 // static shader utilities to compile and link shader programs
-static GLuint load(const char * filename, GLenum shader_type = GL_FRAGMENT_SHADER, bool check_errors = true);
+static GLuint load(const char * filename, GLenum shader_type, bool check_errors = true);
 static GLuint link_from_shaders(const GLuint * shaders, int shader_count, bool delete_shaders, bool check_errors = true);
 
 void HWFrameBuffer::loadShaders(void)
 {
+	GLuint shaders[2];
+
+	shaders[0] = load("glsl/fixedPipeline.vs.glsl", GL_VERTEX_SHADER);
+	shaders[1] = load("glsl/fixedPipeline.fs.glsl", GL_FRAGMENT_SHADER);
+
+	if (shaders[0] != 0 && shaders[1] != 0) {
+		fixedPipelineProgram = link_from_shaders(shaders, 4, true);
+	}
+	else {
+		cout << "error loading shaders..." << endl;
+		// ok to commit suicide but got to be extra careful (communicate everybody using this object)
+		//cout << "commit suicide now X( " << endl;
+		//delete this;
+	}
 }
 
 void HWFrameBuffer::draw()
@@ -24,16 +38,10 @@ void HWFrameBuffer::draw()
 			cout << "Error: " << glewGetErrorString(err) << endl;
 		}
 		cout << "Status: Using GLEW " << glewGetString(GLEW_VERSION) << endl;
+		loadShaders();
 		isGlewInit = true;
 	}
 
-	/*	if (isgpu && cgi == NULL) {
-	cgi = new CGInterface();
-	cgi->PerSessionInit();
-	soi = new ShaderOneInterface();
-	soi->PerSessionInit(cgi);
-	}
-	*/
 	// clear framebuffer
 	glClearColor(0.0f, 0.0f, 1.0, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -49,6 +57,8 @@ void HWFrameBuffer::draw()
 
 	glEnable(GL_DEPTH_TEST);
 
+	glUseProgram((GLuint) fixedPipelineProgram);
+
 	// render all triangle meshes with hardware
 	vector<TMesh *>::const_iterator it;
 	for (it = tMeshArray.begin(); it != tMeshArray.end(); ++it) {
@@ -61,14 +71,15 @@ void HWFrameBuffer::draw()
 
 HWFrameBuffer::HWFrameBuffer(int u0, int v0, unsigned int _w, unsigned int _h):
 	FrameBuffer(u0, v0, _w, _h),
-	isGlewInit(false)
+	isGlewInit(false),
+	fixedPipelineProgram(0)
 {
-
 }
 
 
 HWFrameBuffer::~HWFrameBuffer()
 {
+	glDeleteProgram((GLuint) fixedPipelineProgram);
 }
 
 void HWFrameBuffer::registerTMesh(TMesh * tMeshPtr)
@@ -134,9 +145,12 @@ static GLuint load(const char * filename, GLenum shader_type, bool check_errors)
 					{
 						char buffer[4096];
 						glGetShaderInfoLog(result, 4096, NULL, buffer);
-						cout << "filename: " << endl << buffer << endl;
+						cout << filename << ": " << endl << buffer << endl;
 						glDeleteShader(result);
+						result = 0;
 					}
+					else
+						cout << filename << ": Compiled successfully!" << endl;
 				}
 			}
 		}
@@ -168,8 +182,10 @@ static GLuint link_from_shaders(const GLuint * shaders, int shader_count, bool d
 			glGetProgramInfoLog(program, 4096, NULL, buffer);
 			cout << buffer << endl;
 			glDeleteProgram(program);
-			return 0;
+			program = 0;
 		}
+		else
+			cout << "GLSL Program linked  successfully" << endl;
 	}
 
 	if (delete_shaders)
