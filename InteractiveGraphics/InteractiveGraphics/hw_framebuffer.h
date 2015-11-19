@@ -1,24 +1,39 @@
 #pragma once
-#include "framebuffer.h"
-#include "tmesh.h"
-#include "ppc.h"
+#include <GL/glew.h> // opengl
 #include <vector>
 using std::vector;
+#include <utility>
+using std::pair;
+using std::make_pair;
+#include "framebuffer.h"
+#include "tmesh.h"
+#include "texture.h"
+#include "ppc.h"
 
 class HWFrameBuffer :
 	public FrameBuffer
 {
-	// scene's tmeshes and camera need to be registered with this class for rendering
+	// scene's tmeshes, camera and textures need to be registered with this class for rendering
 	// because all the opengl drawing needs to be done from the draw method
 	vector<TMesh *> tMeshArray;
+	vector<pair<Texture *, GLuint>>  texturesInfo;
 	PPC *camera;
+	// TODO: Add Hash map so user specfifies which textures go with which Tmeshes (use pointer 
+	// as key and use texture name as map value)
 
+	// texture handles
+	GLuint  *glTextureHandles;
+
+	// used to initialize opengl state once
 	bool isGlewInit; // opengl extension wrangler utility
 
 	// programmable pipeline support
 	bool isProgrammable; // true for shaders support, false for fixed pipeline functionality
 	void loadShaders(void);
-	unsigned int fixedPipelineProgram;
+	void loadTextures(void);
+
+	// TODO: Eventually have all possible shader programs listed here
+	GLuint fixedPipelineProgram;
 
 public:
 	// function that is always called back by system and never called directly by programmer
@@ -39,5 +54,6 @@ public:
 	// TODO comment on this
 	void registerTMesh(TMesh *TMeshPtr);
 	void registerPPC(PPC *PpcPtr);
+	void registerTexture(Texture *texture);
 };
 

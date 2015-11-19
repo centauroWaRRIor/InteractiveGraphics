@@ -1,4 +1,3 @@
-#include <GL/glew.h>
 #include <iostream>
 using std::cout;
 using std::endl;
@@ -24,6 +23,59 @@ void HWFrameBuffer::loadShaders(void)
 		// ok to commit suicide but got to be extra careful (communicate everybody using this object)
 		//cout << "commit suicide now X( " << endl;
 		//delete this;
+	}
+}
+
+void HWFrameBuffer::loadTextures(void)
+{
+	vector<pair<Texture *, GLuint>>::iterator it;
+	for (it = texturesInfo.begin; it != texturesInfo.end(); ++it) {
+
+		GLuint *glTexHandle = &(it->second);
+		GLsizei width = it->first->getTexWidth();
+		GLsizei height = it->first->getTexHeight();
+
+		// Generate a name for the texture
+		glGenTextures(1, glTexHandle);
+
+		// Now bind it to the context using the GL_TEXTURE_2D binding point
+		glBindTexture(GL_TEXTURE_2D, *glTexHandle);
+
+		// Specify the amount of storage we want to use for the texture
+		glTexStorage2D(
+			GL_TEXTURE_2D,  // 2D texture
+			8,				// 8 mipmap levels
+			GL_RGBA8,		// 8-bit RGBA data
+			width, height);  
+
+		// Define some data to upload into the texture
+		vector<unsigned char> &dataVector = it->first->getTexelsRef();
+		unsigned char * data = it->first->getTexelsRef();
+
+		// generate_texture() is a function that fills memory with image data
+		generate_texture(data, 256, 256);
+
+		// Assume the texture is already bound to the GL_TEXTURE_2D target
+		glTexSubImage2D(GL_TEXTURE_2D,  // 2D texture
+			0,              // Level 0
+			0, 0,           // Offset 0, 0
+			256, 256,       // 256 x 256 texels, replace entire image
+			GL_RGBA,        // Four channel data
+			GL_FLOAT,       // Floating point data
+			data);          // Pointer to data
+		//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 16, 16, GL_RGBA, GL_UNSIGNED_BYTE, tex_data);
+
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		// when not using mimpmaps
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+		// when using mipmaps
+		//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+		// GL now has our data
 	}
 }
 
@@ -96,12 +148,26 @@ HWFrameBuffer::~HWFrameBuffer()
 
 void HWFrameBuffer::registerTMesh(TMesh * tMeshPtr)
 {
-	tMeshArray.push_back(tMeshPtr);
+	// only allowed to be done once at init
+	if (!isGlewInit) {
+		tMeshArray.push_back(tMeshPtr);
+	}
 }
 
 void HWFrameBuffer::registerPPC(PPC * ppcPtr)
 {
-	camera = ppcPtr;
+	// only allowed to be done once at init
+	if (!isGlewInit) {
+		camera = ppcPtr;
+	}
+}
+
+void HWFrameBuffer::registerTexture(Texture * texture)
+{
+	// only allowed to be done once at init
+	if (!isGlewInit) {
+		texturesInfo.push_back(make_pair(texture, 0));
+	}
 }
 
 void HWFrameBuffer::keyboardHandle(void)

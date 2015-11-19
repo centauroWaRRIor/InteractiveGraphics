@@ -23,7 +23,7 @@ private:
 	int trisN; // number of triangle (not number of indices in array)
 	AABB *aabb; // keeps track of current axis aligned box
 
-	// optional hardware rendering support
+	// optional hardware rendering support with VAO (VBOs)
 	bool isHwSupportEnabled;
 	GLuint vertexBuffer[4] = { 0, 0, 0, 0 };
 	GLuint indexBuffer;
