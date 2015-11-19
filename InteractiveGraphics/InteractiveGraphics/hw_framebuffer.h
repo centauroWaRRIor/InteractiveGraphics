@@ -1,5 +1,4 @@
 #pragma once
-#include <GL/glew.h> // opengl
 #include <vector>
 using std::vector;
 #include <utility>

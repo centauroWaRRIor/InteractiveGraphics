@@ -2,6 +2,7 @@
 using std::cout;
 using std::endl;
 #include <cstdio>
+#include <GL/glew.h> // opengl
 #include "hw_framebuffer.h"
 
 // static shader utilities to compile and link shader programs
@@ -29,7 +30,7 @@ void HWFrameBuffer::loadShaders(void)
 void HWFrameBuffer::loadTextures(void)
 {
 	vector<pair<Texture *, GLuint>>::iterator it;
-	for (it = texturesInfo.begin; it != texturesInfo.end(); ++it) {
+	for (it = texturesInfo.begin(); it != texturesInfo.end(); ++it) {
 
 		GLuint *glTexHandle = &(it->second);
 		GLsizei width = it->first->getTexWidth();
@@ -50,20 +51,16 @@ void HWFrameBuffer::loadTextures(void)
 
 		// Define some data to upload into the texture
 		vector<unsigned char> &dataVector = it->first->getTexelsRef();
-		unsigned char * data = it->first->getTexelsRef();
-
-		// generate_texture() is a function that fills memory with image data
-		generate_texture(data, 256, 256);
+		unsigned char * data = &dataVector[0];
 
 		// Assume the texture is already bound to the GL_TEXTURE_2D target
 		glTexSubImage2D(GL_TEXTURE_2D,  // 2D texture
-			0,              // Level 0
-			0, 0,           // Offset 0, 0
-			256, 256,       // 256 x 256 texels, replace entire image
-			GL_RGBA,        // Four channel data
-			GL_FLOAT,       // Floating point data
-			data);          // Pointer to data
-		//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 16, 16, GL_RGBA, GL_UNSIGNED_BYTE, tex_data);
+			0,				            // Level 0
+			0, 0,						// Offset 0, 0
+			width, height,				// 256 x 256 texels, replace entire image
+			GL_RGBA,					// Four channel data
+			GL_UNSIGNED_BYTE,			// Floating point data
+			data);						// Pointer to data
 
 		glGenerateMipmap(GL_TEXTURE_2D);
 
@@ -72,8 +69,8 @@ void HWFrameBuffer::loadTextures(void)
 		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 		// when using mipmaps
-		//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
 		// GL now has our data
 	}

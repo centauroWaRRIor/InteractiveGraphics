@@ -25,7 +25,7 @@ public:
 	unsigned int getTexWidth(void) const { return texWidth; }
 	unsigned int getTexHeight(void) const { return texHeight; }
 	vector<unsigned char> getTexels(void) const { return texels; }
-	vector<unsigned char>* getTexelsRef(void) { return &texels; }
+	vector<unsigned char>& getTexelsRef(void) { return texels; }
 
 	// supports alpha texture
 	unsigned int sampleTexNearClamp(float s, float t) const;
