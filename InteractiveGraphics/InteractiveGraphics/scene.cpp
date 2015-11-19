@@ -40,7 +40,7 @@ Scene::Scene() :
 	gui->show();
 
 	// create HW framebuffer (behind SW so its not initially visible)
-	hWFb = new HWFrameBuffer(u0, v0, K_W, K_H);
+	hWFb = new HWFrameBuffer(u0, v0, K_W, K_H, false);
 	hWFb->label("HW Framebuffer");
 
 	// create SW framebuffer

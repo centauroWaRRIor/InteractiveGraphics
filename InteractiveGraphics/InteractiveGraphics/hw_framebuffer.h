@@ -8,10 +8,15 @@ using std::vector;
 class HWFrameBuffer :
 	public FrameBuffer
 {
+	// scene's tmeshes and camera need to be registered with this class for rendering
+	// because all the opengl drawing needs to be done from the draw method
 	vector<TMesh *> tMeshArray;
 	PPC *camera;
+
 	bool isGlewInit; // opengl extension wrangler utility
 
+	// programmable pipeline support
+	bool isProgrammable; // true for shaders support, false for fixed pipeline functionality
 	void loadShaders(void);
 	unsigned int fixedPipelineProgram;
 
@@ -21,7 +26,10 @@ public:
 	// system call draw()
 	virtual void draw() override;
 
-	HWFrameBuffer(int u0, int v0, unsigned int _w, unsigned int _h); // constructor, top left coords and resolution);
+	HWFrameBuffer(
+		int u0, int v0, // top left coords
+		unsigned int _w, unsigned int _h, // resolution
+		bool isProgrammable); // true for shaders support, false for fixed pipeline functionality
 	virtual ~HWFrameBuffer();
 
 	virtual void keyboardHandle(void) override;

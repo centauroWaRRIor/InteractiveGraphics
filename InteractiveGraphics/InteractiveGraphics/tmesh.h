@@ -118,10 +118,10 @@ public:
 		bool isColorsOn = false);
 
 	// hardware accelerated drawing support
-	//void hardwareDraw(HWFrameBuffer &fb, const PPC &ppc) const;
-	void hardwareDraw(void) const;
-	void createGL_VAO(void);
-	bool getisHwSupportEnabled(void) const;
+	void hwGLFixedPiepelineDraw(void) const;
+	void hwGLVertexArrayObjectDraw(void) const;
+	void createGLVertexArrayObject(void);
+	bool getIsGLVertexArrayObjectCreated(void) const;
 
 	// rotate about axis
 	void rotateAboutAxis(const V3 &aO, const V3 &adir, float theta);

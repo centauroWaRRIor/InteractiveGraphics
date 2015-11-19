@@ -57,20 +57,32 @@ void HWFrameBuffer::draw()
 
 	glEnable(GL_DEPTH_TEST);
 
-	glUseProgram((GLuint) fixedPipelineProgram);
+	if(isProgrammable)
+		glUseProgram((GLuint) fixedPipelineProgram);
+	else
+		glUseProgram(0);
 
 	// render all triangle meshes with hardware
 	vector<TMesh *>::const_iterator it;
 	for (it = tMeshArray.begin(); it != tMeshArray.end(); ++it) {
 		TMesh *tMeshPtr = *it;
-		if(!tMeshPtr->getisHwSupportEnabled())
-			tMeshPtr->createGL_VAO(); // enables hw support for this TMesh 
-		tMeshPtr->hardwareDraw();
+		if (isProgrammable) {
+			if (!tMeshPtr->getIsGLVertexArrayObjectCreated())
+				tMeshPtr->createGLVertexArrayObject(); // enables hw support for this TMesh 
+			tMeshPtr->hwGLVertexArrayObjectDraw();
+		}
+		else {
+			tMeshPtr->hwGLFixedPiepelineDraw();
+		}
 	}
 }
 
-HWFrameBuffer::HWFrameBuffer(int u0, int v0, unsigned int _w, unsigned int _h):
+HWFrameBuffer::HWFrameBuffer(
+	int u0, int v0, 
+	unsigned int _w, unsigned int _h,
+	bool isP):
 	FrameBuffer(u0, v0, _w, _h),
+	isProgrammable(isP),
 	isGlewInit(false),
 	fixedPipelineProgram(0)
 {

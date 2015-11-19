@@ -1282,8 +1282,21 @@ void TMesh::drawRefractive(
 	}
 }
 
-//void TMesh::hardwareDraw(HWFrameBuffer & fb, const PPC & ppc)
-void TMesh::hardwareDraw(void) const
+void TMesh::hwGLFixedPiepelineDraw(void) const
+{
+	// Draw using old OpenGL fixed pipeline functionlity API (this is deprecated functionality)
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+	glVertexPointer(3, GL_FLOAT, 0, (float*)verts);
+	glColorPointer(3, GL_FLOAT, 0, (float*)cols);
+
+	glDrawElements(GL_TRIANGLES, 3 * trisN, GL_UNSIGNED_INT, tris);
+
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
+}
+
+void TMesh::hwGLVertexArrayObjectDraw(void) const
 {
 	// Draw using new OpenGL API (VBOs as opposed to deprecated functionality)
 	glBindVertexArray(vao);
@@ -1295,7 +1308,7 @@ void TMesh::hardwareDraw(void) const
 	glDrawElements(GL_TRIANGLES, 3 * trisN, GL_UNSIGNED_INT, NULL);
 }
 
-void TMesh::createGL_VAO(void)
+void TMesh::createGLVertexArrayObject(void)
 {
 	// A Vertex Array Object(VAO) is an object which contains one or more Vertex Buffer Objects 
 	// and is designed to store the information for a complete rendered object.
@@ -1333,7 +1346,7 @@ void TMesh::createGL_VAO(void)
 	isHwSupportEnabled = true;
 }
 
-bool TMesh::getisHwSupportEnabled(void) const
+bool TMesh::getIsGLVertexArrayObjectCreated(void) const
 {
 	return isHwSupportEnabled;
 }
