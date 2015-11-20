@@ -1291,17 +1291,24 @@ void TMesh::hwGLFixedPiepelineDraw(void) const
 	glColorPointer(3, GL_FLOAT, 0, (float*)cols);
 	// add texture coordinates if available
 	if (tcs != nullptr) {
+		glEnable(GL_TEXTURE_2D);
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		glClientActiveTexture(GL_TEXTURE0);
 		glTexCoordPointer(2, GL_FLOAT, 0, (float*)tcs);
+		// select texture environment parameters
+		//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE); // modulates
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE); // replaces
+		//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_ADD); // adds
 	}
-	glEnable(GL_TEXTURE_2D);
-	glClientActiveTexture(GL_TEXTURE0);
+
 	glDrawElements(GL_TRIANGLES, 3 * trisN, GL_UNSIGNED_INT, tris);
 
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_COLOR_ARRAY);
+	// disable texture coordinates if available
 	if (tcs != nullptr) {
 		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		glDisable(GL_TEXTURE_2D);
 	}
 }
 

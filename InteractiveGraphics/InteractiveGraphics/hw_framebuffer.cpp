@@ -109,6 +109,8 @@ void HWFrameBuffer::draw()
 	glEnable(GL_DEPTH_TEST);
 
 	// bind texture
+	// TODO: make it so that this is looked up in a hash table
+	// that maps tmesh to texture binding
 	glBindTexture(GL_TEXTURE_2D, texturesInfo[0].second);
 
 	// bind shader program if applicable
