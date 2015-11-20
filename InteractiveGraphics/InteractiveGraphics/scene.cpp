@@ -245,6 +245,7 @@ void Scene::dbgDraw() {
 
 		// load five different textures for demoing
 		texObjects[0] = new Texture("pngs\\White_brick_block_pxr128.png");
+		//texObjects[0] = new Texture("pngs\\Macbeth_color_checker_pxr128.png"); // test tiling
 		hWFb->registerTexture(texObjects[0]);
 
 		V3 center = tms[0]->getCenter();
