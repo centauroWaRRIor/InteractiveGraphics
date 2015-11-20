@@ -68,7 +68,6 @@ Scene::Scene() :
 	}
 
 	fb->show();
-	hWFb->show();
 
 	// position UI window
 	gui->uiw->position(fb->getWidth() + u0 + 2 * 20, v0);
@@ -239,14 +238,21 @@ void Scene::dbgDraw() {
 
 		cleanForNewScene();
 		tms[0] = new TMesh();
-		tms[0]->loadBin("geometry/teapot1K.bin");
+		//tms[0]->loadBin("geometry/teapot1K.bin");
+		tms[0]->createQuadTestTMesh(false);
+
 		hWFb->registerTMesh(tms[0]);
+
+		// load five different textures for demoing
+		texObjects[0] = new Texture("pngs\\White_brick_block_pxr128.png");
+		hWFb->registerTexture(texObjects[0]);
 
 		V3 center = tms[0]->getCenter();
 		ppc->moveForward(-200.0f);
 		ppc->positionAndOrient(ppc->getEyePoint(), center, V3(0.0f, 1.0f, 0.0f));
 		hWFb->registerPPC(ppc);
 
+		hWFb->show();
 		isDGBInit = true;		
 	}
 	// clear screen

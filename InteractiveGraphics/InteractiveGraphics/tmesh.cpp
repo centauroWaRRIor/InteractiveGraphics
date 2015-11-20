@@ -1289,11 +1289,20 @@ void TMesh::hwGLFixedPiepelineDraw(void) const
 	glEnableClientState(GL_COLOR_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, (float*)verts);
 	glColorPointer(3, GL_FLOAT, 0, (float*)cols);
-
+	// add texture coordinates if available
+	if (tcs != nullptr) {
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		glTexCoordPointer(2, GL_FLOAT, 0, (float*)tcs);
+	}
+	glEnable(GL_TEXTURE_2D);
+	glClientActiveTexture(GL_TEXTURE0);
 	glDrawElements(GL_TRIANGLES, 3 * trisN, GL_UNSIGNED_INT, tris);
 
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_COLOR_ARRAY);
+	if (tcs != nullptr) {
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	}
 }
 
 void TMesh::hwGLVertexArrayObjectDraw(void) const

@@ -57,20 +57,20 @@ void HWFrameBuffer::loadTextures(void)
 		glTexSubImage2D(GL_TEXTURE_2D,  // 2D texture
 			0,				            // Level 0
 			0, 0,						// Offset 0, 0
-			width, height,				// 256 x 256 texels, replace entire image
+			width, height,				// width x height texels, replace entire image
 			GL_RGBA,					// Four channel data
 			GL_UNSIGNED_BYTE,			// Floating point data
 			data);						// Pointer to data
 
-		glGenerateMipmap(GL_TEXTURE_2D);
+		//glGenerateMipmap(GL_TEXTURE_2D);
 
 		// when not using mimpmaps
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 		// when using mipmaps
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
 		// GL now has our data
 	}
@@ -87,7 +87,9 @@ void HWFrameBuffer::draw()
 			cout << "Error: " << glewGetErrorString(err) << endl;
 		}
 		cout << "Status: Using GLEW " << glewGetString(GLEW_VERSION) << endl;
-		loadShaders();
+		if(isProgrammable)
+			loadShaders();
+		loadTextures();
 		isGlewInit = true;
 	}
 
@@ -106,6 +108,10 @@ void HWFrameBuffer::draw()
 
 	glEnable(GL_DEPTH_TEST);
 
+	// bind texture
+	glBindTexture(GL_TEXTURE_2D, texturesInfo[0].second);
+
+	// bind shader program if applicable
 	if(isProgrammable)
 		glUseProgram((GLuint) fixedPipelineProgram);
 	else
@@ -141,6 +147,8 @@ HWFrameBuffer::HWFrameBuffer(
 HWFrameBuffer::~HWFrameBuffer()
 {
 	glDeleteProgram((GLuint) fixedPipelineProgram);
+	// TODO: Delete all the textures
+	//glDeleteTextures(2, tex_object);
 }
 
 void HWFrameBuffer::registerTMesh(TMesh * tMeshPtr)

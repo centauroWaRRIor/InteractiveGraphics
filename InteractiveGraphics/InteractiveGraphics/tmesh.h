@@ -117,7 +117,7 @@ public:
 		const Texture *const texture = nullptr,
 		bool isColorsOn = false);
 
-	// hardware accelerated drawing support
+	// hardware accelerated drawing support (optional)
 	void hwGLFixedPiepelineDraw(void) const;
 	void hwGLVertexArrayObjectDraw(void) const;
 	void createGLVertexArrayObject(void);
