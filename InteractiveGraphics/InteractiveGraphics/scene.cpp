@@ -237,28 +237,50 @@ void Scene::dbgDraw() {
 	if (!isDGBInit) {
 
 		cleanForNewScene();
+
+		unsigned int tmsN = 5;
+		unsigned int n;
 		tms[0] = new TMesh();
 		tms[1] = new TMesh();
-		//tms[0]->loadBin("geometry/teapot1K.bin");
+		tms[2] = new TMesh();
+		tms[3] = new TMesh();
+		tms[4] = new TMesh();
+
 		tms[0]->createQuadTestTMesh(false);
+		tms[0]->translate(V3(-100.0f, 50.0f, 0.0f));
 		tms[1]->createQuadTestTMesh(false);
-		tms[1]->translate(V3(50.0f, 0.0f, 0.0f));
-		hWFb->registerTMesh(tms[0]);
-		hWFb->registerTMesh(tms[1]);
+		tms[1]->translate(V3(20.0f, 50.0f, 0.0f));
+		tms[2]->createQuadTestTMesh(true);
+		tms[2]->translate(V3(-100.0f, 0.0f, 0.0f));
+		tms[3]->createQuadTestTMesh(true);
+		tms[3]->translate(V3(20.0f, 0.0f, 0.0f));
+		tms[4]->loadBin("geometry/teapot1K.bin");
+		for (n = 0; n < tmsN; n++) {
+			hWFb->registerTMesh(tms[n]);
+		}
 
 		// load five different textures for demoing
+		unsigned int texObjectsN = 6;
 		texObjects[0] = new Texture("pngs\\White_brick_block_pxr128.png");
 		texObjects[1] = new Texture("pngs\\Macbeth_color_checker_pxr128.png"); // test tiling
-		hWFb->registerTexture(texObjects[0]);
-		hWFb->registerTexture(texObjects[1]);
+		texObjects[2] = new Texture("pngs\\Alloy_diamond_plate_pxr128.png");
+		texObjects[3] = new Texture("pngs\\Brown_staggered_pxr128.png");
+		texObjects[4] = new Texture("pngs\\Woven_flower_pxr128.png");
+		texObjects[5] = new Texture("pngs\\American_walnut_pxr128.png");
+		for (n = 0; n < texObjectsN; n++) {
+			hWFb->registerTexture(texObjects[n]);
+		}
 
 		// assign tMesh to texture mappings
-		hWFb->assignTMeshTexture(0, 0); // tMesh zero gets texture zero
-		hWFb->assignTMeshTexture(1, 1); // tMesh zero gets texture zero
+		hWFb->assignTMeshTexture(0, 0);
+		hWFb->assignTMeshTexture(1, 1);
+		hWFb->assignTMeshTexture(2, 2);
+		hWFb->assignTMeshTexture(3, 3);
 
-		V3 center = tms[0]->getCenter();
+		V3 center = tms[4]->getCenter();
 		ppc->moveForward(-200.0f);
 		ppc->positionAndOrient(ppc->getEyePoint(), center, V3(0.0f, 1.0f, 0.0f));
+		ppc->moveUp(10.0f);
 		hWFb->registerPPC(ppc);
 
 		hWFb->show();

@@ -145,18 +145,18 @@ void HWFrameBuffer::draw()
 		glUseProgram(0);
 
 	// render all triangle meshes with hardware
-	GLuint glTexHandle = -1;
+	GLuint glTexHandle;
 	vector<TMesh *>::const_iterator it;
 	for (it = tMeshArray.begin(); it != tMeshArray.end(); ++it) {
 		
 		TMesh *tMeshPtr = *it;
 		
 		// loopk up in hash map the texture to bind
-		glTexHandle = tMeshTextureMap[tMeshPtr];
-		if (glTexHandle != -1) {
-			// bind texture
-			glBindTexture(GL_TEXTURE_2D, glTexHandle);
-		}
+		glTexHandle = tMeshTextureMap[tMeshPtr];	// it doesn't matter if entry is not existant
+													// and this operation ends up creating a new entry, 
+													// it won't be used anyawys
+		// bind texture
+		glBindTexture(GL_TEXTURE_2D, glTexHandle);
 
 		if (isProgrammable) {
 			if (!tMeshPtr->getIsGLVertexArrayObjectCreated()) {
