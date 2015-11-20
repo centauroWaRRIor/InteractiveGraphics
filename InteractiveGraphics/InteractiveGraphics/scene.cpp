@@ -238,15 +238,23 @@ void Scene::dbgDraw() {
 
 		cleanForNewScene();
 		tms[0] = new TMesh();
+		tms[1] = new TMesh();
 		//tms[0]->loadBin("geometry/teapot1K.bin");
 		tms[0]->createQuadTestTMesh(false);
-
+		tms[1]->createQuadTestTMesh(false);
+		tms[1]->translate(V3(50.0f, 0.0f, 0.0f));
 		hWFb->registerTMesh(tms[0]);
+		hWFb->registerTMesh(tms[1]);
 
 		// load five different textures for demoing
 		texObjects[0] = new Texture("pngs\\White_brick_block_pxr128.png");
-		//texObjects[0] = new Texture("pngs\\Macbeth_color_checker_pxr128.png"); // test tiling
+		texObjects[1] = new Texture("pngs\\Macbeth_color_checker_pxr128.png"); // test tiling
 		hWFb->registerTexture(texObjects[0]);
+		hWFb->registerTexture(texObjects[1]);
+
+		// assign tMesh to texture mappings
+		hWFb->assignTMeshTexture(0, 0); // tMesh zero gets texture zero
+		hWFb->assignTMeshTexture(1, 1); // tMesh zero gets texture zero
 
 		V3 center = tms[0]->getCenter();
 		ppc->moveForward(-200.0f);

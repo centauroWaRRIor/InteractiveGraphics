@@ -4,6 +4,8 @@ using std::vector;
 #include <utility>
 using std::pair;
 using std::make_pair;
+#include <unordered_map>
+using std::unordered_map;
 #include "framebuffer.h"
 #include "tmesh.h"
 #include "texture.h"
@@ -17,8 +19,8 @@ class HWFrameBuffer :
 	vector<TMesh *> tMeshArray;
 	vector<pair<Texture *, GLuint>>  texturesInfo;
 	PPC *camera;
-	// TODO: Add Hash map so user specfifies which textures go with which Tmeshes (use pointer 
-	// as key and use texture name as map value)
+	// user specfifies which texture go with which Tmesh
+	unordered_map<TMesh *, GLuint> tMeshTextureMap;
 
 	// texture handles
 	GLuint  *glTextureHandles;
@@ -50,9 +52,11 @@ public:
 	virtual void mouseLeftClickDragHandle(int event) override;
 	virtual void mouseRightClickDragHandle(int event) override;
 
-	// TODO comment on this
+	// Register TMeshes, textures and PPC. Also establish tMesh texture corerspondance
+	// Reason behind this API is that all openGL drawing needs to be issued from draw function
 	void registerTMesh(TMesh *TMeshPtr);
 	void registerPPC(PPC *PpcPtr);
 	void registerTexture(Texture *texture);
+	bool assignTMeshTexture(unsigned int tMeshIndex, unsigned int textureIndex);
 };
 

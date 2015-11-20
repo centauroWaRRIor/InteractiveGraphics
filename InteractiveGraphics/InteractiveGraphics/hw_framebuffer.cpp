@@ -2,12 +2,30 @@
 using std::cout;
 using std::endl;
 #include <cstdio>
+#include <stdexcept>
 #include <GL/glew.h> // opengl
 #include "hw_framebuffer.h"
 
 // static shader utilities to compile and link shader programs
 static GLuint load(const char * filename, GLenum shader_type, bool check_errors = true);
 static GLuint link_from_shaders(const GLuint * shaders, int shader_count, bool delete_shaders, bool check_errors = true);
+
+bool HWFrameBuffer::assignTMeshTexture(unsigned int tMeshIndex, unsigned int textureIndex)
+{
+	TMesh *tMesh = nullptr;
+	try {
+		tMesh = tMeshArray.at(tMeshIndex);      // vector::at throws an out-of-range
+		texturesInfo.at(textureIndex); // just makes sure this texture object has been registered
+		// create map entry in hash map
+		tMeshTextureMap[tMesh] = (GLuint) textureIndex; // glTexture handles have not been assigned yet because
+		// textures have not yet being loaded with openGL. defer this step until later. Put textureIndex for now
+	}
+	catch (const std::out_of_range& oor) {
+		cout << "Out of Range error: " << oor.what() << '\n';
+		return false;
+	}
+	return true;
+}
 
 void HWFrameBuffer::loadShaders(void)
 {
@@ -78,6 +96,14 @@ void HWFrameBuffer::loadTextures(void)
 
 		// GL now has our data
 	}
+
+	// now that gl texture handles have been generated update the hashmap with these values
+	unordered_map<TMesh *, GLuint>::iterator hashMapIt;
+	for (hashMapIt = tMeshTextureMap.begin(); hashMapIt != tMeshTextureMap.end(); ++hashMapIt) {
+		GLuint textureIndex = hashMapIt->second;
+		GLuint glTextHandle = texturesInfo[textureIndex].second;
+		hashMapIt->second = glTextHandle;
+	}
 }
 
 void HWFrameBuffer::draw()
@@ -112,11 +138,6 @@ void HWFrameBuffer::draw()
 
 	glEnable(GL_DEPTH_TEST);
 
-	// bind texture
-	// TODO: make it so that this is looked up in a hash table
-	// that maps tmesh to texture binding
-	glBindTexture(GL_TEXTURE_2D, texturesInfo[0].second);
-
 	// bind shader program if applicable
 	if(isProgrammable)
 		glUseProgram((GLuint) fixedPipelineProgram);
@@ -124,12 +145,23 @@ void HWFrameBuffer::draw()
 		glUseProgram(0);
 
 	// render all triangle meshes with hardware
+	GLuint glTexHandle = -1;
 	vector<TMesh *>::const_iterator it;
 	for (it = tMeshArray.begin(); it != tMeshArray.end(); ++it) {
+		
 		TMesh *tMeshPtr = *it;
+		
+		// loopk up in hash map the texture to bind
+		glTexHandle = tMeshTextureMap[tMeshPtr];
+		if (glTexHandle != -1) {
+			// bind texture
+			glBindTexture(GL_TEXTURE_2D, glTexHandle);
+		}
+
 		if (isProgrammable) {
-			if (!tMeshPtr->getIsGLVertexArrayObjectCreated())
+			if (!tMeshPtr->getIsGLVertexArrayObjectCreated()) {
 				tMeshPtr->createGLVertexArrayObject(); // enables hw support for this TMesh 
+			}
 			tMeshPtr->hwGLVertexArrayObjectDraw();
 		}
 		else {
