@@ -1,5 +1,5 @@
 # Interactive Graphics
-This is a project developed to better understand and explore the theory and practice behind many computer graphics fundamentals. Project was developed entirely in C++ as a rendering pipeline that is implemented completely in software. The only call made to OpenGL is glDrawPixels. However, later in the project, as I started shifting my interests towards writing shaders, extensions were made to accomodate support for GPU acceleration via OpenGL4 and GLSL. Click on image below to see a demo.
+This is a project developed to better understand and explore the theory and practice behind many computer graphics fundamentals. Project was developed entirely in C++ as a rendering pipeline that is implemented completely in software. The only call made to OpenGL is glDrawPixels. However, later in the project, as I started shifting my interests towards writing shaders, extensions were made to accomodate support for GPU acceleration via OpenGL4 and GLSL. __Click on image below to see a demo__.
 
 [![Demo Link](https://j.gifs.com/mL4Q7p.gif)](https://youtu.be/_ep05z9ca2o)
 
