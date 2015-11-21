@@ -34,6 +34,7 @@ class HWFrameBuffer :
 	void loadTextures(void);
 
 	// TODO: Eventually have all possible shader programs listed here
+	GLuint oldGLSLProgram; // TODO finish implementing this program
 	GLuint fixedPipelineProgram;
 
 public:

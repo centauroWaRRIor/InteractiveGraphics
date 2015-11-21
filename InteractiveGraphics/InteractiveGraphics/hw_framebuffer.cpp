@@ -31,11 +31,10 @@ void HWFrameBuffer::loadShaders(void)
 {
 	GLuint shaders[2];
 
-	shaders[0] = load("glsl/fixedPipeline.vs.glsl", GL_VERTEX_SHADER);
-	shaders[1] = load("glsl/fixedPipeline.fs.glsl", GL_FRAGMENT_SHADER);
-
+	shaders[0] = load("glsl/oldGLSL.vs.glsl", GL_VERTEX_SHADER);
+	shaders[1] = load("glsl/oldGLSL.fs.glsl", GL_FRAGMENT_SHADER);
 	if (shaders[0] != 0 && shaders[1] != 0) {
-		fixedPipelineProgram = link_from_shaders(shaders, 4, true);
+		oldGLSLProgram = link_from_shaders(shaders, 2, true);
 	}
 	else {
 		cout << "error loading shaders..." << endl;
@@ -43,6 +42,19 @@ void HWFrameBuffer::loadShaders(void)
 		//cout << "commit suicide now X( " << endl;
 		//delete this;
 	}
+
+	shaders[0] = load("glsl/fixedPipeline.vs.glsl", GL_VERTEX_SHADER);
+	shaders[1] = load("glsl/fixedPipeline.fs.glsl", GL_FRAGMENT_SHADER);
+	if (shaders[0] != 0 && shaders[1] != 0) {
+		fixedPipelineProgram = link_from_shaders(shaders, 2, true);
+	}
+	else {
+		cout << "error loading shaders..." << endl;
+		// ok to commit suicide but got to be extra careful (communicate everybody using this object)
+		//cout << "commit suicide now X( " << endl;
+		//delete this;
+	}
+
 }
 
 void HWFrameBuffer::loadTextures(void)
@@ -127,22 +139,37 @@ void HWFrameBuffer::draw()
 	glClearColor(0.0f, 0.0f, 1.0, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	glEnable(GL_DEPTH_TEST);
+
+	// bind shader program if applicable
+	if(isProgrammable)
+		glUseProgram(fixedPipelineProgram);
+	else
+		glUseProgram(0);
+
+	// set perspective and model-view matrices
 	const float nearPlaneValue = 10.0f;
 	const float farPlaneValue = 1000.0f;
+	GLfloat perspectiveMatrix[4];
+	GLfloat modelviewMatrix[4];
+	// use old fixed pipeline (deprecated) glFrustum and gluLookAt
+	// to set the perspective matrix and modelview matrix respectively
 	if (camera) {
 		// set view intrinsics
 		camera->setGLIntrinsics(nearPlaneValue, farPlaneValue);
 		// set view extrinsics
 		camera->setGLExtrinsics();
+
+		// need to send matrices as uniforms when using shaders
+		//if (isProgrammable) {
+	
+			//glGetFloatv(GL_PROJECTION_MATRIX, perspectiveMatrix);
+			//glGetFloatv(GL_PROJECTION_MATRIX, modelviewMatrix);
+
+			//glUniformMatrix4fv(uniforms.mv_matrix, 1, GL_FALSE, mv_matrix);
+			//glUniformMatrix4fv(uniforms.proj_matrix, 1, GL_FALSE, proj_matrix);
+		//}
 	}
-
-	glEnable(GL_DEPTH_TEST);
-
-	// bind shader program if applicable
-	if(isProgrammable)
-		glUseProgram((GLuint) fixedPipelineProgram);
-	else
-		glUseProgram(0);
 
 	// render all triangle meshes with hardware
 	GLuint glTexHandle;
@@ -177,15 +204,16 @@ HWFrameBuffer::HWFrameBuffer(
 	FrameBuffer(u0, v0, _w, _h),
 	isProgrammable(isP),
 	isGlewInit(false),
-	fixedPipelineProgram(0)
+	oldGLSLProgram(0)
 {
 }
 
 
 HWFrameBuffer::~HWFrameBuffer()
 {
-	// TODO: delete all the programs
-	glDeleteProgram((GLuint) fixedPipelineProgram);
+	// delete all the programs
+	glDeleteProgram(oldGLSLProgram);
+	glDeleteProgram(fixedPipelineProgram);
 	// delete all the textures
 	vector<pair<Texture *, GLuint>>::iterator it;
 	for (it = texturesInfo.begin(); it != texturesInfo.end(); ++it) {
