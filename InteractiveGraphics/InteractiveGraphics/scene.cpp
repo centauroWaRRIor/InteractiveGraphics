@@ -23,7 +23,8 @@ const int Scene::K_H = 720;
 Scene::Scene() :
 	fb(nullptr),
 	fbAux(nullptr),
-	hWFb(nullptr),
+	fixedHwFb(nullptr),
+	progrHwFb(nullptr),
 	gui(nullptr),
 	ppc(nullptr),
 	light(nullptr),
@@ -39,11 +40,7 @@ Scene::Scene() :
 	gui = new GUI();
 	gui->show();
 
-	// create HW framebuffer (behind SW so its not initially visible)
-	hWFb = new HWFrameBuffer(u0, v0, K_W, K_H, false);
-	hWFb->label("HW Framebuffer");
-
-	// create SW framebuffer
+	// create persistent SW framebuffer
 	fb = new SWFrameBuffer(u0, v0, K_W, K_H);
 	fb->label("SW Framebuffer");
 
@@ -94,9 +91,12 @@ Scene::Scene() :
 Scene::~Scene()
 {
 	delete fb;
-	delete hWFb;
 	if (fbAux)
 		delete fbAux;
+	if (fixedHwFb)
+		delete fixedHwFb;
+	if (progrHwFb)
+		delete progrHwFb;
 	delete gui;
 	delete ppc;
 	delete light;
@@ -216,6 +216,18 @@ void Scene::cleanForNewScene(void)
 		fbAux = nullptr;
 	}
 
+	// destroy fixedHwFb if present
+	if (fixedHwFb) {
+		delete fixedHwFb;
+		fixedHwFb = nullptr;
+	}
+
+	// destroy progrHwFb if present
+	if (progrHwFb) {
+		delete progrHwFb;
+		progrHwFb = nullptr;
+	}
+
 	// reset init flags for the different scenes
 	this->isDGBInit = false;
 	this->isTestCamControlsInit = false;
@@ -242,6 +254,10 @@ void Scene::dbgDraw() {
 
 		cleanForNewScene();
 
+		// create HW framebuffer (behind SW so its not initially visible)
+		fixedHwFb = new HWFrameBuffer(u0, v0, K_W, K_H, false);
+		fixedHwFb->label("Fixed Pipeline HW Framebuffer");
+
 		unsigned int tmsN = 5;
 		unsigned int n;
 		tms[0] = new TMesh();
@@ -260,7 +276,7 @@ void Scene::dbgDraw() {
 		tms[3]->translate(V3(20.0f, 0.0f, 0.0f));
 		tms[4]->loadBin("geometry/teapot1K.bin");
 		for (n = 0; n < tmsN; n++) {
-			hWFb->registerTMesh(tms[n]);
+			fixedHwFb->registerTMesh(tms[n]);
 		}
 
 		// load five different textures for demoing
@@ -272,22 +288,22 @@ void Scene::dbgDraw() {
 		texObjects[4] = new Texture("pngs\\Woven_flower_pxr128.png");
 		texObjects[5] = new Texture("pngs\\American_walnut_pxr128.png");
 		for (n = 0; n < texObjectsN; n++) {
-			hWFb->registerTexture(texObjects[n]);
+			fixedHwFb->registerTexture(texObjects[n]);
 		}
 
 		// assign tMesh to texture mappings
-		hWFb->assignTMeshTexture(0, 0);
-		hWFb->assignTMeshTexture(1, 1);
-		hWFb->assignTMeshTexture(2, 2);
-		hWFb->assignTMeshTexture(3, 3);
+		fixedHwFb->assignTMeshTexture(0, 0);
+		fixedHwFb->assignTMeshTexture(1, 1);
+		fixedHwFb->assignTMeshTexture(2, 2);
+		fixedHwFb->assignTMeshTexture(3, 3);
 
 		V3 center = tms[4]->getCenter();
 		ppc->moveForward(-200.0f);
 		ppc->positionAndOrient(ppc->getEyePoint(), center, V3(0.0f, 1.0f, 0.0f));
 		ppc->moveUp(10.0f);
-		hWFb->registerPPC(ppc);
+		fixedHwFb->registerPPC(ppc);
 
-		hWFb->show();
+		fixedHwFb->show();
 		isDGBInit = true;		
 	}
 	// clear screen
@@ -300,7 +316,7 @@ void Scene::dbgDraw() {
 	drawTMesh(*tms[0], *fb, *ppc, true);
 	
 	fb->redraw();
-	hWFb->redraw();
+	fixedHwFb->redraw();
 	return;
 }
 
@@ -1765,6 +1781,10 @@ void Scene::testFixedPipelineHW(void)
 
 		cleanForNewScene();
 
+		// create HW framebuffer (behind SW so its not initially visible)
+		fixedHwFb = new HWFrameBuffer(u0, v0, K_W, K_H, false);
+		fixedHwFb->label("Fixed Pipeline HW Framebuffer");
+
 		unsigned int tmsN = 5;
 		unsigned int n;
 		tms[0] = new TMesh();
@@ -1783,7 +1803,7 @@ void Scene::testFixedPipelineHW(void)
 		tms[3]->translate(V3(20.0f, 0.0f, 0.0f));
 		tms[4]->loadBin("geometry/teapot1K.bin");
 		for (n = 0; n < tmsN; n++) {
-			hWFb->registerTMesh(tms[n]);
+			fixedHwFb->registerTMesh(tms[n]);
 		}
 
 		// load five different textures for demoing
@@ -1795,22 +1815,22 @@ void Scene::testFixedPipelineHW(void)
 		texObjects[4] = new Texture("pngs\\Woven_flower_pxr128.png");
 		texObjects[5] = new Texture("pngs\\American_walnut_pxr128.png");
 		for (n = 0; n < texObjectsN; n++) {
-			hWFb->registerTexture(texObjects[n]);
+			fixedHwFb->registerTexture(texObjects[n]);
 		}
 
 		// assign tMesh to texture mappings
-		hWFb->assignTMeshTexture(0, 0);
-		hWFb->assignTMeshTexture(1, 1);
-		hWFb->assignTMeshTexture(2, 2);
-		hWFb->assignTMeshTexture(3, 3);
+		fixedHwFb->assignTMeshTexture(0, 0);
+		fixedHwFb->assignTMeshTexture(1, 1);
+		fixedHwFb->assignTMeshTexture(2, 2);
+		fixedHwFb->assignTMeshTexture(3, 3);
 
 		V3 center = tms[4]->getCenter();
 		ppc->moveForward(-200.0f);
 		ppc->positionAndOrient(ppc->getEyePoint(), center, V3(0.0f, 1.0f, 0.0f));
 		ppc->moveUp(10.0f);
-		hWFb->registerPPC(ppc);
+		fixedHwFb->registerPPC(ppc);
 
-		hWFb->show();
+		fixedHwFb->show();
 		isTestFixedPipelineInit = true;
 	}
 	// clear screen
@@ -1823,7 +1843,7 @@ void Scene::testFixedPipelineHW(void)
 	drawTMesh(*tms[0], *fb, *ppc, true);
 
 	fb->redraw();
-	hWFb->redraw();
+	fixedHwFb->redraw();
 	return;
 }
 
