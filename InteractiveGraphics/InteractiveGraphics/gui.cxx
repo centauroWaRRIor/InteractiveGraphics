@@ -142,8 +142,22 @@ void GUI::cb_A5Demo(Fl_Menu_* o, void* v) {
   ((GUI*)(o->parent()->user_data()))->cb_A5Demo_i(o,v);
 }
 
+void GUI::cb_TestFixedPipeline_i(Fl_Menu_*, void*) {
+  TestFixedHW_cb();
+}
+void GUI::cb_TestFixedPipeline(Fl_Menu_* o, void* v) {
+  ((GUI*)(o->parent()->user_data()))->cb_TestFixedPipeline_i(o,v);
+}
+
+void GUI::cb_TestProgPipeline_i(Fl_Menu_*, void*) {
+  TestProgHW_cb();
+}
+void GUI::cb_TestProgPipeline(Fl_Menu_* o, void* v) {
+  ((GUI*)(o->parent()->user_data()))->cb_TestProgPipeline_i(o,v);
+}
+
 Fl_Menu_Item GUI::menu_Main[] = {
- {"Previous Assignments", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"SW Rendering", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
  {"A1", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
  {"Test Rotation", 0,  (Fl_Callback*)GUI::cb_A1TestRot, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Test Rasterization", 0,  (Fl_Callback*)GUI::cb_A1TestRaster, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
@@ -173,8 +187,11 @@ Fl_Menu_Item GUI::menu_Main[] = {
  {"Test CM Refraction", 0,  (Fl_Callback*)GUI::cb_TestCubeMapRefraction, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"A5 Demo", 0,  (Fl_Callback*)GUI::cb_A5Demo, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
+ {0,0,0,0,0,0,0,0,0},
+ {"HW Rendering", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
  {"A6", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
- {"Fixed Pipeline HW Acceleration", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Fixed Pipeline Demo", 0,  (Fl_Callback*)GUI::cb_TestFixedPipeline, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Progr Pipeline Demo", 0,  (Fl_Callback*)GUI::cb_TestProgPipeline, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
  {0,0,0,0,0,0,0,0,0},
  {0,0,0,0,0,0,0,0,0}
@@ -203,7 +220,9 @@ Fl_Menu_Item* GUI::TestCubeMapFaces = GUI::menu_Main + 25;
 Fl_Menu_Item* GUI::TestCubeMapReflection = GUI::menu_Main + 26;
 Fl_Menu_Item* GUI::TestCubeMapRefraction = GUI::menu_Main + 27;
 Fl_Menu_Item* GUI::A5Demo = GUI::menu_Main + 28;
-Fl_Menu_Item* GUI::A6SubMenu = GUI::menu_Main + 30;
+Fl_Menu_Item* GUI::A6SubMenu = GUI::menu_Main + 32;
+Fl_Menu_Item* GUI::TestFixedPipeline = GUI::menu_Main + 33;
+Fl_Menu_Item* GUI::TestProgPipeline = GUI::menu_Main + 34;
 
 void GUI::cb_SaveCameraButton_i(Fl_Button*, void*) {
   SaveCameraButton_cb();
@@ -1228,7 +1247,7 @@ void GUI::cb_A5Button(Fl_Button* o, void* v) {
 #include "scene.h"
 
 GUI::GUI() {
-  { uiw = new Fl_Double_Window(258, 437, "GUI");
+  { uiw = new Fl_Double_Window(264, 437, "GUI");
     uiw->user_data((void*)(this));
     { dbgButton = new Fl_Button(15, 40, 225, 40, "Debug");
       dbgButton->selection_color(FL_DARK_RED);
@@ -1403,4 +1422,12 @@ scene->testCubeMapRefraction();
 
 void GUI::A5Demo_cb() {
   scene->a5Demo();
+}
+
+void GUI::TestFixedHW_cb() {
+  scene->testFixedPipelineHW();
+}
+
+void GUI::TestProgHW_cb() {
+  scene->testProgrPipelineHW();
 }

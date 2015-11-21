@@ -58,7 +58,8 @@ private:
 		isTextureInit, isA3Init, isSpriteTestInit, 
 		isTestBilTexLookupInit, isShadowMapTestInit,
 		isTexProjectTestInit, isA4DemoInit, isA4DemoExtraInit,
-		isTestCMReflectInit, isTestCMRefractInit;
+		isTestCMReflectInit, isTestCMRefractInit,
+		isTestFixedPipelineInit, isTestProgrPipelineInit;
 	
 	static const int u0, v0; // initial window coordinates
 
@@ -106,6 +107,8 @@ public:
 	void testCubeMapReflection(void);
 	void testCubeMapRefraction(void);
 	void a5Demo(void);
+	void testFixedPipelineHW(void);
+	void testProgrPipelineHW(void);
 
 	void saveCamera(void) const;
 	void saveThisFramebuffer(void) const;

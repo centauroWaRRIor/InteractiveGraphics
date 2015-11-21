@@ -87,6 +87,8 @@ Scene::Scene() :
 	this->isTexProjectTestInit = false;
 	this->isTestCMReflectInit = false;
 	this->isTestCMRefractInit = false;
+	this->isTestFixedPipelineInit = false;
+	this->isTestProgrPipelineInit = false;
 }
 
 Scene::~Scene()
@@ -229,6 +231,8 @@ void Scene::cleanForNewScene(void)
 	this->isA4DemoExtraInit = false;
 	this->isTestCMReflectInit = false;
 	this->isTestCMRefractInit = false;
+	this->isTestFixedPipelineInit = false;
+	this->isTestProgrPipelineInit = false;
 }
 
 // function linked to the DBG GUI button for testing new features
@@ -1753,6 +1757,79 @@ void Scene::a5Demo(void)
 	}
 
 	return;
+}
+
+void Scene::testFixedPipelineHW(void)
+{
+	if (!isTestFixedPipelineInit) {
+
+		cleanForNewScene();
+
+		unsigned int tmsN = 5;
+		unsigned int n;
+		tms[0] = new TMesh();
+		tms[1] = new TMesh();
+		tms[2] = new TMesh();
+		tms[3] = new TMesh();
+		tms[4] = new TMesh();
+
+		tms[0]->createQuadTestTMesh(false);
+		tms[0]->translate(V3(-100.0f, 50.0f, 0.0f));
+		tms[1]->createQuadTestTMesh(false);
+		tms[1]->translate(V3(20.0f, 50.0f, 0.0f));
+		tms[2]->createQuadTestTMesh(true);
+		tms[2]->translate(V3(-100.0f, 0.0f, 0.0f));
+		tms[3]->createQuadTestTMesh(true);
+		tms[3]->translate(V3(20.0f, 0.0f, 0.0f));
+		tms[4]->loadBin("geometry/teapot1K.bin");
+		for (n = 0; n < tmsN; n++) {
+			hWFb->registerTMesh(tms[n]);
+		}
+
+		// load five different textures for demoing
+		unsigned int texObjectsN = 6;
+		texObjects[0] = new Texture("pngs\\White_brick_block_pxr128.png");
+		texObjects[1] = new Texture("pngs\\Macbeth_color_checker_pxr128.png"); // test tiling
+		texObjects[2] = new Texture("pngs\\Alloy_diamond_plate_pxr128.png");
+		texObjects[3] = new Texture("pngs\\Brown_staggered_pxr128.png");
+		texObjects[4] = new Texture("pngs\\Woven_flower_pxr128.png");
+		texObjects[5] = new Texture("pngs\\American_walnut_pxr128.png");
+		for (n = 0; n < texObjectsN; n++) {
+			hWFb->registerTexture(texObjects[n]);
+		}
+
+		// assign tMesh to texture mappings
+		hWFb->assignTMeshTexture(0, 0);
+		hWFb->assignTMeshTexture(1, 1);
+		hWFb->assignTMeshTexture(2, 2);
+		hWFb->assignTMeshTexture(3, 3);
+
+		V3 center = tms[4]->getCenter();
+		ppc->moveForward(-200.0f);
+		ppc->positionAndOrient(ppc->getEyePoint(), center, V3(0.0f, 1.0f, 0.0f));
+		ppc->moveUp(10.0f);
+		hWFb->registerPPC(ppc);
+
+		hWFb->show();
+		isTestFixedPipelineInit = true;
+	}
+	// clear screen
+	fb->set(0xFFFFFFFF);
+	// clear zBuffer
+	if (currentDrawMode == DrawModes::MODELSPACELERP)
+		fb->clearZB(FLT_MAX);
+	else
+		fb->clearZB(0.0f);
+	drawTMesh(*tms[0], *fb, *ppc, true);
+
+	fb->redraw();
+	hWFb->redraw();
+	return;
+}
+
+void Scene::testProgrPipelineHW(void)
+{
+	isTestProgrPipelineInit = true;
 }
 
 void Scene::saveCamera(void) const

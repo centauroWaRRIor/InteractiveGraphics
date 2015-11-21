@@ -120,6 +120,16 @@ private:
   static void cb_A5Demo(Fl_Menu_*, void*);
 public:
   static Fl_Menu_Item *A6SubMenu;
+  static Fl_Menu_Item *TestFixedPipeline;
+private:
+  void cb_TestFixedPipeline_i(Fl_Menu_*, void*);
+  static void cb_TestFixedPipeline(Fl_Menu_*, void*);
+public:
+  static Fl_Menu_Item *TestProgPipeline;
+private:
+  void cb_TestProgPipeline_i(Fl_Menu_*, void*);
+  static void cb_TestProgPipeline(Fl_Menu_*, void*);
+public:
   Fl_Group *CameraFBSaveGroup;
   Fl_Button *SaveCameraButton;
 private:
@@ -191,5 +201,7 @@ public:
   void TestCubeMapReflection_cb();
   void TestCubeMapRefraction_cb();
   void A5Demo_cb();
+  void TestFixedHW_cb();
+  void TestProgHW_cb();
 };
 #endif

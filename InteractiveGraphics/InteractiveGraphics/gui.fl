@@ -9,7 +9,7 @@ class GUI {open
   } {
     Fl_Window uiw {
       label GUI open
-      xywh {756 258 258 437} type Double visible
+      xywh {656 472 264 437} type Double visible
     } {
       Fl_Button dbgButton {
         label Debug
@@ -17,11 +17,11 @@ class GUI {open
         xywh {15 40 225 40} selection_color 72
       }
       Fl_Menu_Bar {} {
-        label {Main Menu} open selected
+        label {Main Menu} open
         xywh {0 0 315 30}
       } {
         Submenu {} {
-          label {Previous Assignments} open
+          label {SW Rendering} open
           xywh {0 0 62 20}
         } {
           Submenu A1SubMenu {
@@ -144,12 +144,23 @@ class GUI {open
               xywh {0 0 30 20}
             }
           }
+        }
+        Submenu {} {
+          label {HW Rendering} open
+          xywh {0 0 62 20}
+        } {
           Submenu A6SubMenu {
             label A6 open
             xywh {0 0 62 20}
           } {
-            MenuItem {} {
-              label {Fixed Pipeline HW Acceleration}
+            MenuItem TestFixedPipeline {
+              label {Fixed Pipeline Demo}
+              callback {TestFixedHW_cb()}
+              xywh {0 0 30 20}
+            }
+            MenuItem TestProgPipeline {
+              label {Progr Pipeline Demo}
+              callback {TestProgHW_cb()}
               xywh {0 0 30 20}
             }
           }
@@ -167,7 +178,7 @@ class GUI {open
           image {pngs/Eye-Scan-icon.png} xywh {135 352 95 60}
         }
       }
-      Fl_Group RenderingOptionsGroup {open
+      Fl_Group RenderingOptionsGroup {
         xywh {10 149 240 166} box EMBOSSED_FRAME
       } {
         Fl_Round_Button WireframeRadialButton {
@@ -284,18 +295,24 @@ scene->testA4Demo();} {}
   Function {TestCubeMapFaces_cb()} {} {
     code {scene->testCubeMapFaces();} {}
   }
-  Function {TestCubeMapReflection_cb()} {open
-  } {
+  Function {TestCubeMapReflection_cb()} {} {
     code {scene->regFuncForKbRedraw(Scenes::REFLECTEST);
 scene->testCubeMapReflection();} {}
   }
-  Function {TestCubeMapRefraction_cb()} {open
-  } {
+  Function {TestCubeMapRefraction_cb()} {} {
     code {scene->regFuncForKbRedraw(Scenes::REFRACTEST);
 scene->testCubeMapRefraction();} {}
   }
-  Function {A5Demo_cb()} {open
-  } {
+  Function {A5Demo_cb()} {} {
     code {scene->a5Demo();} {}
+  }
+  Function {TestFixedHW_cb()} {open
+  } {
+    code {scene->testFixedPipelineHW();} {}
+  }
+  Function {TestProgHW_cb()} {open
+  } {
+    code {scene->testProgrPipelineHW();} {selected
+    }
   }
 } 
