@@ -136,6 +136,7 @@
     <ClCompile Include="framebuffer.cpp" />
     <ClCompile Include="gui.cxx" />
     <ClCompile Include="hw_framebuffer.cpp" />
+    <ClCompile Include="hw_shaderprogram.cpp" />
     <ClCompile Include="light.cpp" />
     <ClCompile Include="lightprojector.cpp" />
     <ClCompile Include="lodepng.cpp" />
@@ -154,6 +155,7 @@
     <ClInclude Include="glext.h" />
     <ClInclude Include="gui.h" />
     <ClInclude Include="hw_framebuffer.h" />
+    <ClInclude Include="hw_shaderprogram.h" />
     <ClInclude Include="light.h" />
     <ClInclude Include="lightprojector.h" />
     <ClInclude Include="lodepng.h" />

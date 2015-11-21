@@ -10,6 +10,9 @@ using std::unordered_map;
 #include "tmesh.h"
 #include "texture.h"
 #include "ppc.h"
+// this needs to be a forward delcaration due to 
+// gl.h compilation order sensibility.
+class ShaderProgram;
 
 class HWFrameBuffer :
 	public FrameBuffer
@@ -33,9 +36,9 @@ class HWFrameBuffer :
 	void loadShaders(void);
 	void loadTextures(void);
 
-	// TODO: Eventually have all possible shader programs listed here
-	GLuint oldGLSLProgram; // TODO finish implementing this program
-	GLuint fixedPipelineProgram;
+	// all shader programs are listed here
+	ShaderProgram *oldGLSLProgram;
+	ShaderProgram *fixedPipelineProgram;
 
 public:
 	// function that is always called back by system and never called directly by programmer

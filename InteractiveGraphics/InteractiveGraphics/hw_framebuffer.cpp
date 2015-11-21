@@ -1,14 +1,15 @@
 #include <iostream>
 using std::cout;
 using std::endl;
+#include <list>
+using std::list;
+#include <string>
+using std::string;
 #include <cstdio>
 #include <stdexcept>
 #include <GL/glew.h> // opengl
 #include "hw_framebuffer.h"
-
-// static shader utilities to compile and link shader programs
-static GLuint load(const char * filename, GLenum shader_type, bool check_errors = true);
-static GLuint link_from_shaders(const GLuint * shaders, int shader_count, bool delete_shaders, bool check_errors = true);
+#include "hw_shaderprogram.h"
 
 bool HWFrameBuffer::assignTMeshTexture(unsigned int tMeshIndex, unsigned int textureIndex)
 {
@@ -29,32 +30,14 @@ bool HWFrameBuffer::assignTMeshTexture(unsigned int tMeshIndex, unsigned int tex
 
 void HWFrameBuffer::loadShaders(void)
 {
-	GLuint shaders[2];
-
-	shaders[0] = load("glsl/oldGLSL.vs.glsl", GL_VERTEX_SHADER);
-	shaders[1] = load("glsl/oldGLSL.fs.glsl", GL_FRAGMENT_SHADER);
-	if (shaders[0] != 0 && shaders[1] != 0) {
-		oldGLSLProgram = link_from_shaders(shaders, 2, true);
-	}
-	else {
-		cout << "error loading shaders..." << endl;
-		// ok to commit suicide but got to be extra careful (communicate everybody using this object)
-		//cout << "commit suicide now X( " << endl;
-		//delete this;
-	}
-
-	shaders[0] = load("glsl/fixedPipeline.vs.glsl", GL_VERTEX_SHADER);
-	shaders[1] = load("glsl/fixedPipeline.fs.glsl", GL_FRAGMENT_SHADER);
-	if (shaders[0] != 0 && shaders[1] != 0) {
-		fixedPipelineProgram = link_from_shaders(shaders, 2, true);
-	}
-	else {
-		cout << "error loading shaders..." << endl;
-		// ok to commit suicide but got to be extra careful (communicate everybody using this object)
-		//cout << "commit suicide now X( " << endl;
-		//delete this;
-	}
-
+	list<string> shaderList1;
+	shaderList1.push_back("glsl/oldGLSL.vs.glsl");
+	shaderList1.push_back("glsl/oldGLSL.fs.glsl");
+	list<string> shaderList2;
+	shaderList2.push_back("glsl/fixedPipeline.vs.glsl");
+	shaderList2.push_back("glsl/fixedPipeline.fs.glsl");
+	oldGLSLProgram = new ShaderProgram(shaderList1);
+	fixedPipelineProgram = new ShaderProgram(shaderList2);
 }
 
 void HWFrameBuffer::loadTextures(void)
@@ -143,15 +126,15 @@ void HWFrameBuffer::draw()
 
 	// bind shader program if applicable
 	if(isProgrammable)
-		glUseProgram(fixedPipelineProgram);
+		glUseProgram(fixedPipelineProgram->getGLProgramHandle());
 	else
 		glUseProgram(0);
 
 	// set perspective and model-view matrices
 	const float nearPlaneValue = 10.0f;
 	const float farPlaneValue = 1000.0f;
-	GLfloat perspectiveMatrix[4];
-	GLfloat modelviewMatrix[4];
+	//GLfloat perspectiveMatrix[4];
+	//GLfloat modelviewMatrix[4];
 	// use old fixed pipeline (deprecated) glFrustum and gluLookAt
 	// to set the perspective matrix and modelview matrix respectively
 	if (camera) {
@@ -204,7 +187,8 @@ HWFrameBuffer::HWFrameBuffer(
 	FrameBuffer(u0, v0, _w, _h),
 	isProgrammable(isP),
 	isGlewInit(false),
-	oldGLSLProgram(0)
+	oldGLSLProgram(nullptr),
+	fixedPipelineProgram(nullptr)
 {
 }
 
@@ -212,8 +196,8 @@ HWFrameBuffer::HWFrameBuffer(
 HWFrameBuffer::~HWFrameBuffer()
 {
 	// delete all the programs
-	glDeleteProgram(oldGLSLProgram);
-	glDeleteProgram(fixedPipelineProgram);
+	delete oldGLSLProgram;
+	delete fixedPipelineProgram;
 	// delete all the textures
 	vector<pair<Texture *, GLuint>>::iterator it;
 	for (it = texturesInfo.begin(); it != texturesInfo.end(); ++it) {
@@ -260,96 +244,4 @@ void HWFrameBuffer::mouseLeftClickDragHandle(int event)
 void HWFrameBuffer::mouseRightClickDragHandle(int event)
 {
 
-}
-
-static GLuint load(const char * filename, GLenum shader_type, bool check_errors)
-{
-	GLuint result = 0;
-	FILE * fp;
-	size_t filesize;
-	char * data;
-	errno_t err;
-	err = fopen_s(&fp, filename, "rb");
-
-	if (err == 0) {
-
-		fseek(fp, 0, SEEK_END);
-		filesize = ftell(fp);
-		fseek(fp, 0, SEEK_SET);
-		data = new char[filesize + 1];
-
-		if (data) {
-
-			fread(data, 1, filesize, fp);
-			data[filesize] = '\0';
-			fclose(fp);
-			result = glCreateShader(shader_type);
-
-			if (result) {
-
-				glShaderSource(result, 1, &data, NULL);
-				glCompileShader(result);
-				delete[] data;
-
-				if (check_errors)
-				{
-					GLint status = 0;
-					glGetShaderiv(result, GL_COMPILE_STATUS, &status);
-
-					if (!status)
-					{
-						char buffer[4096];
-						glGetShaderInfoLog(result, 4096, NULL, buffer);
-						cout << filename << ": " << endl << buffer << endl;
-						glDeleteShader(result);
-						result = 0;
-					}
-					else
-						cout << filename << ": Compiled successfully!" << endl;
-				}
-			}
-		}
-	}
-	return result;
-}
-
-static GLuint link_from_shaders(const GLuint * shaders, int shader_count, bool delete_shaders, bool check_errors)
-{
-	int i;
-	GLuint program;
-	program = glCreateProgram();
-
-	for (i = 0; i < shader_count; i++)
-	{
-		glAttachShader(program, shaders[i]);
-	}
-
-	glLinkProgram(program);
-
-	if (check_errors)
-	{
-		GLint status;
-		glGetProgramiv(program, GL_LINK_STATUS, &status);
-
-		if (!status)
-		{
-			char buffer[4096];
-			glGetProgramInfoLog(program, 4096, NULL, buffer);
-			cout << buffer << endl;
-			glDeleteProgram(program);
-			program = 0;
-		}
-		else
-			cout << "GLSL Program linked  successfully" << endl;
-	}
-
-	if (delete_shaders)
-	{
-		for (i = 0; i < shader_count; i++)
-		{
-			glDeleteShader(shaders[i]);
-		}
-	}
-
-	return program;
 }
