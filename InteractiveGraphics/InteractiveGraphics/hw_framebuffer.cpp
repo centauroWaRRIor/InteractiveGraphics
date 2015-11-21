@@ -184,9 +184,15 @@ HWFrameBuffer::HWFrameBuffer(
 
 HWFrameBuffer::~HWFrameBuffer()
 {
+	// TODO: delete all the programs
 	glDeleteProgram((GLuint) fixedPipelineProgram);
-	// TODO: Delete all the textures
-	//glDeleteTextures(2, tex_object);
+	// delete all the textures
+	vector<pair<Texture *, GLuint>>::iterator it;
+	for (it = texturesInfo.begin(); it != texturesInfo.end(); ++it) {
+		GLuint *glTexHandle = &(it->second);
+		// delete texture from gpu card (video memory)
+		glDeleteTextures(1, glTexHandle);
+	}
 }
 
 void HWFrameBuffer::registerTMesh(TMesh * tMeshPtr)
