@@ -38,6 +38,8 @@ void HWFrameBuffer::loadShaders(void)
 	shaderList2.push_back("glsl/fixedPipeline.fs.glsl");
 	oldGLSLProgram = new ShaderProgram(shaderList1);
 	fixedPipelineProgram = new ShaderProgram(shaderList2);
+	fixedPipelineProgram->createUniform("proj_matrix");
+	fixedPipelineProgram->createUniform("mv_matrix");
 }
 
 void HWFrameBuffer::loadTextures(void)
@@ -133,8 +135,8 @@ void HWFrameBuffer::draw()
 	// set perspective and model-view matrices
 	const float nearPlaneValue = 10.0f;
 	const float farPlaneValue = 1000.0f;
-	//GLfloat perspectiveMatrix[4];
-	//GLfloat modelviewMatrix[4];
+	GLfloat perspectiveMatrix[16];
+	GLfloat modelviewMatrix[16];
 	// use old fixed pipeline (deprecated) glFrustum and gluLookAt
 	// to set the perspective matrix and modelview matrix respectively
 	if (camera) {
@@ -143,15 +145,16 @@ void HWFrameBuffer::draw()
 		// set view extrinsics
 		camera->setGLExtrinsics();
 
-		// need to send matrices as uniforms when using shaders
-		//if (isProgrammable) {
+		// need to send matrices as uniforms when using shaders since I'm using GLSL 420 core
+		if (isProgrammable) {
 	
-			//glGetFloatv(GL_PROJECTION_MATRIX, perspectiveMatrix);
-			//glGetFloatv(GL_PROJECTION_MATRIX, modelviewMatrix);
+			glGetFloatv(GL_PROJECTION_MATRIX, perspectiveMatrix);
+			glGetFloatv(GL_MODELVIEW_MATRIX, modelviewMatrix);
 
-			//glUniformMatrix4fv(uniforms.mv_matrix, 1, GL_FALSE, mv_matrix);
-			//glUniformMatrix4fv(uniforms.proj_matrix, 1, GL_FALSE, proj_matrix);
-		//}
+			fixedPipelineProgram->getGLProgramHandle();
+			fixedPipelineProgram->uploadMatrixUniform("proj_matrix", perspectiveMatrix);
+			fixedPipelineProgram->uploadMatrixUniform("mv_matrix", modelviewMatrix);
+		}
 	}
 
 	// render all triangle meshes with hardware

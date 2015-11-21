@@ -112,7 +112,7 @@ ShaderProgram::ShaderProgram(const list<string>& shadersList) :
 			glShadersHandle[i] = load(listIt->c_str(), GL_FRAGMENT_SHADER);
 		}
 		else {
-			glShadersHandle[i] == 0;
+			glShadersHandle[i] = 0;
 		}
 
 		// check for errors
@@ -147,13 +147,13 @@ GLuint ShaderProgram::getGLProgramHandle(void) const
 	return glShaderProgramHandle;
 }
 
-void ShaderProgram::uploadMatrixUniform(const string & uniformName, const GLfloat * const matrix4x4)
+void ShaderProgram::uploadMatrixUniform(string uniformName, const GLfloat * const matrix4x4)
 {
 	GLint uniformLocation = uniformsMap[uniformName];
 	glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, matrix4x4);
 }
 
-void ShaderProgram::createUniform(const string & uniformName)
+void ShaderProgram::createUniform(string uniformName)
 {
 	if (isInitSuccess) {
 

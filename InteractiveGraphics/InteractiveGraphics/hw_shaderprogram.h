@@ -31,7 +31,7 @@ public:
 
 	GLuint getGLProgramHandle(void) const;
 
-	void uploadMatrixUniform(const string &uniformName, const GLfloat * const matrix4x4);
-	void createUniform(const string &uniformName);
+	void uploadMatrixUniform(string uniformName, const GLfloat * const matrix4x4);
+	void createUniform(string uniformName);
 };
 
