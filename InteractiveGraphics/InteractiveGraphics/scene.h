@@ -44,7 +44,7 @@ private:
 	SWFrameBuffer *fb; // SW framebuffer
 	SWFrameBuffer *fbAux; // currently used for rendering a FB as a 3D point cloud
 	HWFrameBuffer *fixedHwFb; // fixed HW pipeline framebuffer
-	HWFrameBuffer *progrHwFb; // fixed HW pipeline framebuffer
+	HWFrameBuffer *progrHwFb; // programmable HW pipeline framebuffer
 	GUI * gui; // graphical user interface
 	PPC *ppc; // camera used to render the scene from views chosen by user
 	Light *light; // light used to render models in lit mode

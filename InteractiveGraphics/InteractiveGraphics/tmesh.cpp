@@ -1387,6 +1387,13 @@ bool TMesh::getIsTexCoordsAvailable(void) const
 	return tcs != nullptr;
 }
 
+void TMesh::disableTexCoords(void)
+{
+	if (tcs != nullptr)
+		delete tcs;
+	tcs = nullptr;
+}
+
 void TMesh::rotateAboutAxis(const V3 &aO, const V3 &adir, float theta)
 {
 	for (int vi = 0; vi < vertsN; vi++) {

@@ -284,6 +284,7 @@ void Scene::dbgDraw() {
 		tms[3]->createQuadTestTMesh(true);
 		tms[3]->translate(V3(20.0f, 0.0f, 0.0f));
 		tms[4]->loadBin("geometry/teapot1K.bin");
+		tms[4]->disableTexCoords(); // they don't look good
 		for (n = 0; n < tmsN; n++) {
 			progrHwFb->registerTMesh(tms[n]);
 		}
@@ -1812,6 +1813,7 @@ void Scene::testFixedPipelineHW(void)
 		tms[3]->createQuadTestTMesh(true);
 		tms[3]->translate(V3(20.0f, 0.0f, 0.0f));
 		tms[4]->loadBin("geometry/teapot1K.bin");
+		tms[4]->disableTexCoords(); // they don't look good
 		for (n = 0; n < tmsN; n++) {
 			fixedHwFb->registerTMesh(tms[n]);
 		}
