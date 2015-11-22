@@ -75,6 +75,9 @@
     <ClCompile Include="hw_progrpipeline.cpp">
       <Filter>Source Files\Hardware Support</Filter>
     </ClCompile>
+    <ClCompile Include="hw_reflections.cpp">
+      <Filter>Source Files\Hardware Support</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framebuffer.h">
@@ -132,6 +135,9 @@
       <Filter>Header Files\Hardware Support</Filter>
     </ClInclude>
     <ClInclude Include="hw_progrpipeline.h">
+      <Filter>Header Files\Hardware Support</Filter>
+    </ClInclude>
+    <ClInclude Include="hw_reflections.h">
       <Filter>Header Files\Hardware Support</Filter>
     </ClInclude>
   </ItemGroup>

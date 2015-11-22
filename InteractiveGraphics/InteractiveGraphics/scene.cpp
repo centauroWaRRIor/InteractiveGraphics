@@ -1861,7 +1861,76 @@ void Scene::testFixedPipelineHW(void)
 
 void Scene::testProgrPipelineHW(void)
 {
-	isTestProgrPipelineInit = true;
+	if (!isTestProgrPipelineInit) {
+
+		cleanForNewScene();
+
+		// create progr pipeline HW framebuffer
+		progrHwFb = new HWProgrPipeline(u0, v0, K_W, K_H);
+		progrHwFb->label("Fixed Pipeline HW Framebuffer");
+
+		unsigned int tmsN = 5;
+		unsigned int n;
+		tms[0] = new TMesh();
+		tms[1] = new TMesh();
+		tms[2] = new TMesh();
+		tms[3] = new TMesh();
+		tms[4] = new TMesh();
+
+		tms[0]->createQuadTestTMesh(false);
+		tms[0]->translate(V3(-100.0f, 50.0f, 0.0f));
+		tms[1]->createQuadTestTMesh(false);
+		tms[1]->translate(V3(20.0f, 50.0f, 0.0f));
+		tms[2]->createQuadTestTMesh(true);
+		tms[2]->translate(V3(-100.0f, 0.0f, 0.0f));
+		tms[3]->createQuadTestTMesh(true);
+		tms[3]->translate(V3(20.0f, 0.0f, 0.0f));
+		tms[4]->loadBin("geometry/teapot1K.bin");
+		tms[4]->disableTexCoords(); // they don't look good
+		for (n = 0; n < tmsN; n++) {
+			progrHwFb->registerTMesh(tms[n]);
+		}
+
+		// load five different textures for demoing
+		unsigned int texObjectsN = 6;
+		texObjects[0] = new Texture("pngs\\White_brick_block_pxr128.png");
+		texObjects[1] = new Texture("pngs\\Macbeth_color_checker_pxr128.png"); // test tiling
+		texObjects[2] = new Texture("pngs\\Alloy_diamond_plate_pxr128.png");
+		texObjects[3] = new Texture("pngs\\Brown_staggered_pxr128.png");
+		texObjects[4] = new Texture("pngs\\Woven_flower_pxr128.png");
+		texObjects[5] = new Texture("pngs\\American_walnut_pxr128.png");
+		for (n = 0; n < texObjectsN; n++) {
+			progrHwFb->registerTexture(texObjects[n]);
+		}
+
+		// assign tMesh to texture mappings
+		progrHwFb->assignTMeshTexture(0, 0);
+		progrHwFb->assignTMeshTexture(1, 1);
+		progrHwFb->assignTMeshTexture(2, 2);
+		progrHwFb->assignTMeshTexture(3, 3);
+		progrHwFb->assignTMeshTexture(4, 3);
+
+		V3 center = tms[4]->getCenter();
+		ppc->moveForward(-200.0f);
+		ppc->positionAndOrient(ppc->getEyePoint(), center, V3(0.0f, 1.0f, 0.0f));
+		ppc->moveUp(10.0f);
+		progrHwFb->registerPPC(ppc);
+
+		progrHwFb->show();
+		isTestProgrPipelineInit = true;
+	}
+	// clear screen
+	fb->set(0xFFFFFFFF);
+	// clear zBuffer
+	if (currentDrawMode == DrawModes::MODELSPACELERP)
+		fb->clearZB(FLT_MAX);
+	else
+		fb->clearZB(0.0f);
+	drawTMesh(*tms[0], *fb, *ppc, true);
+
+	fb->redraw();
+	progrHwFb->redraw();
+	return;
 }
 
 void Scene::saveCamera(void) const
