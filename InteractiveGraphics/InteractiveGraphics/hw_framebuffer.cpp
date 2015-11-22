@@ -169,6 +169,7 @@ void HWFrameBuffer::draw()
 													// and this operation ends up creating a new entry, 
 													// it won't be used anyawys
 		// bind texture
+		glActiveTexture(GL_TEXTURE0); // bind color texture to texture unit 0
 		glBindTexture(GL_TEXTURE_2D, glTexHandle);
 
 		if (isProgrammable) {

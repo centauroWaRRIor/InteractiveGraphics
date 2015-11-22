@@ -258,7 +258,7 @@ void Scene::dbgDraw() {
 		progrHwFb = new HWFrameBuffer(u0, v0, K_W, K_H, true);
 		progrHwFb->label("Fixed Pipeline HW Framebuffer");
 
-		unsigned int tmsN = 5;
+		unsigned int tmsN = 4;
 		unsigned int n;
 		tms[0] = new TMesh();
 		tms[1] = new TMesh();

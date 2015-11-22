@@ -1319,6 +1319,8 @@ void TMesh::hwGLVertexArrayObjectDraw(void) const
 
 	//glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer); // not needed ?
 	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer); // not needed ?
+	// I think binding the VAO binds the whole collection of vertex attributes
+	// and whatever else was bound using the vertex array objects
 
 	//The is the number of indices. 3 indices needed to make a single triangle
 	glDrawElements(GL_TRIANGLES, 3 * trisN, GL_UNSIGNED_INT, NULL);
@@ -1343,14 +1345,27 @@ void TMesh::createGLVertexArrayObject(void)
 	// vertex data
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer[0]);
 	glBufferData(GL_ARRAY_BUFFER, (sizeof(float) * 3) * vertsN, (float *)verts, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);// todo: comment on meaning of each parameter here
+	glVertexAttribPointer(
+		0,			// attribute 0
+		3,			// three components
+		GL_FLOAT,	// floating-point data
+		GL_FALSE,	// not normalized (floating point data never is)
+		0,			// tightly packed
+		NULL);		// offset zero (NULL pointer)
 	glEnableVertexAttribArray(0);
 	// color data
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer[1]);
 	glBufferData(GL_ARRAY_BUFFER, (sizeof(float) * 3) * vertsN, (float *)cols, GL_STATIC_DRAW);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);// todo: comment on meaning of each parameter here
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 	glEnableVertexAttribArray(1);
-
+	// texture coordinate data (if available)
+	if (tcs != nullptr) {
+		glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer[2]);
+		glBufferData(GL_ARRAY_BUFFER, (sizeof(float) * 2) * vertsN, tcs, GL_STATIC_DRAW);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+		glEnableVertexAttribArray(2);
+	}
+	// index data
 	glGenBuffers(1, &indexBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * 3 * trisN, tris, GL_STATIC_DRAW);
