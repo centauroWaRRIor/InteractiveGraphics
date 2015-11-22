@@ -258,7 +258,7 @@ void Scene::dbgDraw() {
 		progrHwFb = new HWFrameBuffer(u0, v0, K_W, K_H, true);
 		progrHwFb->label("Fixed Pipeline HW Framebuffer");
 
-		unsigned int tmsN = 4;
+		unsigned int tmsN = 5;
 		unsigned int n;
 		tms[0] = new TMesh();
 		tms[1] = new TMesh();
@@ -296,6 +296,7 @@ void Scene::dbgDraw() {
 		progrHwFb->assignTMeshTexture(1, 1);
 		progrHwFb->assignTMeshTexture(2, 2);
 		progrHwFb->assignTMeshTexture(3, 3);
+		progrHwFb->assignTMeshTexture(4, 3);
 
 		V3 center = tms[4]->getCenter();
 		ppc->moveForward(-200.0f);

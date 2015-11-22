@@ -37,7 +37,7 @@ class HWFrameBuffer :
 	void loadTextures(void);
 
 	// all shader programs are listed here
-	ShaderProgram *oldGLSLProgram;
+	ShaderProgram *fixedPipelineProgramNoTexture;
 	ShaderProgram *fixedPipelineProgram;
 
 public:

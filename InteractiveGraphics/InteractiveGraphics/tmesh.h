@@ -122,6 +122,7 @@ public:
 	void hwGLVertexArrayObjectDraw(void) const;
 	void createGLVertexArrayObject(void);
 	bool getIsGLVertexArrayObjectCreated(void) const;
+	bool getIsTexCoordsAvailable(void) const;
 
 	// rotate about axis
 	void rotateAboutAxis(const V3 &aO, const V3 &adir, float theta);

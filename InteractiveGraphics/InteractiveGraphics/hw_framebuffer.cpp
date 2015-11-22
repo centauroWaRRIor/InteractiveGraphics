@@ -31,12 +31,16 @@ bool HWFrameBuffer::assignTMeshTexture(unsigned int tMeshIndex, unsigned int tex
 void HWFrameBuffer::loadShaders(void)
 {
 	list<string> shaderList1;
-	shaderList1.push_back("glsl/oldGLSL.vs.glsl");
-	shaderList1.push_back("glsl/oldGLSL.fs.glsl");
+	shaderList1.push_back("glsl/fixedPipelineNoTexture.vs.glsl");
+	shaderList1.push_back("glsl/fixedPipelineNoTexture.fs.glsl");
 	list<string> shaderList2;
 	shaderList2.push_back("glsl/fixedPipeline.vs.glsl");
 	shaderList2.push_back("glsl/fixedPipeline.fs.glsl");
-	oldGLSLProgram = new ShaderProgram(shaderList1);
+
+	fixedPipelineProgramNoTexture = new ShaderProgram(shaderList1);
+	fixedPipelineProgramNoTexture->createUniform("proj_matrix");
+	fixedPipelineProgramNoTexture->createUniform("mv_matrix");
+
 	fixedPipelineProgram = new ShaderProgram(shaderList2);
 	fixedPipelineProgram->createUniform("proj_matrix");
 	fixedPipelineProgram->createUniform("mv_matrix");
@@ -114,7 +118,7 @@ void HWFrameBuffer::draw()
 			cout << "Error: " << glewGetErrorString(err) << endl;
 		}
 		cout << "Status: Using GLEW " << glewGetString(GLEW_VERSION) << endl;
-		if(isProgrammable)
+		if (isProgrammable)
 			loadShaders();
 		loadTextures();
 		isGlewInit = true;
@@ -125,12 +129,6 @@ void HWFrameBuffer::draw()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glEnable(GL_DEPTH_TEST);
-
-	// bind shader program if applicable
-	if(isProgrammable)
-		glUseProgram(fixedPipelineProgram->getGLProgramHandle());
-	else
-		glUseProgram(0);
 
 	// set perspective and model-view matrices
 	const float nearPlaneValue = 10.0f;
@@ -151,35 +149,66 @@ void HWFrameBuffer::draw()
 			glGetFloatv(GL_PROJECTION_MATRIX, perspectiveMatrix);
 			glGetFloatv(GL_MODELVIEW_MATRIX, modelviewMatrix);
 
-			fixedPipelineProgram->getGLProgramHandle();
+			glUseProgram(fixedPipelineProgram->getGLProgramHandle());
 			fixedPipelineProgram->uploadMatrixUniform("proj_matrix", perspectiveMatrix);
 			fixedPipelineProgram->uploadMatrixUniform("mv_matrix", modelviewMatrix);
+
+			glUseProgram(fixedPipelineProgramNoTexture->getGLProgramHandle());
+			fixedPipelineProgramNoTexture->uploadMatrixUniform("proj_matrix", perspectiveMatrix);
+			fixedPipelineProgramNoTexture->uploadMatrixUniform("mv_matrix", modelviewMatrix);
 		}
 	}
 
-	// render all triangle meshes with hardware
+	// render all triangle meshes through hardware
 	GLuint glTexHandle;
 	vector<TMesh *>::const_iterator it;
 	for (it = tMeshArray.begin(); it != tMeshArray.end(); ++it) {
 		
 		TMesh *tMeshPtr = *it;
-		
-		// loopk up in hash map the texture to bind
-		glTexHandle = tMeshTextureMap[tMeshPtr];	// it doesn't matter if entry is not existant
-													// and this operation ends up creating a new entry, 
-													// it won't be used anyawys
-		// bind texture
-		glActiveTexture(GL_TEXTURE0); // bind color texture to texture unit 0
-		glBindTexture(GL_TEXTURE_2D, glTexHandle);
+		if (tMeshPtr->getIsTexCoordsAvailable() && 
+			(it - tMeshArray.begin() != 4) /* aparently teapot has tcs but they don't look good so I'm disabling them
+									      here by hand*/ ) {
 
-		if (isProgrammable) {
-			if (!tMeshPtr->getIsGLVertexArrayObjectCreated()) {
-				tMeshPtr->createGLVertexArrayObject(); // enables hw support for this TMesh 
+			// loopk up in hash map the texture to bind
+			glTexHandle = tMeshTextureMap[tMeshPtr];	// it doesn't matter if entry is not existant
+														// and this operation ends up creating a new entry, 
+														// it won't be used anyawys
+			// bind texture
+			glActiveTexture(GL_TEXTURE0); // bind color texture to texture unit 0
+			glBindTexture(GL_TEXTURE_2D, glTexHandle);
+
+			if (isProgrammable) {
+
+				glUseProgram(fixedPipelineProgram->getGLProgramHandle());
+
+				if (!tMeshPtr->getIsGLVertexArrayObjectCreated()) {
+					tMeshPtr->createGLVertexArrayObject(); // enables hw support for this TMesh 
+				}
+				tMeshPtr->hwGLVertexArrayObjectDraw();
 			}
-			tMeshPtr->hwGLVertexArrayObjectDraw();
+			else {
+
+				glUseProgram(0);
+				tMeshPtr->hwGLFixedPiepelineDraw();
+			}
 		}
 		else {
-			tMeshPtr->hwGLFixedPiepelineDraw();
+
+			if (isProgrammable) {
+
+				glUseProgram(fixedPipelineProgramNoTexture->getGLProgramHandle());
+				
+				if (!tMeshPtr->getIsGLVertexArrayObjectCreated()) {
+					tMeshPtr->createGLVertexArrayObject(); // enables hw support for this TMesh 
+				}
+				tMeshPtr->hwGLVertexArrayObjectDraw();
+			}
+			else {
+
+				glUseProgram(0);
+				tMeshPtr->hwGLFixedPiepelineDraw();
+			}
+
 		}
 	}
 }
@@ -191,7 +220,7 @@ HWFrameBuffer::HWFrameBuffer(
 	FrameBuffer(u0, v0, _w, _h),
 	isProgrammable(isP),
 	isGlewInit(false),
-	oldGLSLProgram(nullptr),
+	fixedPipelineProgramNoTexture(nullptr),
 	fixedPipelineProgram(nullptr)
 {
 }
@@ -200,7 +229,7 @@ HWFrameBuffer::HWFrameBuffer(
 HWFrameBuffer::~HWFrameBuffer()
 {
 	// delete all the programs
-	delete oldGLSLProgram;
+	delete fixedPipelineProgramNoTexture;
 	delete fixedPipelineProgram;
 	// delete all the textures
 	vector<pair<Texture *, GLuint>>::iterator it;

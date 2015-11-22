@@ -10,12 +10,10 @@ uniform mat4 proj_matrix;
 // Per-vertex inputs
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec3 color;
-layout (location = 2) in vec2 texcoord;
 
 out VS_OUT
 {
     vec4 color;
-    vec2 texcoord;
 } vs_out;
 
 void main(void)
@@ -25,7 +23,6 @@ void main(void)
     vec4 P = mv_matrix * posHomog;
 	
 	vs_out.color = vec4(color, 1.0);
-	vs_out.texcoord = texcoord;
 
     // Calculate the clip-space position of each vertex
     gl_Position = proj_matrix * P;
