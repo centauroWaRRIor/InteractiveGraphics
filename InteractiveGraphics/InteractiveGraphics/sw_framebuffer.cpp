@@ -3,6 +3,7 @@
 #include "scene.h"
 #include "scene.h"
 #include "ppc.h"
+#include "aabb.h"
 #include "cubemap.h"
 #include <iostream>
 #include <math.h>

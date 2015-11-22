@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\Hardware Support">
+      <UniqueIdentifier>{bcbb7ffb-224d-4931-ab6b-24ff0aec889a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Hardware Support">
+      <UniqueIdentifier>{3cc41c59-94b6-45f1-9f34-5948f742645f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="framebuffer.cpp">
@@ -57,11 +63,17 @@
     <ClCompile Include="sw_framebuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="hw_framebuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="hw_shaderprogram.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Hardware Support</Filter>
+    </ClCompile>
+    <ClCompile Include="hw_framebuffer.cpp">
+      <Filter>Source Files\Hardware Support</Filter>
+    </ClCompile>
+    <ClCompile Include="hw_fixedpipeline.cpp">
+      <Filter>Source Files\Hardware Support</Filter>
+    </ClCompile>
+    <ClCompile Include="hw_progrpipeline.cpp">
+      <Filter>Source Files\Hardware Support</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -110,11 +122,17 @@
     <ClInclude Include="sw_framebuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="hw_framebuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="hw_shaderprogram.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Hardware Support</Filter>
+    </ClInclude>
+    <ClInclude Include="hw_framebuffer.h">
+      <Filter>Header Files\Hardware Support</Filter>
+    </ClInclude>
+    <ClInclude Include="hw_fixedpipeline.h">
+      <Filter>Header Files\Hardware Support</Filter>
+    </ClInclude>
+    <ClInclude Include="hw_progrpipeline.h">
+      <Filter>Header Files\Hardware Support</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

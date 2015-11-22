@@ -4,7 +4,6 @@
 #include "aabb.h"
 #include "texture.h"
 #include "sw_framebuffer.h"
-#include "hw_framebuffer.h"
 
 // Implements a triangle mesh class that stores shared vertices and triangle 
 // connectivity data.

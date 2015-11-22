@@ -1,11 +1,16 @@
 #pragma once
-
 #include <string>
 using std::string;
 #include "gui.h"
-#include "sw_framebuffer.h"
-#include "hw_framebuffer.h"
-#include "tmesh.h"
+// forward declaration here to prevent glew include
+// sensibilities
+class HWFrameBuffer;
+class SWFrameBuffer;
+class LightProjector;
+class Texture;
+class Light;
+class TMesh;
+class PPC;
 
 // Only those function that actually require a TMesh slot are 
 // registered here

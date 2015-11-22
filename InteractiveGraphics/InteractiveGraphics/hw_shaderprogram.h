@@ -1,5 +1,5 @@
 #pragma once
-#include <GL/glew.h> // opengl
+#include "hw_framebuffer.h" // opengl
 #include <string>
 using std::string;
 #include <unordered_map>

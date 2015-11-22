@@ -14,7 +14,7 @@ public:
 	virtual ~FrameBuffer();
 
 	// because this function does not override the pure virtual draw function
-	// from base class. this class is also still abstract. No need to redefine it
+	// from base class, this class is also still abstract. No need to redefine it
 	// virtual void draw() = 0; 
 
 	// simple getters

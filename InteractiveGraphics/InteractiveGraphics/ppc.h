@@ -1,5 +1,4 @@
 #pragma once
-
 #include "v3.h"
 #include "m33.h"
 #include "sw_framebuffer.h"

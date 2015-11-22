@@ -1,6 +1,15 @@
 #include "scene.h"
 #include "v3.h"
 #include "m33.h"
+#include "hw_framebuffer.h"
+#include "hw_progrpipeline.h"
+#include "hw_fixedpipeline.h"
+#include "sw_framebuffer.h"
+#include "tmesh.h"
+#include "ppc.h"
+#include "light.h"
+#include "lightprojector.h"
+#include "texture.h"
 #include "cubemap.h"
 #include <float.h>
 #include <ctime>
@@ -255,7 +264,7 @@ void Scene::dbgDraw() {
 		cleanForNewScene();
 
 		// create progr pipeline HW framebuffer
-		progrHwFb = new HWFrameBuffer(u0, v0, K_W, K_H, true);
+		progrHwFb = new HWProgrPipeline(u0, v0, K_W, K_H);
 		progrHwFb->label("Fixed Pipeline HW Framebuffer");
 
 		unsigned int tmsN = 5;
@@ -1783,7 +1792,7 @@ void Scene::testFixedPipelineHW(void)
 		cleanForNewScene();
 
 		// create fixed pipeline HW framebuffer
-		fixedHwFb = new HWFrameBuffer(u0, v0, K_W, K_H, false);
+		fixedHwFb = new HWFixedPipeline(u0, v0, K_W, K_H);
 		fixedHwFb->label("Fixed Pipeline HW Framebuffer");
 
 		unsigned int tmsN = 5;

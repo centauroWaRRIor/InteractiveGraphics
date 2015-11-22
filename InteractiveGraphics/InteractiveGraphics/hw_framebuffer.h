@@ -6,17 +6,17 @@ using std::pair;
 using std::make_pair;
 #include <unordered_map>
 using std::unordered_map;
+#include <GL/glew.h> // opengl
 #include "framebuffer.h"
 #include "tmesh.h"
 #include "texture.h"
 #include "ppc.h"
-// this needs to be a forward delcaration due to 
-// gl.h compilation order sensibility.
-class ShaderProgram;
 
 class HWFrameBuffer :
 	public FrameBuffer
 {
+protected: // need child classes to have access to these members
+
 	// scene's tmeshes, camera and textures need to be registered with this class for rendering
 	// because all the opengl drawing needs to be done from the draw method
 	vector<TMesh *> tMeshArray;
@@ -31,30 +31,25 @@ class HWFrameBuffer :
 	// used to initialize opengl state once
 	bool isGlewInit; // opengl extension wrangler utility
 
-	// programmable pipeline support
-	bool isProgrammable; // true for shaders support, false for fixed pipeline functionality
-	void loadShaders(void);
+	// texturing support
 	void loadTextures(void);
 
-	// all shader programs are listed here
-	ShaderProgram *fixedPipelineProgramNoTexture;
-	ShaderProgram *fixedPipelineProgram;
-
 public:
-	// function that is always called back by system and never called directly by programmer
-	// programmer triggers framebuffer update by calling FrameBuffer::redraw(), which makes
-	// system call draw()
-	virtual void draw() override;
+
+	// because this function does not override the pure virtual draw function
+	// from base class, this class is also still abstract. No need to redefine it
+	// virtual void draw() = 0; 
 
 	HWFrameBuffer(
 		int u0, int v0, // top left coords
-		unsigned int _w, unsigned int _h, // resolution
-		bool isProgrammable); // true for shaders support, false for fixed pipeline functionality
+		unsigned int _w, unsigned int _h); // resolution 
 	virtual ~HWFrameBuffer();
 
-	virtual void keyboardHandle(void) override;
-	virtual void mouseLeftClickDragHandle(int event) override;
-	virtual void mouseRightClickDragHandle(int event) override;
+	// because this function does not override the pure virtual functions
+	// from base class, this class is also still abstract. No need to redefine it
+	//virtual void keyboardHandle(void) = 0;
+	//virtual void mouseLeftClickDragHandle(int event) = 0;
+	//virtual void mouseRightClickDragHandle(int event) = 0;
 
 	// Register TMeshes, textures and PPC. Also establish tMesh texture corerspondance
 	// Reason behind this API is that all openGL drawing needs to be issued from draw function
