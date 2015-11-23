@@ -10,10 +10,16 @@ class HWReflections :
 {
 	// all shader programs are listed here
 	ShaderProgram *fixedPipelineProgram;
-	ShaderProgram *writeToTextureProgram;
+	ShaderProgram *fixedPipelineProgramNoTexture;
+
+	// TODO initialize in the constructor
+	GLuint FramebufferName = 0;
+	GLuint renderedTexture;
+	GLuint depthrenderbuffer;
+	GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
 
 	void loadShaders(void);
-
+	bool createRenderTextureTarget(void);
 public:
 	HWReflections(int u0, int v0, // top left coords
 		unsigned int _w, unsigned int _h); // resolution

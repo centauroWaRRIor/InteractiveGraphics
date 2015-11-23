@@ -4,6 +4,7 @@
 #include "hw_framebuffer.h"
 #include "hw_progrpipeline.h"
 #include "hw_fixedpipeline.h"
+#include "hw_reflections.h"
 #include "sw_framebuffer.h"
 #include "tmesh.h"
 #include "ppc.h"
@@ -34,6 +35,7 @@ Scene::Scene() :
 	fbAux(nullptr),
 	fixedHwFb(nullptr),
 	progrHwFb(nullptr),
+	reflectionshwFb(nullptr),
 	gui(nullptr),
 	ppc(nullptr),
 	light(nullptr),
@@ -106,6 +108,8 @@ Scene::~Scene()
 		delete fixedHwFb;
 	if (progrHwFb)
 		delete progrHwFb;
+	if (reflectionshwFb)
+		delete reflectionshwFb;
 	delete gui;
 	delete ppc;
 	delete light;
@@ -237,6 +241,12 @@ void Scene::cleanForNewScene(void)
 		progrHwFb = nullptr;
 	}
 
+	// destroy progrHwFb if present
+	if (reflectionshwFb) {
+		delete reflectionshwFb;
+		reflectionshwFb = nullptr;
+	}
+
 	// reset init flags for the different scenes
 	this->isDGBInit = false;
 	this->isTestCamControlsInit = false;
@@ -264,8 +274,8 @@ void Scene::dbgDraw() {
 		cleanForNewScene();
 
 		// create progr pipeline HW framebuffer
-		progrHwFb = new HWProgrPipeline(u0, v0, K_W, K_H);
-		progrHwFb->label("Fixed Pipeline HW Framebuffer");
+		reflectionshwFb = new HWReflections(u0, v0, K_W, K_H);
+		reflectionshwFb->label("Programmable Pipeline HW Framebuffer for A6");
 
 		unsigned int tmsN = 5;
 		unsigned int n;
@@ -286,7 +296,7 @@ void Scene::dbgDraw() {
 		tms[4]->loadBin("geometry/teapot1K.bin");
 		tms[4]->disableTexCoords(); // they don't look good
 		for (n = 0; n < tmsN; n++) {
-			progrHwFb->registerTMesh(tms[n]);
+			reflectionshwFb->registerTMesh(tms[n]);
 		}
 
 		// load five different textures for demoing
@@ -298,23 +308,23 @@ void Scene::dbgDraw() {
 		texObjects[4] = new Texture("pngs\\Woven_flower_pxr128.png");
 		texObjects[5] = new Texture("pngs\\American_walnut_pxr128.png");
 		for (n = 0; n < texObjectsN; n++) {
-			progrHwFb->registerTexture(texObjects[n]);
+			reflectionshwFb->registerTexture(texObjects[n]);
 		}
 
 		// assign tMesh to texture mappings
-		progrHwFb->assignTMeshTexture(0, 0);
-		progrHwFb->assignTMeshTexture(1, 1);
-		progrHwFb->assignTMeshTexture(2, 2);
-		progrHwFb->assignTMeshTexture(3, 3);
-		progrHwFb->assignTMeshTexture(4, 3);
+		reflectionshwFb->assignTMeshTexture(0, 0);
+		reflectionshwFb->assignTMeshTexture(1, 1);
+		reflectionshwFb->assignTMeshTexture(2, 2);
+		reflectionshwFb->assignTMeshTexture(3, 3);
+		reflectionshwFb->assignTMeshTexture(4, 3);
 
 		V3 center = tms[4]->getCenter();
 		ppc->moveForward(-200.0f);
 		ppc->positionAndOrient(ppc->getEyePoint(), center, V3(0.0f, 1.0f, 0.0f));
 		ppc->moveUp(10.0f);
-		progrHwFb->registerPPC(ppc);
+		reflectionshwFb->registerPPC(ppc);
 
-		progrHwFb->show();
+		reflectionshwFb->show();
 		isDGBInit = true;		
 	}
 	// clear screen
@@ -327,7 +337,7 @@ void Scene::dbgDraw() {
 	drawTMesh(*tms[0], *fb, *ppc, true);
 	
 	fb->redraw();
-	progrHwFb->redraw();
+	reflectionshwFb->redraw();
 	return;
 }
 
@@ -1867,7 +1877,7 @@ void Scene::testProgrPipelineHW(void)
 
 		// create progr pipeline HW framebuffer
 		progrHwFb = new HWProgrPipeline(u0, v0, K_W, K_H);
-		progrHwFb->label("Fixed Pipeline HW Framebuffer");
+		progrHwFb->label("Programmable Pipeline HW Framebuffer");
 
 		unsigned int tmsN = 5;
 		unsigned int n;
