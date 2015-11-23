@@ -16,9 +16,9 @@ HWReflections::HWReflections(
 HWReflections::~HWReflections()
 {
 	// undo render to target setup 
-	glDeleteFramebuffers(1, &FramebufferName);
+	glDeleteFramebuffers(1, &renderToTextureFramebuffer);
 	glDeleteTextures(1, &renderedTexture);
-	glDeleteRenderbuffers(1, &depthrenderbuffer);
+	glDeleteRenderbuffers(1, &renderToTextureDepthbuffer);
 	// delete all the programs
 	delete fixedPipelineProgramNoTexture;
 	delete fixedPipelineProgram;
@@ -49,8 +49,8 @@ bool HWReflections::createRenderTextureTarget(void)
 	// ---------------------------------------------
 
 	// The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
-	glGenFramebuffers(1, &FramebufferName);
-	glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+	glGenFramebuffers(1, &renderToTextureFramebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, renderToTextureFramebuffer);
 
 	// The texture we're going to render to
 	glGenTextures(1, &renderedTexture);
@@ -68,16 +68,16 @@ bool HWReflections::createRenderTextureTarget(void)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 	// The depth buffer
-	glGenRenderbuffers(1, &depthrenderbuffer);
-	glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
+	glGenRenderbuffers(1, &renderToTextureDepthbuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, renderToTextureDepthbuffer);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 1280, 720);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderToTextureDepthbuffer);
 
 	// Set "renderedTexture" as our colour attachement #0
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTexture, 0);
 
 	// Set the list of draw buffers.
-	glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
+	glDrawBuffers(1, renderToTextureDrawBuffers); // "1" is the size of DrawBuffers
 
    // Always check that our framebuffer is ok
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -134,7 +134,7 @@ void HWReflections::draw()
 	}
 
 	// Render to our render to texture framebuffer
-	glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+	glBindFramebuffer(GL_FRAMEBUFFER, renderToTextureFramebuffer);
 	// clear framebuffer
 	glClearColor(0.0f, 0.0f, 1.0, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -163,7 +163,7 @@ void HWReflections::draw()
 	// enable depth test
 	glEnable(GL_DEPTH_TEST);
 
-	glUseProgram(fixedPipelineProgram->getGLProgramHandle());
+	// use previously rendered texture as texture here
 	glActiveTexture(GL_TEXTURE0); // bind color texture to texture unit 0
 	glBindTexture(GL_TEXTURE_2D, renderedTexture);
 
@@ -171,6 +171,12 @@ void HWReflections::draw()
 	for (it = tMeshArray.begin(); it != tMeshArray.end(); ++it) {
 
 		TMesh *tMeshPtr = *it;
+
+		if (tMeshPtr->getIsTexCoordsAvailable())
+			glUseProgram(fixedPipelineProgram->getGLProgramHandle());
+		else
+			glUseProgram(fixedPipelineProgramNoTexture->getGLProgramHandle());
+
 		if (!tMeshPtr->getIsGLVertexArrayObjectCreated()) {
 			tMeshPtr->createGLVertexArrayObject(); // enables hw support for this TMesh 
 		}

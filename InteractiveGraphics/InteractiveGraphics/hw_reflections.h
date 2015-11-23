@@ -13,10 +13,10 @@ class HWReflections :
 	ShaderProgram *fixedPipelineProgramNoTexture;
 
 	// TODO initialize in the constructor
-	GLuint FramebufferName = 0;
+	GLuint renderToTextureFramebuffer = 0;
 	GLuint renderedTexture;
-	GLuint depthrenderbuffer;
-	GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+	GLuint renderToTextureDepthbuffer;
+	GLenum renderToTextureDrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
 
 	void loadShaders(void);
 	bool createRenderTextureTarget(void);
