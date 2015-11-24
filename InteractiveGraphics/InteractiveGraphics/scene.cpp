@@ -97,6 +97,7 @@ Scene::Scene() :
 	this->isTestCMRefractInit = false;
 	this->isTestFixedPipelineInit = false;
 	this->isTestProgrPipelineInit = false;
+	this->isA6DemoInit = false;
 }
 
 Scene::~Scene()
@@ -264,6 +265,7 @@ void Scene::cleanForNewScene(void)
 	this->isTestCMRefractInit = false;
 	this->isTestFixedPipelineInit = false;
 	this->isTestProgrPipelineInit = false;
+	this->isA6DemoInit = false;
 }
 
 // function linked to the DBG GUI button for testing new features
@@ -285,13 +287,13 @@ void Scene::dbgDraw() {
 		tms[3] = new TMesh();
 		tms[4] = new TMesh();
 
-		tms[0]->createQuadTestTMesh(false);
+		tms[0]->createQuadTMesh(false);
 		tms[0]->translate(V3(-100.0f, 50.0f, 0.0f));
-		tms[1]->createQuadTestTMesh(false);
+		tms[1]->createQuadTMesh(false);
 		tms[1]->translate(V3(20.0f, 50.0f, 0.0f));
-		tms[2]->createQuadTestTMesh(true);
+		tms[2]->createQuadTMesh(true);
 		tms[2]->translate(V3(-100.0f, 0.0f, 0.0f));
-		tms[3]->createQuadTestTMesh(true);
+		tms[3]->createQuadTMesh(true);
 		tms[3]->translate(V3(20.0f, 0.0f, 0.0f));
 		tms[4]->loadBin("geometry/teapot1K.bin");
 		tms[4]->disableTexCoords(); // they don't look good
@@ -702,12 +704,12 @@ void Scene::a3Demo(void)
 		ppcLerp0 = new PPC(*ppc);
 
 		// enable tiling for all the quads
-		tms[0]->createQuadTestTMesh(false);
-		tms[1]->createQuadTestTMesh(true);
-		tms[2]->createQuadTestTMesh(true);
-		tms[3]->createQuadTestTMesh(false);
-		tms[4]->createQuadTestTMesh(false);
-		tms[5]->createQuadTestTMesh(true);
+		tms[0]->createQuadTMesh(false);
+		tms[1]->createQuadTMesh(true);
+		tms[2]->createQuadTMesh(true);
+		tms[3]->createQuadTMesh(false);
+		tms[4]->createQuadTMesh(false);
+		tms[5]->createQuadTMesh(true);
 
 		// load five different textures for demoing
 		texObjects[0] = new Texture("pngs\\White_brick_block_pxr128.png");
@@ -800,7 +802,7 @@ void Scene::testTexture(void)
 		// create textured quad
 		ppc->moveForward(-200.0f);
 
-		tms[0]->createQuadTestTMesh(true); // enables tiling
+		tms[0]->createQuadTMesh(true); // enables tiling
 
 		//texObject = new Texture("pngs\\Woven_flower_pxr128.png"); // test simple texturing
 		texObjects[0] = new Texture("pngs\\Macbeth_color_checker_pxr128.png"); // test tiling
@@ -841,12 +843,12 @@ void Scene::testBilTexLookup(void)
 		ppcLerp0 = new PPC(*ppc);
 
 		// enable tiling for all the quads
-		tms[0]->createQuadTestTMesh(false);
-		tms[1]->createQuadTestTMesh(false);
-		tms[2]->createQuadTestTMesh(false);
-		tms[3]->createQuadTestTMesh(false);
-		tms[4]->createQuadTestTMesh(false);
-		tms[5]->createQuadTestTMesh(true);
+		tms[0]->createQuadTMesh(false);
+		tms[1]->createQuadTMesh(false);
+		tms[2]->createQuadTMesh(false);
+		tms[3]->createQuadTMesh(false);
+		tms[4]->createQuadTMesh(false);
+		tms[5]->createQuadTMesh(true);
 
 		// load five different textures for demoing
 		texObjects[0] = new Texture("pngs\\Woven_flower_pxr128.png");
@@ -928,7 +930,7 @@ void Scene::testSprites(void)
 		ppc->moveUp(20.0f);
 
 		// test textured quad
-		tms[0]->createQuadTestTMesh(false); // no tiling
+		tms[0]->createQuadTMesh(false); // no tiling
 
 		//texObjects[0] = new Texture("pngs\\Decal_12.png");
 		texObjects[0] = new Texture("pngs\\T_Explosion_SubUV.png");
@@ -1072,7 +1074,7 @@ void Scene::testShadowMap(void)
 		light->setDirection(V3(0.0f, 0.0f, -1.0f));
 
 		// Create a plane TMesh and a teapot TMesh
-		tms[0]->createQuadTestTMesh(false);
+		tms[0]->createQuadTMesh(false);
 		tms[0]->scale(6.0f);
 		tms[1]->loadBin("geometry/teapot1K.bin");
 		tms[1]->translate(V3(130.0f, 100.0f, 50.0f));
@@ -1128,7 +1130,7 @@ void Scene::testTexProj(void)
 		light->setDirection(V3(0.0f, 0.0f, -1.0f));
 
 		// Create a plane TMesh and a teapot TMesh
-		tms[0]->createQuadTestTMesh(false);
+		tms[0]->createQuadTMesh(false);
 		tms[0]->scale(6.0f);
 		tms[1]->loadBin("geometry/teapot1K.bin");
 		tms[1]->translate(V3(130.0f, 100.0f, 50.0f));
@@ -1197,7 +1199,7 @@ void Scene::testA4Demo(void)
 		ppc->moveRight(150.0f);
 		ppc->tilt(-15);
 
-		tms[0]->createQuadTestTMesh(true); // enable tiling for floor quad
+		tms[0]->createQuadTMesh(true); // enable tiling for floor quad
 		tms[1]->loadBin("geometry/happy4.bin");
 		//tms[1]->loadBin("geometry/happy2.bin"); // high res version (not ready for it, takes too long)
 		tms[2]->loadBin("geometry/teapot1K.bin");
@@ -1537,7 +1539,7 @@ void Scene::testCubeMapReflection(void)
 		tms[0]->loadBin("geometry/teapot1K.bin");
 		tms[0]->translate(V3(10.0f, -10.0f, 0.0f));
 		tms[0]->scale(1.0);
-		tms[1]->createQuadTestTMesh(true);
+		tms[1]->createQuadTMesh(true);
 		tms[1]->scale(2.5);
 		tms[1]->translate(V3(-50.0f, -40.0f, 0.0f));
 
@@ -1592,7 +1594,7 @@ void Scene::testCubeMapRefraction(void)
 		tms[0]->loadBin("geometry/teapot1K.bin");
 		tms[0]->translate(V3(10.0f, -10.0f, 0.0f));
 		tms[0]->scale(1.0);
-		tms[1]->createQuadTestTMesh(true);
+		tms[1]->createQuadTMesh(true);
 		tms[1]->scale(2.5);
 		tms[1]->translate(V3(-50.0f, -40.0f, 0.0f));
 
@@ -1635,7 +1637,7 @@ void Scene::a5Demo(void)
 	//tms[0]->loadBin("geometry/teapot57K.bin"); // HD model
 	tms[0]->translate(V3(10.0f, -10.0f, 0.0f));
 	tms[0]->scale(1.0);
-	tms[1]->createQuadTestTMesh(true);
+	tms[1]->createQuadTMesh(true);
 	tms[1]->scale(2.5);
 	tms[1]->translate(V3(-50.0f, -60.0f, 0.0f));
 	tms[1]->rotateAboutAxis(tms[1]->getCenter(), V3(1.0f, 0.0f, 0.0f), 90.0f);
@@ -1814,13 +1816,13 @@ void Scene::testFixedPipelineHW(void)
 		tms[3] = new TMesh();
 		tms[4] = new TMesh();
 
-		tms[0]->createQuadTestTMesh(false);
+		tms[0]->createQuadTMesh(false);
 		tms[0]->translate(V3(-100.0f, 50.0f, 0.0f));
-		tms[1]->createQuadTestTMesh(false);
+		tms[1]->createQuadTMesh(false);
 		tms[1]->translate(V3(20.0f, 50.0f, 0.0f));
-		tms[2]->createQuadTestTMesh(true);
+		tms[2]->createQuadTMesh(true);
 		tms[2]->translate(V3(-100.0f, 0.0f, 0.0f));
-		tms[3]->createQuadTestTMesh(true);
+		tms[3]->createQuadTMesh(true);
 		tms[3]->translate(V3(20.0f, 0.0f, 0.0f));
 		tms[4]->loadBin("geometry/teapot1K.bin");
 		tms[4]->disableTexCoords(); // they don't look good
@@ -1887,13 +1889,13 @@ void Scene::testProgrPipelineHW(void)
 		tms[3] = new TMesh();
 		tms[4] = new TMesh();
 
-		tms[0]->createQuadTestTMesh(false);
+		tms[0]->createQuadTMesh(false);
 		tms[0]->translate(V3(-100.0f, 50.0f, 0.0f));
-		tms[1]->createQuadTestTMesh(false);
+		tms[1]->createQuadTMesh(false);
 		tms[1]->translate(V3(20.0f, 50.0f, 0.0f));
-		tms[2]->createQuadTestTMesh(true);
+		tms[2]->createQuadTMesh(true);
 		tms[2]->translate(V3(-100.0f, 0.0f, 0.0f));
-		tms[3]->createQuadTestTMesh(true);
+		tms[3]->createQuadTMesh(true);
 		tms[3]->translate(V3(20.0f, 0.0f, 0.0f));
 		tms[4]->loadBin("geometry/teapot1K.bin");
 		tms[4]->disableTexCoords(); // they don't look good
@@ -1940,6 +1942,54 @@ void Scene::testProgrPipelineHW(void)
 
 	fb->redraw();
 	progrHwFb->redraw();
+	return;
+}
+
+void Scene::a6Demo(void)
+{
+	if (!isA6DemoInit) {
+
+		cleanForNewScene();
+
+		// create progr pipeline HW framebuffer
+		reflectionshwFb = new HWReflections(u0, v0, K_W, K_H);
+		reflectionshwFb->label("Programmable Pipeline HW Framebuffer for A6");
+
+		unsigned int tmsN = 2;
+		unsigned int n;
+		tms[0] = new TMesh();
+		tms[1] = new TMesh();
+
+		tms[0]->loadBin("geometry/teapot1K.bin");
+		tms[0]->disableTexCoords(); // they don't look good
+		tms[1]->loadBin("geometry/happy4.bin");
+		// scale happy mesh to be same scale as teapots
+		AABB teapotAABB = tms[0]->getAABB();
+		tms[1]->setToFitAABB(teapotAABB);
+		for (n = 0; n < tmsN; n++) {
+			reflectionshwFb->registerTMesh(tms[n]);
+		}
+
+		V3 center = tms[4]->getCenter();
+		ppc->moveForward(-200.0f);
+		ppc->positionAndOrient(ppc->getEyePoint(), center, V3(0.0f, 1.0f, 0.0f));
+		ppc->moveUp(10.0f);
+		reflectionshwFb->registerPPC(ppc);
+
+		reflectionshwFb->show();
+		isA6DemoInit = true;
+	}
+	// clear screen
+	//fb->set(0xFFFFFFFF);
+	// clear zBuffer
+	//if (currentDrawMode == DrawModes::MODELSPACELERP)
+		//fb->clearZB(FLT_MAX);
+	//else
+		//fb->clearZB(0.0f);
+	//drawTMesh(*tms[0], *fb, *ppc, true);
+
+	//fb->redraw();
+	reflectionshwFb->redraw();
 	return;
 }
 

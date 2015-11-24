@@ -1,5 +1,7 @@
 #include "hw_reflections.h"
 #include "hw_shaderprogram.h"
+#include "ppc.h"
+#include "v3.h"
 #include <iostream>
 using std::cout;
 using std::endl;
@@ -9,7 +11,8 @@ HWReflections::HWReflections(
 	unsigned int _w, unsigned int _h):
 	HWFrameBuffer(u0, v0, _w, _h),
 	fixedPipelineProgramNoTexture(nullptr),
-	fixedPipelineProgram(nullptr)
+	fixedPipelineProgram(nullptr),
+	reflectorTMeshIndex(0)
 {
 }
 
@@ -44,9 +47,9 @@ void HWReflections::loadShaders(void)
 
 bool HWReflections::createRenderTextureTarget(void)
 {
-	// ---------------------------------------------
-	// Render to Texture - specific code begins here
-	// ---------------------------------------------
+	// -----------------------------------------------
+	// Render to Texture - set up code is placed here
+	// -----------------------------------------------
 
 	// The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
 	glGenFramebuffers(1, &renderToTextureFramebuffer);
@@ -86,6 +89,42 @@ bool HWReflections::createRenderTextureTarget(void)
 		return true;
 }
 
+bool HWReflections::createImpostorBillboards(void)
+{
+	unsigned int impostorsCreated = 0;
+	unsigned int tMeshIndex = 0;
+
+	V3 reflectionCentroid = tMeshArray[reflectorTMeshIndex]->getCenter();
+	V3 tMeshCentroid;
+	V3 a, b;
+	V3 lookAtVector;
+	V3 bottomLeftCorner, upperRightCorner;
+
+	PPC ppc(55.0, 1280, 720);
+
+	while (impostorsCreated < MAX_IMPOSTORS && tMeshIndex < tMeshArray.size()) {
+		// make sure we are not creating an impostor billboard for the teapot
+		if (tMeshIndex != reflectorTMeshIndex) {
+
+			tMeshCentroid = tMeshArray[tMeshIndex]->getCenter();
+			ppc.positionAndOrient(reflectionCentroid, tMeshCentroid, V3(0.0f, 1.0f, 0.0f));
+
+			// use camera plane axis directions to create billboard without too much math
+			a = ppc.getLowerCaseA();
+			b = ppc.getLowerCaseB();
+
+			lookAtVector = tMeshCentroid - reflectionCentroid;
+			bottomLeftCorner = reflectionCentroid + lookAtVector - (a * 100.0f) + (b * 100.0f);
+			upperRightCorner = reflectionCentroid + lookAtVector + (a * 100.0f) - (b * 100.0f);
+			impostorBillboards[impostorsCreated].createQuadTMesh(bottomLeftCorner, upperRightCorner, false);
+
+			++impostorsCreated;
+		}
+		++tMeshIndex;
+	}
+	return false;
+}
+
 void HWReflections::draw()
 {
 	// initialize opengl extension wrangler utility
@@ -100,7 +139,59 @@ void HWReflections::draw()
 		cout << "Status: Using GLEW " << glewGetString(GLEW_VERSION) << endl;
 		loadShaders();
 		//loadTextures();
-		if(!createRenderTextureTarget())
+		//createImpostorBillboards();
+		isGlewInit = true;
+	}
+
+	glUseProgram(fixedPipelineProgramNoTexture->getGLProgramHandle());
+
+	vector<TMesh *>::const_iterator it;
+	// render all triangle meshes through hardware
+	for (it = tMeshArray.begin(); it != tMeshArray.end(); ++it) {
+
+		TMesh *tMeshPtr = *it;
+		glUseProgram(fixedPipelineProgramNoTexture->getGLProgramHandle());
+
+		if (!tMeshPtr->getIsGLVertexArrayObjectCreated()) {
+			tMeshPtr->createGLVertexArrayObject(); // enables hw support for this TMesh 
+		}
+		tMeshPtr->hwGLVertexArrayObjectDraw();
+	}
+	/*
+	// draw reflector Tmesh through hardware
+	if (!tMeshArray[reflectorTMeshIndex]->getIsGLVertexArrayObjectCreated()) {
+		tMeshArray[reflectorTMeshIndex]->createGLVertexArrayObject(); // enables hw support for this TMesh 
+	}
+	tMeshArray[reflectorTMeshIndex]->hwGLVertexArrayObjectDraw();
+
+	// render all impostor billboards through hardware
+	vector<TMesh *>::const_iterator it;
+	for (it = tMeshArray.begin(); it != tMeshArray.end(); ++it) {
+
+		TMesh *tMeshPtr = *it;
+		if (!tMeshPtr->getIsGLVertexArrayObjectCreated()) {
+			tMeshPtr->createGLVertexArrayObject(); // enables hw support for this TMesh 
+		}
+		tMeshPtr->hwGLVertexArrayObjectDraw();
+	}
+	*/
+}
+
+void HWReflections::drawRenderToTexture(void)
+{
+	// initialize opengl extension wrangler utility
+	if (!isGlewInit) {
+		GLenum err = glewInit();
+		if (GLEW_OK != err)
+		{
+			/* Problem: glewInit failed, something is seriously wrong. */
+			cout << "Error: " << glewGetErrorString(err) << endl;
+			return;
+		}
+		cout << "Status: Using GLEW " << glewGetString(GLEW_VERSION) << endl;
+		loadShaders();
+		//loadTextures();
+		if (!createRenderTextureTarget())
 			cout << "Error: Failed while settting up render to texture" << endl;
 		else
 			cout << "Render to texture set up successfully!" << endl;
@@ -181,6 +272,14 @@ void HWReflections::draw()
 			tMeshPtr->createGLVertexArrayObject(); // enables hw support for this TMesh 
 		}
 		tMeshPtr->hwGLVertexArrayObjectDraw();
+	}
+}
+
+void HWReflections::setReflectorTMesh(unsigned int index)
+{
+	// only allowed to be done once at init
+	if (!isGlewInit) {
+		reflectorTMeshIndex = index;
 	}
 }
 

@@ -159,7 +159,7 @@ void TMesh::createTetrahedronTestMesh(void)
 	aabb = new AABB(computeAABB());
 }
 
-void TMesh::createQuadTestTMesh(bool isTiling)
+void TMesh::createQuadTMesh(bool isTiling)
 {
 	this->cleanUp();
 
@@ -175,7 +175,7 @@ void TMesh::createQuadTestTMesh(bool isTiling)
 	// allocate normals array
 	normals = new V3[vertsN];
 
-	// following vertices define a sample tetrahedron
+	// following vertices define a sample quad TMesh
 	verts[0] = V3(0.0f, 0.0f, 0.0f);
 	cols[0] = V3(0.0f, 0.0f, 0.0f);
 	normals[0] = V3(0.0f, 0.0f, 1.0f);
@@ -192,6 +192,78 @@ void TMesh::createQuadTestTMesh(bool isTiling)
 	tcs[4] = isTiling ? 2.0f : 1.0f;
 	tcs[5] = isTiling ? 2.0f : 1.0f;
 	verts[3] = V3(0.0f, 40.0f, 0.0f);
+	cols[3] = V3(0.0f, 0.0f, 1.0f);
+	normals[3] = V3(0.0f, 0.0f, 1.0f);
+	tcs[6] = 0.0;
+	tcs[7] = isTiling ? 2.0f : 1.0f;
+
+	trisN = 2;
+
+	// allocate triangle indices array
+	tris = new unsigned int[3 * trisN];
+
+	int tri = 0;
+	tris[3 * tri + 0] = 0;
+	tris[3 * tri + 1] = 1;
+	tris[3 * tri + 2] = 3;
+
+	tri++;
+	tris[3 * tri + 0] = 3;
+	tris[3 * tri + 1] = 1;
+	tris[3 * tri + 2] = 2;
+
+	// compute aabb
+	aabb = new AABB(computeAABB());
+}
+
+void TMesh::createQuadTMesh(V3 bottomLeftCorner, V3 upperRightCorner, bool isTiling)
+{
+	this->cleanUp();
+
+	vertsN = 4;
+	// allocate vertices array
+	verts = new V3[vertsN];
+	projVerts = new V3[vertsN];
+	isVertProjVis = new bool[vertsN];
+	// allocate colors array
+	cols = new V3[vertsN];
+	// allocate tex coords array
+	tcs = new float[vertsN * 2];
+	// allocate normals array
+	normals = new V3[vertsN];
+
+	// following vertices define a sample quad TMesh
+	verts[0] = V3(
+		bottomLeftCorner.getX(),
+		bottomLeftCorner.getY(), 
+		bottomLeftCorner.getZ());
+	cols[0] = V3(0.0f, 0.0f, 0.0f);
+	normals[0] = V3(0.0f, 0.0f, 1.0f);
+	tcs[0] = 0.0;
+	tcs[1] = 0.0;
+
+	verts[1] = V3(
+		upperRightCorner.getX(),
+		bottomLeftCorner.getY(),
+		bottomLeftCorner.getZ());
+	cols[1] = V3(1.0f, 0.0f, 0.0f);
+	normals[1] = V3(0.0f, 0.0f, 1.0f);
+	tcs[2] = isTiling ? 2.0f : 1.0f;
+	tcs[3] = 0.0;
+
+	verts[2] = V3(
+		upperRightCorner.getX(),
+		upperRightCorner.getY(),
+		upperRightCorner.getZ());
+	cols[2] = V3(0.0f, 1.0f, 0.0f);
+	normals[2] = V3(0.0f, 0.0f, 1.0f);
+	tcs[4] = isTiling ? 2.0f : 1.0f;
+	tcs[5] = isTiling ? 2.0f : 1.0f;
+	
+	verts[3] = V3(
+		bottomLeftCorner.getX(),
+		upperRightCorner.getY(),
+		bottomLeftCorner.getZ());
 	cols[3] = V3(0.0f, 0.0f, 1.0f);
 	normals[3] = V3(0.0f, 0.0f, 1.0f);
 	tcs[6] = 0.0;

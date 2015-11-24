@@ -69,7 +69,8 @@ private:
 		isTestBilTexLookupInit, isShadowMapTestInit,
 		isTexProjectTestInit, isA4DemoInit, isA4DemoExtraInit,
 		isTestCMReflectInit, isTestCMRefractInit,
-		isTestFixedPipelineInit, isTestProgrPipelineInit;
+		isTestFixedPipelineInit, isTestProgrPipelineInit,
+		isA6DemoInit;
 	
 	static const int u0, v0; // initial window coordinates
 
@@ -119,6 +120,7 @@ public:
 	void a5Demo(void);
 	void testFixedPipelineHW(void);
 	void testProgrPipelineHW(void);
+	void a6Demo(void);
 
 	void saveCamera(void) const;
 	void saveThisFramebuffer(void) const;

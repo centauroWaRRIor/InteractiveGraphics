@@ -148,7 +148,8 @@ public:
 	// constructs a tetrahedron for testing purposes
 	void createTetrahedronTestMesh(void);
 	// creates a quad for texture testing purposes
-	void createQuadTestTMesh(bool isTiling);
+	void createQuadTMesh(bool isTiling);
+	void createQuadTMesh(V3 bottomLeftCorner, V3 upperRightCorner, bool isTiling);
 
 	// small static utitlities
 	// self note: because they are static no need for object instance.

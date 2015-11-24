@@ -212,9 +212,9 @@ class GUI {open
           xywh {30 289 140 15} type Radio down_box ROUND_DOWN_BOX
         }
       }
-      Fl_Button A5Button {
-        label {Dummy Button}
-        callback {A5Demo_cb()}
+      Fl_Button A6Button {
+        label {A6 Demo}
+        callback {A6Demo_cb()}
         xywh {15 92 225 40} selection_color 72
       }
     }
@@ -303,16 +303,19 @@ scene->testCubeMapReflection();} {}
     code {scene->regFuncForKbRedraw(Scenes::REFRACTEST);
 scene->testCubeMapRefraction();} {}
   }
-  Function {A5Demo_cb()} {} {
+  Function {A5Demo_cb()} {open
+  } {
     code {scene->a5Demo();} {}
   }
-  Function {TestFixedHW_cb()} {open
-  } {
+  Function {TestFixedHW_cb()} {} {
     code {scene->testFixedPipelineHW();} {}
   }
-  Function {TestProgHW_cb()} {open
+  Function {TestProgHW_cb()} {} {
+    code {scene->testProgrPipelineHW();} {}
+  }
+  Function {A6Demo_cb()} {open
   } {
-    code {scene->testProgrPipelineHW();} {selected
+    code {scene->a6Demo();} {selected
     }
   }
 } 
