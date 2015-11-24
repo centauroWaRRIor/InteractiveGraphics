@@ -139,8 +139,40 @@ void HWReflections::draw()
 		cout << "Status: Using GLEW " << glewGetString(GLEW_VERSION) << endl;
 		loadShaders();
 		//loadTextures();
-		//createImpostorBillboards();
+		createImpostorBillboards();
 		isGlewInit = true;
+	}
+
+	// clear framebuffer
+	glClearColor(0.0f, 0.0f, 1.0, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	// enable depth test
+	glEnable(GL_DEPTH_TEST);
+
+	// set perspective and model-view matrices
+	const float nearPlaneValue = 10.0f;
+	const float farPlaneValue = 1000.0f;
+	GLfloat perspectiveMatrix[16];
+	GLfloat modelviewMatrix[16];
+	// use old fixed pipeline (deprecated) glFrustum and gluLookAt
+	// to set the perspective matrix and modelview matrix respectively
+	if (camera) {
+		// set view intrinsics
+		camera->setGLIntrinsics(nearPlaneValue, farPlaneValue);
+		// set view extrinsics
+		camera->setGLExtrinsics();
+
+		// need to send matrices as uniforms when using shaders since I'm using GLSL 420 core
+		glGetFloatv(GL_PROJECTION_MATRIX, perspectiveMatrix);
+		glGetFloatv(GL_MODELVIEW_MATRIX, modelviewMatrix);
+
+		glUseProgram(fixedPipelineProgram->getGLProgramHandle());
+		fixedPipelineProgram->uploadMatrixUniform("proj_matrix", perspectiveMatrix);
+		fixedPipelineProgram->uploadMatrixUniform("mv_matrix", modelviewMatrix);
+
+		glUseProgram(fixedPipelineProgramNoTexture->getGLProgramHandle());
+		fixedPipelineProgramNoTexture->uploadMatrixUniform("proj_matrix", perspectiveMatrix);
+		fixedPipelineProgramNoTexture->uploadMatrixUniform("mv_matrix", modelviewMatrix);
 	}
 
 	glUseProgram(fixedPipelineProgramNoTexture->getGLProgramHandle());
@@ -163,18 +195,18 @@ void HWReflections::draw()
 		tMeshArray[reflectorTMeshIndex]->createGLVertexArrayObject(); // enables hw support for this TMesh 
 	}
 	tMeshArray[reflectorTMeshIndex]->hwGLVertexArrayObjectDraw();
-
+	*/
 	// render all impostor billboards through hardware
-	vector<TMesh *>::const_iterator it;
-	for (it = tMeshArray.begin(); it != tMeshArray.end(); ++it) {
+	//vector<TMesh *>::const_iterator it;
+	for (unsigned int i = 0; i < MAX_IMPOSTORS; i++) {
 
-		TMesh *tMeshPtr = *it;
+		TMesh *tMeshPtr = &impostorBillboards[i];
 		if (!tMeshPtr->getIsGLVertexArrayObjectCreated()) {
 			tMeshPtr->createGLVertexArrayObject(); // enables hw support for this TMesh 
 		}
 		tMeshPtr->hwGLVertexArrayObjectDraw();
 	}
-	*/
+	
 }
 
 void HWReflections::drawRenderToTexture(void)

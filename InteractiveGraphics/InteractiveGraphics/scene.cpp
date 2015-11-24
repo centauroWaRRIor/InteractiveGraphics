@@ -1966,12 +1966,14 @@ void Scene::a6Demo(void)
 		// scale happy mesh to be same scale as teapots
 		AABB teapotAABB = tms[0]->getAABB();
 		tms[1]->setToFitAABB(teapotAABB);
+		tms[1]->translate(V3(150.0f, 0.0f, 0.0f));
 		for (n = 0; n < tmsN; n++) {
 			reflectionshwFb->registerTMesh(tms[n]);
 		}
 
-		V3 center = tms[4]->getCenter();
-		ppc->moveForward(-200.0f);
+		V3 center = tms[0]->getCenter();
+		ppc->moveForward(-400.0f);
+		ppc->moveRight(-100.0f);
 		ppc->positionAndOrient(ppc->getEyePoint(), center, V3(0.0f, 1.0f, 0.0f));
 		ppc->moveUp(10.0f);
 		reflectionshwFb->registerPPC(ppc);
