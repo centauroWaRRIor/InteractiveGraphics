@@ -1971,6 +1971,9 @@ void Scene::a6Demo(void)
 			reflectionshwFb->registerTMesh(tms[n]);
 		}
 
+		HWReflections *tempPointer = (HWReflections *) reflectionshwFb;
+		tempPointer->setReflectorTMesh(0);
+
 		V3 center = tms[0]->getCenter();
 		ppc->moveForward(-400.0f);
 		ppc->moveRight(-100.0f);

@@ -216,7 +216,11 @@ void TMesh::createQuadTMesh(bool isTiling)
 	aabb = new AABB(computeAABB());
 }
 
-void TMesh::createQuadTMesh(V3 bottomLeftCorner, V3 upperRightCorner, bool isTiling)
+void TMesh::createQuadTMesh(const V3 &p1,
+	const V3 &p2,
+	const V3 &p3,
+	const V3 &p4,
+	bool isTiling)
 {
 	this->cleanUp();
 
@@ -234,36 +238,36 @@ void TMesh::createQuadTMesh(V3 bottomLeftCorner, V3 upperRightCorner, bool isTil
 
 	// following vertices define a sample quad TMesh
 	verts[0] = V3(
-		bottomLeftCorner.getX(),
-		bottomLeftCorner.getY(), 
-		bottomLeftCorner.getZ());
+		p1.getX(),
+		p1.getY(),
+		p1.getZ());
 	cols[0] = V3(0.0f, 0.0f, 0.0f);
 	normals[0] = V3(0.0f, 0.0f, 1.0f);
 	tcs[0] = 0.0;
 	tcs[1] = 0.0;
 
 	verts[1] = V3(
-		upperRightCorner.getX(),
-		bottomLeftCorner.getY(),
-		bottomLeftCorner.getZ());
+		p2.getX(),
+		p2.getY(),
+		p2.getZ());
 	cols[1] = V3(1.0f, 0.0f, 0.0f);
 	normals[1] = V3(0.0f, 0.0f, 1.0f);
 	tcs[2] = isTiling ? 2.0f : 1.0f;
 	tcs[3] = 0.0;
 
 	verts[2] = V3(
-		upperRightCorner.getX(),
-		upperRightCorner.getY(),
-		upperRightCorner.getZ());
+		p3.getX(),
+		p3.getY(),
+		p3.getZ());
 	cols[2] = V3(0.0f, 1.0f, 0.0f);
 	normals[2] = V3(0.0f, 0.0f, 1.0f);
 	tcs[4] = isTiling ? 2.0f : 1.0f;
 	tcs[5] = isTiling ? 2.0f : 1.0f;
-	
+
 	verts[3] = V3(
-		bottomLeftCorner.getX(),
-		upperRightCorner.getY(),
-		bottomLeftCorner.getZ());
+		p4.getX(),
+		p4.getY(),
+		p4.getZ());
 	cols[3] = V3(0.0f, 0.0f, 1.0f);
 	normals[3] = V3(0.0f, 0.0f, 1.0f);
 	tcs[6] = 0.0;

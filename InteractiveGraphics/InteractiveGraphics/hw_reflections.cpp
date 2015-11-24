@@ -98,7 +98,7 @@ bool HWReflections::createImpostorBillboards(void)
 	V3 tMeshCentroid;
 	V3 a, b;
 	V3 lookAtVector;
-	V3 bottomLeftCorner, upperRightCorner;
+	V3 p1, p2, p3, p4;
 
 	PPC ppc(55.0, 1280, 720);
 
@@ -114,9 +114,12 @@ bool HWReflections::createImpostorBillboards(void)
 			b = ppc.getLowerCaseB();
 
 			lookAtVector = tMeshCentroid - reflectionCentroid;
-			bottomLeftCorner = reflectionCentroid + lookAtVector - (a * 100.0f) + (b * 100.0f);
-			upperRightCorner = reflectionCentroid + lookAtVector + (a * 100.0f) - (b * 100.0f);
-			impostorBillboards[impostorsCreated].createQuadTMesh(bottomLeftCorner, upperRightCorner, false);
+
+			p1 = reflectionCentroid + lookAtVector - (a * 100.0f) + (b * 100.0f);
+			p2 = reflectionCentroid + lookAtVector + (a * 100.0f) + (b * 100.0f);
+			p3 = reflectionCentroid + lookAtVector + (a * 100.0f) - (b * 100.0f);
+			p4 = reflectionCentroid + lookAtVector - (a * 100.0f) - (b * 100.0f);
+			impostorBillboards[impostorsCreated].createQuadTMesh(p1, p2, p3, p4, false);
 
 			++impostorsCreated;
 		}
@@ -148,6 +151,9 @@ void HWReflections::draw()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	// enable depth test
 	glEnable(GL_DEPTH_TEST);
+
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	//glCullFace?(GL_FRONT_AND_BACK);
 
 	// set perspective and model-view matrices
 	const float nearPlaneValue = 10.0f;

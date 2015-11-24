@@ -149,7 +149,12 @@ public:
 	void createTetrahedronTestMesh(void);
 	// creates a quad for texture testing purposes
 	void createQuadTMesh(bool isTiling);
-	void createQuadTMesh(V3 bottomLeftCorner, V3 upperRightCorner, bool isTiling);
+	void createQuadTMesh(
+		const V3 &p1, 
+		const V3 &p2, 
+		const V3 &p3, 
+		const V3 &p4, 
+		bool isTiling);
 
 	// small static utitlities
 	// self note: because they are static no need for object instance.
