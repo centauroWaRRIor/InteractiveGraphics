@@ -1955,18 +1955,22 @@ void Scene::a6Demo(void)
 		reflectionshwFb = new HWReflections(u0, v0, K_W, K_H);
 		reflectionshwFb->label("Programmable Pipeline HW Framebuffer for A6");
 
-		unsigned int tmsN = 2;
+		unsigned int tmsN = 3;
 		unsigned int n;
 		tms[0] = new TMesh();
 		tms[1] = new TMesh();
+		tms[2] = new TMesh();
 
 		tms[0]->loadBin("geometry/teapot1K.bin");
 		tms[0]->disableTexCoords(); // they don't look good
 		tms[1]->loadBin("geometry/happy4.bin");
+		tms[2]->loadBin("geometry/happy4.bin");
 		// scale happy mesh to be same scale as teapots
 		AABB teapotAABB = tms[0]->getAABB();
 		tms[1]->setToFitAABB(teapotAABB);
+		tms[2]->setToFitAABB(teapotAABB);
 		tms[1]->translate(V3(150.0f, 0.0f, 0.0f));
+		tms[2]->translate(V3(-150.0f, 0.0f, 0.0f));
 		for (n = 0; n < tmsN; n++) {
 			reflectionshwFb->registerTMesh(tms[n]);
 		}
