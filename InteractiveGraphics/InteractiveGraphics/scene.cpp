@@ -1969,7 +1969,7 @@ void Scene::a6Demo(void)
 		AABB teapotAABB = tms[0]->getAABB();
 		tms[1]->setToFitAABB(teapotAABB);
 		tms[2]->setToFitAABB(teapotAABB);
-		tms[1]->translate(V3(150.0f, 0.0f, 0.0f));
+		tms[1]->translate(V3(0.0f, 0.0f, -80.0f));
 		tms[2]->translate(V3(-150.0f, 0.0f, 0.0f));
 		for (n = 0; n < tmsN; n++) {
 			reflectionshwFb->registerTMesh(tms[n]);

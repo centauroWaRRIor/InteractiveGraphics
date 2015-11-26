@@ -161,8 +161,9 @@ void HWReflections::draw()
 		glUseProgram(reflectionShader->getGLProgramHandle());
 		GLfloat billboardCoords[3 * 4];
 		GLfloat billboardColors[3 * 4];
-		tMeshArray[reflectorTMeshIndex]->copyNVerts(billboardCoords, 4);
-		tMeshArray[reflectorTMeshIndex]->copyNColors(billboardColors, 4);
+		// pass billboard imnpostor 1 information
+		impostorBillboards[0].copyNVerts(billboardCoords, 4);
+		impostorBillboards[0].copyNColors(billboardColors, 4);
 		reflectionShader->uploadVectors3Uniform("billboard", billboardCoords, 4);
 		reflectionShader->uploadVectors3Uniform("billboardColor", billboardColors, 4);
 
