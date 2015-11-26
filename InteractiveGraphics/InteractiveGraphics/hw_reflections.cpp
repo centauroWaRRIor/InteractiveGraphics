@@ -12,6 +12,7 @@ HWReflections::HWReflections(
 	HWFrameBuffer(u0, v0, _w, _h),
 	fixedPipelineProgramNoTexture(nullptr),
 	fixedPipelineProgram(nullptr),
+	reflectionShader(nullptr),
 	reflectorTMeshIndex(0)
 {
 }
@@ -25,6 +26,7 @@ HWReflections::~HWReflections()
 	// delete all the programs
 	delete fixedPipelineProgramNoTexture;
 	delete fixedPipelineProgram;
+	delete reflectionShader;
 }
 
 void HWReflections::loadShaders(void)
@@ -35,6 +37,9 @@ void HWReflections::loadShaders(void)
 	list<string> shaderList2;
 	shaderList2.push_back("glsl/fixedPipeline.vs.glsl");
 	shaderList2.push_back("glsl/fixedPipeline.fs.glsl");
+	list<string> shaderList3;
+	shaderList3.push_back("glsl/reflectionShader.vs.glsl");
+	shaderList3.push_back("glsl/reflectionShader.fs.glsl");
 
 	fixedPipelineProgramNoTexture = new ShaderProgram(shaderList1);
 	fixedPipelineProgramNoTexture->createUniform("proj_matrix");
@@ -43,6 +48,13 @@ void HWReflections::loadShaders(void)
 	fixedPipelineProgram = new ShaderProgram(shaderList2);
 	fixedPipelineProgram->createUniform("proj_matrix");
 	fixedPipelineProgram->createUniform("mv_matrix");
+
+	reflectionShader = new ShaderProgram(shaderList3);
+	reflectionShader->createUniform("proj_matrix");
+	reflectionShader->createUniform("mv_matrix");
+	reflectionShader->createUniform("billboard");
+	reflectionShader->createUniform("billboardColor");
+	reflectionShader->createUniform("eyePosition");
 }
 
 bool HWReflections::createRenderTextureTarget(void)
@@ -179,29 +191,35 @@ void HWReflections::draw()
 		glUseProgram(fixedPipelineProgramNoTexture->getGLProgramHandle());
 		fixedPipelineProgramNoTexture->uploadMatrixUniform("proj_matrix", perspectiveMatrix);
 		fixedPipelineProgramNoTexture->uploadMatrixUniform("mv_matrix", modelviewMatrix);
+
+		glUseProgram(reflectionShader->getGLProgramHandle());
+		reflectionShader->uploadMatrixUniform("proj_matrix", perspectiveMatrix);
+		reflectionShader->uploadMatrixUniform("mv_matrix", modelviewMatrix);
 	}
 
-	glUseProgram(fixedPipelineProgramNoTexture->getGLProgramHandle());
-
-	vector<TMesh *>::const_iterator it;
-	// render all triangle meshes through hardware
-	for (it = tMeshArray.begin(); it != tMeshArray.end(); ++it) {
-
-		TMesh *tMeshPtr = *it;
-		glUseProgram(fixedPipelineProgramNoTexture->getGLProgramHandle());
-
-		if (!tMeshPtr->getIsGLVertexArrayObjectCreated()) {
-			tMeshPtr->createGLVertexArrayObject(); // enables hw support for this TMesh 
-		}
-		tMeshPtr->hwGLVertexArrayObjectDraw();
-	}
-	/*
-	// draw reflector Tmesh through hardware
+	glUseProgram(reflectionShader->getGLProgramHandle());
+	// draw reflector Tmesh through hardware using special shader 
 	if (!tMeshArray[reflectorTMeshIndex]->getIsGLVertexArrayObjectCreated()) {
-		tMeshArray[reflectorTMeshIndex]->createGLVertexArrayObject(); // enables hw support for this TMesh 
+	tMeshArray[reflectorTMeshIndex]->createGLVertexArrayObject(); // enables hw support for this TMesh
 	}
 	tMeshArray[reflectorTMeshIndex]->hwGLVertexArrayObjectDraw();
-	*/
+
+	glUseProgram(fixedPipelineProgramNoTexture->getGLProgramHandle());
+	vector<TMesh *>::const_iterator it;
+	// render all triangle meshes through hardware except for tMesh acting as reflector
+	for (it = tMeshArray.begin(); it != tMeshArray.end(); ++it) {
+
+		if ((it - tMeshArray.begin()) != reflectorTMeshIndex) {
+			TMesh *tMeshPtr = *it;
+			glUseProgram(fixedPipelineProgramNoTexture->getGLProgramHandle());
+
+			if (!tMeshPtr->getIsGLVertexArrayObjectCreated()) {
+				tMeshPtr->createGLVertexArrayObject(); // enables hw support for this TMesh 
+			}
+			tMeshPtr->hwGLVertexArrayObjectDraw();
+		}
+	}
+
 	// render all impostor billboards through hardware
 	//vector<TMesh *>::const_iterator it;
 	for (unsigned int i = 0; i < MAX_IMPOSTORS; i++) {

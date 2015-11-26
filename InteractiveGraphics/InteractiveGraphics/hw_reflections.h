@@ -13,6 +13,7 @@ class HWReflections :
 	// all shader programs are listed here
 	ShaderProgram *fixedPipelineProgram;
 	ShaderProgram *fixedPipelineProgramNoTexture;
+	ShaderProgram *reflectionShader;
 
 	// TODO initialize in the constructor
 	GLuint renderToTextureFramebuffer = 0;
