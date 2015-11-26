@@ -1441,6 +1441,13 @@ void TMesh::createGLVertexArrayObject(void)
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 		glEnableVertexAttribArray(2);
 	}
+	// texture coordinate data (if available)
+	if (normals != nullptr) {
+		glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer[3]);
+		glBufferData(GL_ARRAY_BUFFER, (sizeof(float) * 3) * vertsN, (float *)normals, GL_STATIC_DRAW);
+		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glEnableVertexAttribArray(3);
+	}
 	// index data
 	glGenBuffers(1, &indexBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);

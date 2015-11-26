@@ -21,11 +21,16 @@ in VS_OUT
     vec4 color;
     vec2 texcoord;
 	vec3 modelSpaceXYZ;
+	vec3 normalDirection;
 } fs_in;
 
 void main(void)
 {
+    //vec3 viewDirection = fs_in.modelSpaceXYZ - eyePosition;
+	//vec3 reflectDir = reflect(viewDirection, normalize(normalDirection)));
+
     // Write final color to the framebuffer
-    color = fs_in.color;
+	color = vec4(normalize(normalDirection), 1.0);
+    //color = fs_in.color;
 	//color = texture(tex_color, fs_in.texcoord);
 }
