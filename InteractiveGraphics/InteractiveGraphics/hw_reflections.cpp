@@ -155,6 +155,17 @@ void HWReflections::draw()
 		loadShaders();
 		//loadTextures();
 		createImpostorBillboards();
+		
+		// with billboards created proceed to set unforms for special reflection shaders
+		// set unforms uniquely needed by the reflection shader
+		glUseProgram(reflectionShader->getGLProgramHandle());
+		GLfloat billboardCoords[3 * 4];
+		GLfloat billboardColors[3 * 4];
+		tMeshArray[reflectorTMeshIndex]->copyNVerts(billboardCoords, 4);
+		tMeshArray[reflectorTMeshIndex]->copyNColors(billboardColors, 4);
+		reflectionShader->uploadVectors3Uniform("billboard", billboardCoords, 4);
+		reflectionShader->uploadVectors3Uniform("billboardColor", billboardColors, 4);
+
 		isGlewInit = true;
 	}
 
@@ -163,9 +174,6 @@ void HWReflections::draw()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	// enable depth test
 	glEnable(GL_DEPTH_TEST);
-
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	//glCullFace?(GL_FRONT_AND_BACK);
 
 	// set perspective and model-view matrices
 	const float nearPlaneValue = 10.0f;
@@ -195,6 +203,12 @@ void HWReflections::draw()
 		glUseProgram(reflectionShader->getGLProgramHandle());
 		reflectionShader->uploadMatrixUniform("proj_matrix", perspectiveMatrix);
 		reflectionShader->uploadMatrixUniform("mv_matrix", modelviewMatrix);
+		V3 cameraEye = camera->getEyePoint();
+		reflectionShader->uploadVector3Uniform(
+			"eyePosition", 
+			cameraEye.getX(),
+			cameraEye.getY(),
+			cameraEye.getZ());
 	}
 
 	glUseProgram(reflectionShader->getGLProgramHandle());

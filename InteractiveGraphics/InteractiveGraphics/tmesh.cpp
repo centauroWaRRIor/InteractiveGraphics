@@ -1470,6 +1470,35 @@ void TMesh::disableTexCoords(void)
 	tcs = nullptr;
 }
 
+void TMesh::copyNVerts(float * const destination, unsigned int nVerts) const
+{
+	unsigned int j = 0;
+	for (unsigned int i = 0; i < nVerts; i++) {
+		destination[j++] = (float) verts[i].getX();
+		destination[j++] = (float) verts[i].getY();
+		destination[j++] = (float) verts[i].getZ();
+	}
+}
+
+void TMesh::copyNColors(float * const destination, unsigned int nColors) const
+{
+	unsigned int j = 0;
+	for (unsigned int i = 0; i < nColors; i++) {
+		destination[j++] = (float) cols[i].getX();
+		destination[j++] = (float) cols[i].getY();
+		destination[j++] = (float) cols[i].getZ();
+	}
+}
+
+void TMesh::copyNTexCoords(float * const destination, unsigned int nTexCoords) const
+{
+	unsigned int j = 0;
+	for (unsigned int i = 0; i < (nTexCoords * 2); i += 2) {
+		destination[j++] = tcs[i];
+		destination[j++] = tcs[i + 1];
+	}
+}
+
 void TMesh::rotateAboutAxis(const V3 &aO, const V3 &adir, float theta)
 {
 	for (int vi = 0; vi < vertsN; vi++) {

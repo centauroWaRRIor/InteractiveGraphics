@@ -124,6 +124,11 @@ public:
 	bool getIsTexCoordsAvailable(void) const;
 	void disableTexCoords(void);
 
+	// following copy functions assume destination array is large enough
+	void copyNVerts(float * const destination, unsigned int nVerts) const;
+	void copyNColors(float * const destination, unsigned int nColors) const;
+	void copyNTexCoords(float * const destination, unsigned int nTexCoords) const;
+
 	// rotate about axis
 	void rotateAboutAxis(const V3 &aO, const V3 &adir, float theta);
 

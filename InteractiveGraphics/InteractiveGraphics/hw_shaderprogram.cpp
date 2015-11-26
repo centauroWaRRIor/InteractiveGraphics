@@ -153,6 +153,18 @@ void ShaderProgram::uploadMatrixUniform(string uniformName, const GLfloat * cons
 	glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, matrix4x4);
 }
 
+void ShaderProgram::uploadVector3Uniform(string uniformName, GLfloat v1, GLfloat v2, GLfloat v3)
+{
+	GLint uniformLocation = uniformsMap[uniformName];
+	glUniform3f(uniformLocation, v1, v2, v3);
+}
+
+void ShaderProgram::uploadVectors3Uniform(string uniformName, const GLfloat * const vectors, GLsizei vectorsCount)
+{
+	GLint uniformLocation = uniformsMap[uniformName];
+	glUniform3fv(uniformLocation, vectorsCount, vectors);
+}
+
 void ShaderProgram::createUniform(string uniformName)
 {
 	if (isInitSuccess) {
