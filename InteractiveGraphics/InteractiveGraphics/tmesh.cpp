@@ -1497,10 +1497,10 @@ void TMesh::copyNColors(float * const destination, unsigned int nColors) const
 	}
 }
 
-void TMesh::copyNTexCoords(float * const destination, unsigned int nTexCoords) const
+void TMesh::copyNTexCoords(float * const destination, unsigned int nTexCoordsPairs) const
 {
 	unsigned int j = 0;
-	for (unsigned int i = 0; i < (nTexCoords * 2); i += 2) {
+	for (unsigned int i = 0; i < (nTexCoordsPairs * 2); i += 2) {
 		destination[j++] = tcs[i];
 		destination[j++] = tcs[i + 1];
 	}

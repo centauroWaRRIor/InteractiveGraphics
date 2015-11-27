@@ -53,7 +53,7 @@ void HWReflections::loadShaders(void)
 	reflectionShader->createUniform("proj_matrix");
 	reflectionShader->createUniform("mv_matrix");
 	reflectionShader->createUniform("billboard");
-	reflectionShader->createUniform("billboardColor");
+	reflectionShader->createUniform("billboardTcs");
 	reflectionShader->createUniform("eyePosition");
 }
 
@@ -153,19 +153,19 @@ void HWReflections::draw()
 		}
 		cout << "Status: Using GLEW " << glewGetString(GLEW_VERSION) << endl;
 		loadShaders();
-		//loadTextures();
+		loadTextures();
 		createImpostorBillboards();
 		
 		// with billboards created proceed to set unforms for special reflection shaders
 		// set unforms uniquely needed by the reflection shader
 		glUseProgram(reflectionShader->getGLProgramHandle());
 		GLfloat billboardCoords[3 * 4];
-		GLfloat billboardColors[3 * 4];
+		GLfloat billboardTcs[2 * 4];
 		// pass billboard imnpostor 1 information
 		impostorBillboards[0].copyNVerts(billboardCoords, 4);
-		impostorBillboards[0].copyNColors(billboardColors, 4);
+		impostorBillboards[0].copyNTexCoords(billboardTcs, 4);
 		reflectionShader->uploadVectors3Uniform("billboard", billboardCoords, 4);
-		reflectionShader->uploadVectors3Uniform("billboardColor", billboardColors, 4);
+		reflectionShader->uploadVectors2Uniform("billboardTcs", billboardTcs, 4);
 
 		isGlewInit = true;
 	}
@@ -215,8 +215,12 @@ void HWReflections::draw()
 			cameraEye.getZ());
 	}
 
-	glUseProgram(reflectionShader->getGLProgramHandle());
 	// draw reflector Tmesh through hardware using special shader 
+	glUseProgram(reflectionShader->getGLProgramHandle());
+	// use placeholder texture for now. Eventually want to use render to texture here
+	GLuint glTexHandle = 1;//tMeshTextureMap[0];
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, glTexHandle);
 	if (!tMeshArray[reflectorTMeshIndex]->getIsGLVertexArrayObjectCreated()) {
 	tMeshArray[reflectorTMeshIndex]->createGLVertexArrayObject(); // enables hw support for this TMesh
 	}
@@ -239,7 +243,12 @@ void HWReflections::draw()
 	}
 
 	// render all impostor billboards through hardware
-	//vector<TMesh *>::const_iterator it;
+	// temp draw impostor billboards with placeholder textures for now
+	glUseProgram(fixedPipelineProgram->getGLProgramHandle());
+	glTexHandle = 1;//tMeshTextureMap[0];
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, glTexHandle);
+
 	for (unsigned int i = 0; i < MAX_IMPOSTORS; i++) {
 
 		TMesh *tMeshPtr = &impostorBillboards[i];

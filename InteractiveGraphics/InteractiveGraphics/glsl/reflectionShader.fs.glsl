@@ -4,11 +4,11 @@
 // note: using this syntax I avoid uploading the uniform manually
 //       binding 0 corresponds to GL_TEXTURE0 unit 
 //       binding 1 corresponds to GL_TEXTURE1 unit so on and so forth
-//layout (binding = 0) uniform sampler2D tex_color;
+layout (binding = 0) uniform sampler2D tex_color;
 
 uniform vec3 eyePosition;
-uniform vec3 billboard[4];
-uniform vec3 billboardColor[4];
+uniform vec3 billboard[4]; // billboard vertices
+uniform vec2 billboardTcs[4]; // billboard texture coordinates
 
 // Output
 layout (location = 0) out vec4 color;
@@ -26,7 +26,9 @@ in VS_OUT
 
 // this function calculates the barycentric coordinates of P with respect to
 // the triangles P0, P1, and P2 by way of calculating the wegihts w0, w1, w2
-// such that P = w0P0 + w1P1 + w2P2 
+// such that P = w0P0 + w1P1 + w2P2. Further, these weights can be used to 
+// interpolate other vertex attributes within the triangle such as colors and
+// texture coordinates.
 bool intersectTriangle(
 	in vec3 P, // 
 	in vec3 P0,
@@ -69,7 +71,6 @@ void main(void)
 	viewDirection = normalize(viewDirection);
 	
 	vec3 billboardNormal = cross(billboard[1] - billboard[0], billboard[3] - billboard[0]);
-	//vec3 billboardNormal = cross(billboard[3] - billboard[0], billboard[1] - billboard[0]);
 	
 	// from "Mathematics for 3D Game Programming and Computer Graphics"
 	vec3 N = normalize(billboardNormal);
@@ -78,7 +79,8 @@ void main(void)
 	// because the two inputs are normalized reflectDir is normalized
 	vec3 reflectDir = reflect(viewDirection, normalize(fs_in.normalDirection));
 	
-	float LdotV = dot(L, vec4(reflectDir, 0.0));
+	vec4 V = vec4(reflectDir, 0.0); // rays direction
+	float LdotV = dot(L, V);
 	if(abs(LdotV) < 0.01) // no intersection occurs
 	{
 		color = vec4(0.0, 0.0, 0.0, 1.0);
@@ -87,13 +89,13 @@ void main(void)
 	{
 		// find P (intersection point)-> P(t) = S + tV
 		vec4 S = vec4(fs_in.modelSpaceXYZ, 1.0); // starting ray position
-		vec4 V = vec4(reflectDir, 0.0); // rays direction
-		float t = dot(L, S) / dot(L, V);
+		float t = dot(L, S) / LdotV;
 		t *= -1.0;
 		// compute P
 		vec4 P = S + (t * V);
 		vec3 barycentricWeights;
-		
+		//vec2 barycentricTcs_s, barycentricTcs_t; 
+		vec2 barycentricTcs;
 		// billboard is made of triangles
 		// 1) billboard[0], billboard[1], billboard[3]
 		// 2) billboard[1], billboard[2], billboard[3]
@@ -107,13 +109,13 @@ void main(void)
 				billboard[3],
 				barycentricWeights)) 
 		{
-			//color = vec4(0.0, 1.0, 0.0, 1.0);
-			// compute color using barycentric weights
-			vec3 barycentricColor = 
-				barycentricWeights[0]*billboardColor[0] +
-				barycentricWeights[1]*billboardColor[1] +
-				barycentricWeights[2]*billboardColor[3];
-			color = vec4(barycentricColor, 1.0);
+			// compute texture coordinates using barycentric weights
+			barycentricTcs = 
+				barycentricWeights[0]*billboardTcs[0] +
+				barycentricWeights[1]*billboardTcs[1] +
+				barycentricWeights[2]*billboardTcs[3];
+
+			color = texture(tex_color, barycentricTcs);
 		}
 		// try triangle 2/2 of billboard 2
 		else if(t > 0 && 
@@ -124,11 +126,13 @@ void main(void)
 				billboard[3],
 				barycentricWeights))
 		{
-			vec3 barycentricColor = 
-				barycentricWeights[0]*billboardColor[1] +
-				barycentricWeights[1]*billboardColor[2] +
-				barycentricWeights[2]*billboardColor[3];
-			color = vec4(barycentricColor, 1.0);		
+			// compute texture coordinates using barycentric weights
+			barycentricTcs = 
+				barycentricWeights[0]*billboardTcs[1] +
+				barycentricWeights[1]*billboardTcs[2] +
+				barycentricWeights[2]*billboardTcs[3];
+				
+			color = texture(tex_color, barycentricTcs);
 		}
 		else {
 				color = vec4(1.0, 1.0, 0.0, 1.0);

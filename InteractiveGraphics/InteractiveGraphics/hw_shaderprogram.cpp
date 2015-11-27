@@ -149,20 +149,34 @@ GLuint ShaderProgram::getGLProgramHandle(void) const
 
 void ShaderProgram::uploadMatrixUniform(string uniformName, const GLfloat * const matrix4x4)
 {
-	GLint uniformLocation = uniformsMap[uniformName];
-	glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, matrix4x4);
+	if (isInitSuccess) {
+		GLint uniformLocation = uniformsMap[uniformName];
+		glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, matrix4x4);
+	}
+}
+
+void ShaderProgram::uploadVectors2Uniform(string uniformName, const GLfloat * const vectors, GLsizei vectorsCount)
+{
+	if (isInitSuccess) {
+		GLint uniformLocation = uniformsMap[uniformName];
+		glUniform2fv(uniformLocation, vectorsCount, vectors);
+	}
 }
 
 void ShaderProgram::uploadVector3Uniform(string uniformName, GLfloat v1, GLfloat v2, GLfloat v3)
 {
-	GLint uniformLocation = uniformsMap[uniformName];
-	glUniform3f(uniformLocation, v1, v2, v3);
+	if (isInitSuccess) {
+		GLint uniformLocation = uniformsMap[uniformName];
+		glUniform3f(uniformLocation, v1, v2, v3);
+	}
 }
 
 void ShaderProgram::uploadVectors3Uniform(string uniformName, const GLfloat * const vectors, GLsizei vectorsCount)
 {
-	GLint uniformLocation = uniformsMap[uniformName];
-	glUniform3fv(uniformLocation, vectorsCount, vectors);
+	if (isInitSuccess) {
+		GLint uniformLocation = uniformsMap[uniformName];
+		glUniform3fv(uniformLocation, vectorsCount, vectors);
+	}
 }
 
 void ShaderProgram::createUniform(string uniformName)

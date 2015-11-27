@@ -1969,12 +1969,23 @@ void Scene::a6Demo(void)
 		AABB teapotAABB = tms[0]->getAABB();
 		tms[1]->setToFitAABB(teapotAABB);
 		tms[2]->setToFitAABB(teapotAABB);
-		tms[1]->translate(V3(0.0f, 0.0f, -80.0f));
+		//tms[1]->translate(V3(0.0f, 0.0f, -80.0f)); // works
+		tms[1]->translate(V3(150.0f, 0.0f, 0.0f)); // works
 		tms[2]->translate(V3(-150.0f, 0.0f, 0.0f));
 		for (n = 0; n < tmsN; n++) {
 			reflectionshwFb->registerTMesh(tms[n]);
 		}
 
+		// load textures
+		unsigned int texObjectsN = 1;
+		//texObjects[0] = new Texture("pngs\\White_brick_block_pxr128.png");
+		texObjects[0] = new Texture("pngs\\Macbeth_color_checker_pxr128.png");
+		for (n = 0; n < texObjectsN; n++) {
+			reflectionshwFb->registerTexture(texObjects[n]);
+		}
+
+		// the following operation is exclusive of derived class and so
+		// casting is needed here first
 		HWReflections *tempPointer = (HWReflections *) reflectionshwFb;
 		tempPointer->setReflectorTMesh(0);
 
