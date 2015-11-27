@@ -52,9 +52,11 @@ void HWReflections::loadShaders(void)
 	reflectionShader = new ShaderProgram(shaderList3);
 	reflectionShader->createUniform("proj_matrix");
 	reflectionShader->createUniform("mv_matrix");
+	reflectionShader->createUniform("eyePosition");
 	reflectionShader->createUniform("billboardVerts_1");
 	reflectionShader->createUniform("billboardTcs_1");
-	reflectionShader->createUniform("eyePosition");
+	reflectionShader->createUniform("billboardVerts_2");
+	reflectionShader->createUniform("billboardTcs_2");
 }
 
 bool HWReflections::createRenderTextureTarget(void)
@@ -166,6 +168,10 @@ void HWReflections::draw()
 		impostorBillboards[0].copyNTexCoords(billboardTcs, 4);
 		reflectionShader->uploadVectors3Uniform("billboardVerts_1", billboardCoords, 4);
 		reflectionShader->uploadVectors2Uniform("billboardTcs_1", billboardTcs, 4);
+		impostorBillboards[1].copyNVerts(billboardCoords, 4);
+		impostorBillboards[1].copyNTexCoords(billboardTcs, 4);
+		reflectionShader->uploadVectors3Uniform("billboardVerts_2", billboardCoords, 4);
+		reflectionShader->uploadVectors2Uniform("billboardTcs_2", billboardTcs, 4);
 
 		isGlewInit = true;
 	}
@@ -218,9 +224,11 @@ void HWReflections::draw()
 	// draw reflector Tmesh through hardware using special shader 
 	glUseProgram(reflectionShader->getGLProgramHandle());
 	// use placeholder texture for now. Eventually want to use render to texture here
-	GLuint glTexHandle = 1;//tMeshTextureMap[0];
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, glTexHandle);
+	glBindTexture(GL_TEXTURE_2D, 1); // upload billboard 1 texture manually for now
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, 2); // upload billboard 2 texture manually for now
+
 	if (!tMeshArray[reflectorTMeshIndex]->getIsGLVertexArrayObjectCreated()) {
 	tMeshArray[reflectorTMeshIndex]->createGLVertexArrayObject(); // enables hw support for this TMesh
 	}
@@ -249,7 +257,7 @@ void HWReflections::draw()
 
 	for (unsigned int i = 0; i < MAX_IMPOSTORS; i++) {
 
-		glTexHandle = i+1;//tMeshTextureMap[0]; this is dangerous and only meant to be temporary
+		GLuint glTexHandle = i+1;//tMeshTextureMap[0]; this is dangerous and only meant to be temporary
 		glBindTexture(GL_TEXTURE_2D, glTexHandle);
 
 		TMesh *tMeshPtr = &impostorBillboards[i];

@@ -124,50 +124,98 @@ bool calcImpostorReflectColor(
 
 void main(void)
 {
+	const float INFINITY = 1e10;
+	float intersectDistance = INFINITY;
+	float t, LdotV;
+	vec4 reflectedColor, S, P, L, V;
+	vec3 billboardNormal;
+	
+	// calculate reflected ray direction
     vec3 viewDirection = fs_in.modelSpaceXYZ - eyePosition;
 	viewDirection = normalize(viewDirection);	
 	// because the two inputs are normalized reflectDir is normalized
 	vec3 reflectDir = reflect(viewDirection, normalize(fs_in.normalDirection));
 	
 	// 4D plane equation is from "Mathematics for 3D Game Programming and Computer Graphics"
-	vec3 billboardNormal_1 = 
+	// calculate plane equation for billboard1
+	billboardNormal = 
 		cross(	billboardVerts_1[1] - billboardVerts_1[0], 
 				billboardVerts_1[3] - billboardVerts_1[0]);
-	vec3 N = normalize(billboardNormal_1);
-	vec4 L = vec4(N, dot(-N, billboardVerts_1[0])); // 4D billboard plane vector
+	billboardNormal = normalize(billboardNormal);
+	// billboard's plane equation is represented as a 4D vector
+	L = vec4(billboardNormal, dot(-billboardNormal, billboardVerts_1[0])); 
 	// L dot V helps determining if there is an intersection possibility
-	vec4 V = vec4(reflectDir, 0.0); // rays direction
-	float LdotV = dot(L, V);
-	vec4 reflectedColor;
-	if(abs(LdotV) < 0.01) // no chance of intersection occurs (reflected ray is parallel to billboard plane)
-	{
-		color = vec4(0.0, 0.0, 0.0, 1.0);
-	}
-	else // safe to proceed (no division by zero danger)
-	{
+	V = vec4(reflectDir, 0.0); // rays direction
+	LdotV = dot(L, V);
+	
+	// no chance of intersection occurs if = 0.0 (reflected ray is parallel to billboard plane in that case)
+	if(abs(LdotV) > 0.01)
+	{	
+		// safe to proceed (no division by zero danger)
+		
 		// find P (intersection point)-> P(t) = S + tV
-		vec4 S = vec4(fs_in.modelSpaceXYZ, 1.0); // starting ray position
-		float t = dot(L, S) / LdotV;
+		S = vec4(fs_in.modelSpaceXYZ, 1.0); // starting ray position
+		t = dot(L, S) / LdotV;
 		t *= -1.0;
 		// compute P
-		vec4 P = S + (t * V);
+		P = S + (t * V);
 		
-		if(t > 0 && calcImpostorReflectColor(
-						P.xyz, 
-						billboardVerts_1, 
-						billboardTcs_1,
-						billboardTexColor_1,
-						reflectedColor)) 
+		if(	(t > 0) && 
+			(length(P) < intersectDistance) && 
+			calcImpostorReflectColor(
+				P.xyz, 
+				billboardVerts_1, 
+				billboardTcs_1,
+				billboardTexColor_1,
+				reflectedColor)) 
 		{
+			intersectDistance = length(P);
 			color = reflectedColor;
-		}
-		else
-		{
-			color = vec4(1.0, 1.0, 0.0, 1.0);
 		}		
 	}
 	
-    // Write final color to the framebuffer
+	// repeat same process from above with billboard 2
+	billboardNormal = 
+		cross(	billboardVerts_2[1] - billboardVerts_2[0], 
+				billboardVerts_2[3] - billboardVerts_2[0]);
+	billboardNormal = normalize(billboardNormal);
+	// billboard's plane equation is represented as a 4D vector
+	L = vec4(billboardNormal, dot(-billboardNormal, billboardVerts_2[0])); 
+	// L dot V helps determining if there is an intersection possibility
+	V = vec4(reflectDir, 0.0); // rays direction
+	LdotV = dot(L, V);
+	
+	// no chance of intersection occurs if = 0.0 (reflected ray is parallel to billboard plane in that case)
+	if(abs(LdotV) > 0.01)
+	{	
+		// safe to proceed (no division by zero danger)
+		
+		// find P (intersection point)-> P(t) = S + tV
+		S = vec4(fs_in.modelSpaceXYZ, 1.0); // starting ray position
+		t = dot(L, S) / LdotV;
+		t *= -1.0;
+		// compute P
+		P = S + (t * V);
+		
+		if(	(t > 0) && 
+			(length(P) < intersectDistance) && 
+			calcImpostorReflectColor(
+				P.xyz, 
+				billboardVerts_2, 
+				billboardTcs_2,
+				billboardTexColor_2,
+				reflectedColor)) 
+		{
+			intersectDistance = length(P);
+			// reflected color is always the color of the closes reflection if multiple apply
+			color = reflectedColor;
+		}		
+	}
+	
+	if(intersectDistance == INFINITY) // if there was no intersection with ANY billboard
+		color = fs_in.color;
+	
+    // some useful for debug only tets
 	//vec4 test = vec4(billboardVerts_1[0], 1.0) + vec4(-137.644196, 76.3608627, 82.6696091, -1.0); checksout
 	//vec4 test = vec4(billboardVerts_1[1], 1.0) + vec4(-137.644196, 76.3608627, -117.330391, -1.0); checksout
 	//vec4 test = vec4(billboardVerts_1[3], 1.0) + vec4(-141.01663, -123.610710, 82.6696091, -1.0);
@@ -178,5 +226,4 @@ void main(void)
 	//color = vec4(billboardVerts_1[3], 1.0);
 	//color = vec4(reflectDir, 1.0);
 	//color = vec4(normalize(fs_in.normalDirection), 1.0);
-    //color = fs_in.color;
 }
