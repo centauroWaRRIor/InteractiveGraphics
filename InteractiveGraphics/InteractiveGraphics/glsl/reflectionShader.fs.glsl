@@ -24,25 +24,56 @@ in VS_OUT
 	vec3 normalDirection;
 } fs_in;
 
+bool intersetTriangle(
+	in vec3 P,
+	in vec3 P1,
+	in vec3 P2, 
+	in vec3 P3, 
+	out vec3 weights)
+{
+	vec3 R = P - P0;
+	vec3 Q1 = P1 - P0;
+	vec3 Q2 = P2 - P0;
+	float Q1dotQ2 = dot(Q1, Q2);
+
+	return false;
+}
+
 void main(void)
 {
     vec3 viewDirection = fs_in.modelSpaceXYZ - eyePosition;
 	viewDirection = normalize(viewDirection);
 	
 	vec3 billboardNormal = cross(billboard[1] - billboard[0], billboard[3] - billboard[0]);
+	//vec3 billboardNormal = cross(billboard[3] - billboard[0], billboard[1] - billboard[0]);
 	
 	// from "Mathematics for 3D Game Programming and Computer Graphics"
 	vec3 N = normalize(billboardNormal);
-	vec4 L = vec4(N, -1 * dot(N, billboard[0])); // 4D billboard plane vector
+	vec4 L = vec4(N, dot(-N, billboard[0])); // 4D billboard plane vector
 	
 	// because the two inputs are normalized reflectDir is normalized
 	vec3 reflectDir = reflect(viewDirection, normalize(fs_in.normalDirection));
 	
 	float LdotV = dot(L, vec4(reflectDir, 0.0));
 	if(abs(LdotV) < 0.01) // no intersection occurs
+	{
 		color = vec4(1.0, 0.0, 0.0, 1.0);
-	else
-		color = vec4(0.0, 1.0, 0.0, 1.0);
+	}
+	else 
+	{
+		// find P (intersection point)-> P(t) = S + tV
+		vec4 S = vec4(fs_in.modelSpaceXYZ, 1.0); // starting ray position
+		vec4 V = vec4(reflectDir, 0.0); // rays direction
+		float t = dot(L, S) / dot(L, V);
+		t *= -1.0;
+		if(t > 0) {
+			color = vec4(0.0, 1.0, 0.0, 1.0);
+		}
+		else {
+				color = vec4(0.0, 0.0, 1.0, 1.0);
+		}
+	}
+	
 	
 	
 
@@ -55,6 +86,7 @@ void main(void)
 	//color = vec4(length(test), length(test), length(test), 1.0);
 	
 	
+	//color = vec4(billboard[3], 1.0);
 	//color = vec4(reflectDir, 1.0);
 	//color = vec4(normalize(fs_in.normalDirection), 1.0);
     //color = fs_in.color;

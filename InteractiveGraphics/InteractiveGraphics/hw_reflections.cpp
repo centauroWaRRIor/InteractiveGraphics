@@ -175,6 +175,9 @@ void HWReflections::draw()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	// enable depth test
 	glEnable(GL_DEPTH_TEST);
+	// enables face culling // TODO: Not sure if needed, should be on by default?
+	glEnable(GL_CULL_FACE); 
+	glCullFace(GL_BACK); // tells OpenGL to cull back faces (the sane default setting)
 
 	// set perspective and model-view matrices
 	const float nearPlaneValue = 10.0f;
