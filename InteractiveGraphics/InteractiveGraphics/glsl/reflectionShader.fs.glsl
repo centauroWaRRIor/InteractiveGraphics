@@ -24,13 +24,18 @@ in VS_OUT
 	vec3 normalDirection;
 } fs_in;
 
+// this function calculates the barycentric coordinates of P with respect to
+// the triangles P0, P1, and P2 by way of calculating the wegihts w0, w1, w2
+// such that P = w0P0 + w1P1 + w2P2 
 bool intersectTriangle(
-	in vec3 P,
+	in vec3 P, // 
 	in vec3 P0,
 	in vec3 P1, 
 	in vec3 P2, 
 	out vec3 weights)
 {
+	// the math magic here was obtained from "Mathenatics for 3D Game Programming 
+	// and Computer Graphics" by Eric Lengyel
 	vec3 R = P - P0;
 	vec3 Q1 = P1 - P0;
 	vec3 Q2 = P2 - P0;
@@ -76,7 +81,7 @@ void main(void)
 	float LdotV = dot(L, vec4(reflectDir, 0.0));
 	if(abs(LdotV) < 0.01) // no intersection occurs
 	{
-		color = vec4(1.0, 0.0, 0.0, 1.0);
+		color = vec4(0.0, 0.0, 0.0, 1.0);
 	}
 	else 
 	{
@@ -93,24 +98,43 @@ void main(void)
 		// 1) billboard[0], billboard[1], billboard[3]
 		// 2) billboard[1], billboard[2], billboard[3]
 
+		// try triangle 1/2 of billboard 1
 		if(t > 0 && 
+			intersectTriangle(
+				P.xyz,
+				billboard[0],
+				billboard[1],
+				billboard[3],
+				barycentricWeights)) 
+		{
+			//color = vec4(0.0, 1.0, 0.0, 1.0);
+			// compute color using barycentric weights
+			vec3 barycentricColor = 
+				barycentricWeights[0]*billboardColor[0] +
+				barycentricWeights[1]*billboardColor[1] +
+				barycentricWeights[2]*billboardColor[3];
+			color = vec4(barycentricColor, 1.0);
+		}
+		// try triangle 2/2 of billboard 2
+		else if(t > 0 && 
 			intersectTriangle(
 				P.xyz,
 				billboard[1],
 				billboard[2],
 				billboard[3],
-				barycentricWeights)) 
+				barycentricWeights))
 		{
-			color = vec4(0.0, 1.0, 0.0, 1.0);
+			vec3 barycentricColor = 
+				barycentricWeights[0]*billboardColor[1] +
+				barycentricWeights[1]*billboardColor[2] +
+				barycentricWeights[2]*billboardColor[3];
+			color = vec4(barycentricColor, 1.0);		
 		}
 		else {
-				color = vec4(0.0, 0.0, 1.0, 1.0);
+				color = vec4(1.0, 1.0, 0.0, 1.0);
 		}
 	}
 	
-	
-	
-
     // Write final color to the framebuffer
 	//vec4 test = vec4(billboard[0], 1.0) + vec4(-137.644196, 76.3608627, 82.6696091, -1.0); checksout
 	//vec4 test = vec4(billboard[1], 1.0) + vec4(-137.644196, 76.3608627, -117.330391, -1.0); checksout
