@@ -245,11 +245,12 @@ void HWReflections::draw()
 	// render all impostor billboards through hardware
 	// temp draw impostor billboards with placeholder textures for now
 	glUseProgram(fixedPipelineProgram->getGLProgramHandle());
-	glTexHandle = 1;//tMeshTextureMap[0];
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, glTexHandle);
 
 	for (unsigned int i = 0; i < MAX_IMPOSTORS; i++) {
+
+		glTexHandle = i+1;//tMeshTextureMap[0]; this is dangerous and only meant to be temporary
+		glBindTexture(GL_TEXTURE_2D, glTexHandle);
 
 		TMesh *tMeshPtr = &impostorBillboards[i];
 		if (!tMeshPtr->getIsGLVertexArrayObjectCreated()) {

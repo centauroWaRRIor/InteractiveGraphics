@@ -1977,9 +1977,9 @@ void Scene::a6Demo(void)
 		}
 
 		// load textures
-		unsigned int texObjectsN = 1;
+		unsigned int texObjectsN = 2;
 		texObjects[0] = new Texture("pngs\\White_brick_block_pxr128.png");
-		//texObjects[0] = new Texture("pngs\\Macbeth_color_checker_pxr128.png");
+		texObjects[1] = new Texture("pngs\\Macbeth_color_checker_pxr128.png");
 		for (n = 0; n < texObjectsN; n++) {
 			reflectionshwFb->registerTexture(texObjects[n]);
 		}

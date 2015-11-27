@@ -5,10 +5,14 @@
 //       binding 0 corresponds to GL_TEXTURE0 unit 
 //       binding 1 corresponds to GL_TEXTURE1 unit so on and so forth
 layout (binding = 0) uniform sampler2D billboardTexColor_1;
+layout (binding = 1) uniform sampler2D billboardTexColor_2;
 
 uniform vec3 eyePosition;
+
 uniform vec3 billboardVerts_1[4]; // billboard vertices
 uniform vec2 billboardTcs_1[4]; // billboard texture coordinates
+uniform vec3 billboardVerts_2[4]; // billboard vertices
+uniform vec2 billboardTcs_2[4]; // billboard texture coordinates
 
 // Output
 layout (location = 0) out vec4 color;
@@ -64,29 +68,82 @@ bool intersectTriangle(
 	return (weights[0] >= 0) && (weights[1] >= 0) && (weights[2] >= 0);
 }
 
+bool calcImpostorReflectColor(
+	in vec3 P, 
+	in vec3 billboardVerts[4], 
+	in vec2 billboardTcs[4],
+	in sampler2D billboardTexColor,
+	out vec4 color)
+{
+	// billboard is made of triangles
+	// 1) billboardVerts[0], billboardVerts[1], billboardVerts[3]
+	// 2) billboardVerts[1], billboardVerts[2], billboardVerts[3]
+
+	vec3 barycentricWeights;
+	vec2 barycentricTcs;
+	
+	// try triangle 1 of billboard
+	if(intersectTriangle(
+		P,
+		billboardVerts[0],
+		billboardVerts[1],
+		billboardVerts[3],
+		barycentricWeights)) 
+	{
+		// compute texture coordinates using barycentric weights
+		barycentricTcs = 
+			barycentricWeights[0]*billboardTcs[0] +
+			barycentricWeights[1]*billboardTcs[1] +
+			barycentricWeights[2]*billboardTcs[3];
+
+		color = texture(billboardTexColor, barycentricTcs);
+		return true;
+	}
+	// try triangle 2 of billboard
+	else if(intersectTriangle(
+			P.xyz,
+			billboardVerts[1],
+			billboardVerts[2],
+			billboardVerts[3],
+			barycentricWeights))
+	{
+		// compute texture coordinates using barycentric weights
+		barycentricTcs = 
+			barycentricWeights[0]*billboardTcs[1] +
+			barycentricWeights[1]*billboardTcs[2] +
+			barycentricWeights[2]*billboardTcs[3];
+				
+		color = texture(billboardTexColor, barycentricTcs);
+		return true;
+	}
+	else {
+		color = vec4(0.0, 0.0, 0.0, 1.0); // don't care color, not used
+		return false;
+	}
+}
+
 void main(void)
 {
     vec3 viewDirection = fs_in.modelSpaceXYZ - eyePosition;
-	viewDirection = normalize(viewDirection);
-	
-	vec3 billboardNormal_1 = 
-		cross(	billboardVerts_1[1] - billboardVerts_1[0], 
-				billboardVerts_1[3] - billboardVerts_1[0]);
-	
-	// from "Mathematics for 3D Game Programming and Computer Graphics"
-	vec3 N = normalize(billboardNormal_1);
-	vec4 L = vec4(N, dot(-N, billboardVerts_1[0])); // 4D billboard plane vector
-	
+	viewDirection = normalize(viewDirection);	
 	// because the two inputs are normalized reflectDir is normalized
 	vec3 reflectDir = reflect(viewDirection, normalize(fs_in.normalDirection));
 	
+	// 4D plane equation is from "Mathematics for 3D Game Programming and Computer Graphics"
+	vec3 billboardNormal_1 = 
+		cross(	billboardVerts_1[1] - billboardVerts_1[0], 
+				billboardVerts_1[3] - billboardVerts_1[0]);
+	vec3 N = normalize(billboardNormal_1);
+	vec4 L = vec4(N, dot(-N, billboardVerts_1[0])); // 4D billboard plane vector
+	// L dot V helps determining if there is an intersection possibility
 	vec4 V = vec4(reflectDir, 0.0); // rays direction
 	float LdotV = dot(L, V);
-	if(abs(LdotV) < 0.01) // no intersection occurs
+	vec4 reflectedColor;
+	if(abs(LdotV) < 0.01) // no chance of intersection occurs (reflected ray is parallel to billboard plane)
 	{
 		color = vec4(0.0, 0.0, 0.0, 1.0);
 	}
-	else 
+	else // safe to proceed (no division by zero danger)
 	{
 		// find P (intersection point)-> P(t) = S + tV
 		vec4 S = vec4(fs_in.modelSpaceXYZ, 1.0); // starting ray position
@@ -94,49 +151,20 @@ void main(void)
 		t *= -1.0;
 		// compute P
 		vec4 P = S + (t * V);
-		vec3 barycentricWeights;
-		vec2 barycentricTcs;
-		// billboard is made of triangles
-		// 1) billboardVerts_1[0], billboardVerts_1[1], billboardVerts_1[3]
-		// 2) billboardVerts_1[1], billboardVerts_1[2], billboardVerts_1[3]
-
-		// try triangle 1/2 of billboard 1
-		if(t > 0 && 
-			intersectTriangle(
-				P.xyz,
-				billboardVerts_1[0],
-				billboardVerts_1[1],
-				billboardVerts_1[3],
-				barycentricWeights)) 
+		
+		if(t > 0 && calcImpostorReflectColor(
+						P.xyz, 
+						billboardVerts_1, 
+						billboardTcs_1,
+						billboardTexColor_1,
+						reflectedColor)) 
 		{
-			// compute texture coordinates using barycentric weights
-			barycentricTcs = 
-				barycentricWeights[0]*billboardTcs_1[0] +
-				barycentricWeights[1]*billboardTcs_1[1] +
-				barycentricWeights[2]*billboardTcs_1[3];
-
-			color = texture(billboardTexColor_1, barycentricTcs);
+			color = reflectedColor;
 		}
-		// try triangle 2/2 of billboard 1
-		else if(t > 0 && 
-			intersectTriangle(
-				P.xyz,
-				billboardVerts_1[1],
-				billboardVerts_1[2],
-				billboardVerts_1[3],
-				barycentricWeights))
+		else
 		{
-			// compute texture coordinates using barycentric weights
-			barycentricTcs = 
-				barycentricWeights[0]*billboardTcs_1[1] +
-				barycentricWeights[1]*billboardTcs_1[2] +
-				barycentricWeights[2]*billboardTcs_1[3];
-				
-			color = texture(billboardTexColor_1, barycentricTcs);
-		}
-		else {
-				color = vec4(1.0, 1.0, 0.0, 1.0);
-		}
+			color = vec4(1.0, 1.0, 0.0, 1.0);
+		}		
 	}
 	
     // Write final color to the framebuffer
@@ -146,7 +174,6 @@ void main(void)
 	//color = vec4(length(test));
 	//vec3 test = vec3(billboardVerts_1[3]) + vec3(-141.01663, -123.610710, 82.6696091);
 	//color = vec4(length(test), length(test), length(test), 1.0);
-	
 	
 	//color = vec4(billboardVerts_1[3], 1.0);
 	//color = vec4(reflectDir, 1.0);
