@@ -24,19 +24,38 @@ in VS_OUT
 	vec3 normalDirection;
 } fs_in;
 
-bool intersetTriangle(
+bool intersectTriangle(
 	in vec3 P,
-	in vec3 P1,
+	in vec3 P0,
+	in vec3 P1, 
 	in vec3 P2, 
-	in vec3 P3, 
 	out vec3 weights)
 {
 	vec3 R = P - P0;
 	vec3 Q1 = P1 - P0;
 	vec3 Q2 = P2 - P0;
 	float Q1dotQ2 = dot(Q1, Q2);
-
-	return false;
+	float Q1Squared = dot(Q1, Q1);
+	float Q2Squared = dot(Q2, Q2);
+	
+	mat2 matrixA;
+	matrixA[0][0] = Q2Squared;
+	matrixA[0][1] = -Q1dotQ2;
+	matrixA[1][0] = -Q1dotQ2;
+	matrixA[1][1] = Q1Squared;
+	
+	vec2 B;
+	B[0] = dot(R, Q1);
+	B[1] = dot(R, Q2);
+	
+	float C = 1 / (Q1Squared*Q2Squared - pow(Q1dotQ2, 2));
+	
+	vec2 weightsResult = (matrixA * B) * C;
+	weights[1] = weightsResult[0];
+	weights[2] = weightsResult[1];
+	weights[0] = 1 - weights[1] - weights[2];
+	
+	return (weights[0] >= 0) && (weights[1] >= 0) && (weights[2] >= 0);
 }
 
 void main(void)
@@ -66,7 +85,22 @@ void main(void)
 		vec4 V = vec4(reflectDir, 0.0); // rays direction
 		float t = dot(L, S) / dot(L, V);
 		t *= -1.0;
-		if(t > 0) {
+		// compute P
+		vec4 P = S + (t * V);
+		vec3 barycentricWeights;
+		
+		// billboard is made of triangles
+		// 1) billboard[0], billboard[1], billboard[3]
+		// 2) billboard[1], billboard[2], billboard[3]
+
+		if(t > 0 && 
+			intersectTriangle(
+				P.xyz,
+				billboard[1],
+				billboard[2],
+				billboard[3],
+				barycentricWeights)) 
+		{
 			color = vec4(0.0, 1.0, 0.0, 1.0);
 		}
 		else {
