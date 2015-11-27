@@ -52,8 +52,8 @@ void HWReflections::loadShaders(void)
 	reflectionShader = new ShaderProgram(shaderList3);
 	reflectionShader->createUniform("proj_matrix");
 	reflectionShader->createUniform("mv_matrix");
-	reflectionShader->createUniform("billboard");
-	reflectionShader->createUniform("billboardTcs");
+	reflectionShader->createUniform("billboardVerts_1");
+	reflectionShader->createUniform("billboardTcs_1");
 	reflectionShader->createUniform("eyePosition");
 }
 
@@ -164,8 +164,8 @@ void HWReflections::draw()
 		// pass billboard imnpostor 1 information
 		impostorBillboards[0].copyNVerts(billboardCoords, 4);
 		impostorBillboards[0].copyNTexCoords(billboardTcs, 4);
-		reflectionShader->uploadVectors3Uniform("billboard", billboardCoords, 4);
-		reflectionShader->uploadVectors2Uniform("billboardTcs", billboardTcs, 4);
+		reflectionShader->uploadVectors3Uniform("billboardVerts_1", billboardCoords, 4);
+		reflectionShader->uploadVectors2Uniform("billboardTcs_1", billboardTcs, 4);
 
 		isGlewInit = true;
 	}
