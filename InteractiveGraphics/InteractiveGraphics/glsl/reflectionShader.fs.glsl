@@ -125,8 +125,9 @@ bool calcImpostorReflectColor(
 void main(void)
 {
 	const float INFINITY = 1e10;
+	const float MAXINTERSECTDISTANCE = 220.0;
 	float intersectDistance = INFINITY;
-	float t, LdotV;
+	float t, LdotV, mixFactor;
 	vec4 reflectedColor, S, P, L, V;
 	vec3 billboardNormal;
 	
@@ -161,7 +162,7 @@ void main(void)
 		P = S + (t * V);
 		
 		if(	(t > 0) && 
-			(length(P) < intersectDistance) && 
+			(length(P.xyz) < intersectDistance) && 
 			calcImpostorReflectColor(
 				P.xyz, 
 				billboardVerts_1, 
@@ -169,8 +170,7 @@ void main(void)
 				billboardTexColor_1,
 				reflectedColor)) 
 		{
-			intersectDistance = length(P);
-			color = reflectedColor;
+			intersectDistance = length(P.xyz);
 		}		
 	}
 	
@@ -198,7 +198,7 @@ void main(void)
 		P = S + (t * V);
 		
 		if(	(t > 0) && 
-			(length(P) < intersectDistance) && 
+			(length(P.xyz) < intersectDistance) && 
 			calcImpostorReflectColor(
 				P.xyz, 
 				billboardVerts_2, 
@@ -206,14 +206,21 @@ void main(void)
 				billboardTexColor_2,
 				reflectedColor)) 
 		{
-			intersectDistance = length(P);
-			// reflected color is always the color of the closes reflection if multiple apply
-			color = reflectedColor;
+			intersectDistance = length(P.xyz);
 		}		
 	}
 	
 	if(intersectDistance == INFINITY) // if there was no intersection with ANY billboard
 		color = fs_in.color;
+	else
+	{
+		mixFactor = intersectDistance / MAXINTERSECTDISTANCE;
+		mixFactor = clamp(mixFactor, 0.0, 1.0);
+		mixFactor = 1.0 - mixFactor; // the farther the less influence it has
+		// reflected color is always the color of the closest reflection modulated by the
+		// maximum distance allowed
+		color = mix(fs_in.color, reflectedColor, mixFactor);
+	}
 	
     // some useful for debug only tets
 	//vec4 test = vec4(billboardVerts_1[0], 1.0) + vec4(-137.644196, 76.3608627, 82.6696091, -1.0); checksout
