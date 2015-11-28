@@ -204,7 +204,7 @@ void main(void)
 				billboardVerts_2, 
 				billboardTcs_2,
 				billboardTexColor_2,
-				reflectedColor)) 
+				reflectedColor))
 		{
 			intersectDistance = length(P.xyz);
 		}		
@@ -214,6 +214,11 @@ void main(void)
 		color = fs_in.color;
 	else
 	{
+		// modulate reflected color by its alpha
+		reflectedColor = mix(fs_in.color, reflectedColor, reflectedColor.a);
+		reflectedColor.a = 1.0;
+		color = reflectedColor;
+		// modulate reflected color by the distance
 		mixFactor = intersectDistance / MAXINTERSECTDISTANCE;
 		mixFactor = clamp(mixFactor, 0.0, 1.0);
 		mixFactor = 1.0 - mixFactor; // the farther the less influence it has
