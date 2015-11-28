@@ -28,7 +28,8 @@ enum class Scenes {
 	A4,
 	A4EXTRA,
 	REFLECTEST,
-	REFRACTEST};
+	REFRACTEST,
+	A6};
 
 enum class DrawModes { 
 	DOTS, 
@@ -57,7 +58,7 @@ private:
 	TMesh **tms; // an array of pointers to TMesh objects
 	Texture **texObjects; // and array of pointers to Texture objects
 
-	// use for camera dolly with the mouse in REFLECTEST
+	// use for camera dolly with the mouse in REFLECTEST and A6
 	int mouseDeltaX, mouseDeltaY, mouseDeltaZ;
 
 	Scenes currentScene; // used for keyboard callback to invokate the correct redraw

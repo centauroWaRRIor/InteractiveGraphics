@@ -2,6 +2,7 @@
 #include "hw_shaderprogram.h"
 #include "ppc.h"
 #include "v3.h"
+#include "scene.h" // used to get access to global scene singleton handle for camera dolly purposes
 #include <iostream>
 using std::cout;
 using std::endl;
@@ -491,12 +492,63 @@ void HWReflections::setReflectorTMesh(unsigned int index)
 
 void HWReflections::keyboardHandle(void)
 {
+	// do nothing with keyboard
 }
 
 void HWReflections::mouseLeftClickDragHandle(int event)
 {
+	static int prevMouseX = 0;
+	static int prevMouseY = 0;
+	int mouseCurrentX, mouseCurrentY;
+	int deltaMouseX, deltaMouseY;
+
+	mouseCurrentX = Fl::event_x();
+	mouseCurrentY = Fl::event_y();
+
+	switch (event)
+	{
+	case FL_PUSH:
+		prevMouseX = mouseCurrentX;
+		prevMouseY = mouseCurrentY;
+		break;
+	case FL_DRAG:
+		deltaMouseX = -(mouseCurrentX - prevMouseX);
+		deltaMouseY = -(mouseCurrentY - prevMouseY);
+		prevMouseX = mouseCurrentX;
+		prevMouseY = mouseCurrentY;
+		scene->setMouseDelta(deltaMouseX, deltaMouseY);
+		scene->currentSceneRedraw();
+		// reset deltas
+		scene->setMouseDelta(0, 0);
+		break;
+	default: // never used
+		break;
+	}
 }
+
 
 void HWReflections::mouseRightClickDragHandle(int event)
 {
+	static int prevMouseX = 0;
+	int mouseCurrentX;
+	int deltaMouseX;
+
+	mouseCurrentX = Fl::event_x();
+
+	switch (event)
+	{
+	case FL_PUSH:
+		prevMouseX = mouseCurrentX;
+		break;
+	case FL_DRAG:
+		deltaMouseX = -(mouseCurrentX - prevMouseX);
+		prevMouseX = mouseCurrentX;
+		scene->setMouseRoll(deltaMouseX);
+		scene->currentSceneRedraw();
+		// reset delta
+		scene->setMouseRoll(0);
+		break;
+	default: // never used
+		break;
+	}
 }

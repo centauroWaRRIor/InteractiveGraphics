@@ -1947,6 +1947,10 @@ void Scene::testProgrPipelineHW(void)
 
 void Scene::a6Demo(void)
 {
+	// used for dolly camera setup
+	const float speedFactor = 0.01f;
+	V3 lookAtPoint;
+
 	if (!isA6DemoInit) {
 
 		cleanForNewScene();
@@ -1990,26 +1994,26 @@ void Scene::a6Demo(void)
 		HWReflections *tempPointer = (HWReflections *) reflectionshwFb;
 		tempPointer->setReflectorTMesh(0);
 
-		V3 center = tms[0]->getCenter();
-		ppc->moveForward(-400.0f);
-		ppc->moveRight(-100.0f);
-		ppc->positionAndOrient(ppc->getEyePoint(), center, V3(0.0f, 1.0f, 0.0f));
-		ppc->moveUp(10.0f);
-		reflectionshwFb->registerPPC(ppc);
+		lookAtPoint = tms[0]->getCenter(); // teapot centroid
+		reflectionshwFb->registerPPC(ppc); 
 
 		reflectionshwFb->show();
 		isA6DemoInit = true;
 	}
-	// clear screen
-	//fb->set(0xFFFFFFFF);
-	// clear zBuffer
-	//if (currentDrawMode == DrawModes::MODELSPACELERP)
-		//fb->clearZB(FLT_MAX);
-	//else
-		//fb->clearZB(0.0f);
-	//drawTMesh(*tms[0], *fb, *ppc, true);
 
-	//fb->redraw();
+	// set up dolly camera
+	const V3 up(0.0f, 1.0f, 0.0f);
+	V3 viewDirection = ppc->getViewDir();
+	// rotate view direction
+	V3 rotVD = viewDirection;
+	rotVD.rotateThisVectorAboutDirection(V3(0.0f, 1.0f, 0.0f), mouseDeltaX * speedFactor);
+	rotVD.rotateThisVectorAboutDirection(V3(1.0f, 0.0f, 0.0f), mouseDeltaY * speedFactor);
+	// set up the look at cube camera (dolly camera setup)
+	ppc->positionRelativeToPoint(lookAtPoint, rotVD, up, 380.0f);
+	// roll needs to be done independently from cam dolly at the end
+	ppc->roll(-(mouseDeltaZ * speedFactor));
+
+	// hw rendering through opengl
 	reflectionshwFb->redraw();
 	return;
 }
@@ -2070,6 +2074,9 @@ void Scene::currentSceneRedraw(void)
 		break;
 	case Scenes::REFLECTEST:
 		this->testCubeMapReflection();
+		break;
+	case Scenes::A6:
+		this->a6Demo();
 		break;
 	case Scenes::REFRACTEST:
 		this->testCubeMapRefraction();

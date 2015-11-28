@@ -1433,5 +1433,6 @@ void GUI::TestProgHW_cb() {
 }
 
 void GUI::A6Demo_cb() {
-  scene->a6Demo();
+  scene->regFuncForKbRedraw(Scenes::A6);
+scene->a6Demo();
 }

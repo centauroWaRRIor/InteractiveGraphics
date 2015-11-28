@@ -295,7 +295,8 @@ scene->testA4Demo();} {}
   Function {TestCubeMapFaces_cb()} {} {
     code {scene->testCubeMapFaces();} {}
   }
-  Function {TestCubeMapReflection_cb()} {} {
+  Function {TestCubeMapReflection_cb()} {open
+  } {
     code {scene->regFuncForKbRedraw(Scenes::REFLECTEST);
 scene->testCubeMapReflection();} {}
   }
@@ -315,7 +316,8 @@ scene->testCubeMapRefraction();} {}
   }
   Function {A6Demo_cb()} {open
   } {
-    code {scene->a6Demo();} {selected
+    code {scene->regFuncForKbRedraw(Scenes::A6);
+scene->a6Demo();} {selected
     }
   }
 } 
