@@ -29,7 +29,8 @@ class HWReflections :
 	TMesh impostorBillboards[MAX_IMPOSTORS];
 
 	void loadShaders(void);
-	bool createRenderTextureTarget(void);
+	bool initRenderTextureTarget(void);
+	bool createRenderTextureTarget(const PPC &ppc, unsigned int tMeshIndex);
 	bool createImpostorBillboards(void);
 public:
 	HWReflections(int u0, int v0, // top left coords
@@ -40,7 +41,6 @@ public:
 	// programmer triggers framebuffer update by calling FrameBuffer::redraw(), which makes
 	// system call draw()
 	virtual void draw() override;
-	void drawRenderToTexture(void);
 
 	// TODO: Document
 	void setReflectorTMesh(unsigned int index);

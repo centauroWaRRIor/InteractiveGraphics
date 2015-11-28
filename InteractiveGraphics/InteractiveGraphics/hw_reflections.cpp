@@ -59,7 +59,7 @@ void HWReflections::loadShaders(void)
 	reflectionShader->createUniform("billboardTcs_2");
 }
 
-bool HWReflections::createRenderTextureTarget(void)
+bool HWReflections::initRenderTextureTarget(void)
 {
 	// -----------------------------------------------
 	// Render to Texture - set up code is placed here
@@ -76,7 +76,7 @@ bool HWReflections::createRenderTextureTarget(void)
 	glBindTexture(GL_TEXTURE_2D, renderedTexture);
 
 	// Give an empty image to OpenGL ( the last "0" means "empty" )
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1280, 720, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1280, 720, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
 	// Poor filtering
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -101,6 +101,61 @@ bool HWReflections::createRenderTextureTarget(void)
 		return false;
 	else
 		return true;
+}
+
+bool HWReflections::createRenderTextureTarget(const PPC &ppc, unsigned int tMeshIndex)
+{
+	// initialize render to texture setup
+	if (!initRenderTextureTarget()) {
+		cout << "Error: Failed while settting up render to texture" << endl;
+		return false;
+	}
+	
+	// set perspective and model-view matrices
+	const float nearPlaneValue = 10.0f;
+	const float farPlaneValue = 1000.0f;
+	GLfloat perspectiveMatrix[16];
+	GLfloat modelviewMatrix[16];
+	// use old fixed pipeline (deprecated) glFrustum and gluLookAt
+	// to set the perspective matrix and modelview matrix respectively
+	
+	// set view intrinsics
+	ppc.setGLIntrinsics(nearPlaneValue, farPlaneValue);
+	// set view extrinsics
+	ppc.setGLExtrinsics();
+
+	// need to send matrices as uniforms when using shaders since I'm using GLSL 420 core
+	glGetFloatv(GL_PROJECTION_MATRIX, perspectiveMatrix);
+	glGetFloatv(GL_MODELVIEW_MATRIX, modelviewMatrix);
+
+	glUseProgram(fixedPipelineProgram->getGLProgramHandle());
+	fixedPipelineProgram->uploadMatrixUniform("proj_matrix", perspectiveMatrix);
+	fixedPipelineProgram->uploadMatrixUniform("mv_matrix", modelviewMatrix);
+
+	glUseProgram(fixedPipelineProgramNoTexture->getGLProgramHandle());
+	fixedPipelineProgramNoTexture->uploadMatrixUniform("proj_matrix", perspectiveMatrix);
+	fixedPipelineProgramNoTexture->uploadMatrixUniform("mv_matrix", modelviewMatrix);
+
+	// Render to our render to texture framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, renderToTextureFramebuffer);
+	// clear framebuffer
+	glClearColor(0.0f, 0.0f, 1.0, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	// enable depth test
+	glEnable(GL_DEPTH_TEST);
+
+	glUseProgram(fixedPipelineProgramNoTexture->getGLProgramHandle());
+
+	// render requested triangle meshes through hardware
+	TMesh *tMeshPtr = tMeshArray[tMeshIndex];
+	if (!tMeshPtr->getIsGLVertexArrayObjectCreated()) {
+		tMeshPtr->createGLVertexArrayObject(); // enables hw support for this TMesh
+	}
+	tMeshPtr->hwGLVertexArrayObjectDraw();
+
+	// Render to the screen after this
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	return true;
 }
 
 bool HWReflections::createImpostorBillboards(void)
@@ -173,6 +228,19 @@ void HWReflections::draw()
 		reflectionShader->uploadVectors3Uniform("billboardVerts_2", billboardCoords, 4);
 		reflectionShader->uploadVectors2Uniform("billboardTcs_2", billboardTcs, 4);
 
+		// create camera looking at first tMesh to be reflected off of teapot's surface
+		//PPC tempCamera(*camera);
+		PPC tempCamera(85.0f, 1280, 720);
+		tempCamera.positionAndOrient(
+			tMeshArray[reflectorTMeshIndex]->getCenter(),
+			tMeshArray[1]->getCenter(),
+			V3(0.0f, 1.0f, 0.0f));
+
+		if (!createRenderTextureTarget(tempCamera, 1)) {
+			cout << "Error: Failed while aquiring render to texture" << endl;
+			return;
+		}
+
 		isGlewInit = true;
 	}
 
@@ -220,23 +288,24 @@ void HWReflections::draw()
 			cameraEye.getY(),
 			cameraEye.getZ());
 	}
-
+	
 	// draw reflector Tmesh through hardware using special shader 
 	glUseProgram(reflectionShader->getGLProgramHandle());
 	// use placeholder texture for now. Eventually want to use render to texture here
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, 1); // upload billboard 1 texture manually for now
+	glBindTexture(GL_TEXTURE_2D, renderedTexture); // upload billboard 1 texture manually for now
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, 2); // upload billboard 2 texture manually for now
-
+	
 	if (!tMeshArray[reflectorTMeshIndex]->getIsGLVertexArrayObjectCreated()) {
-	tMeshArray[reflectorTMeshIndex]->createGLVertexArrayObject(); // enables hw support for this TMesh
+		tMeshArray[reflectorTMeshIndex]->createGLVertexArrayObject(); // enables hw support for this TMesh
 	}
 	tMeshArray[reflectorTMeshIndex]->hwGLVertexArrayObjectDraw();
-
+	
+	// render all triangle meshes through hardware except for tMesh acting as reflector
 	glUseProgram(fixedPipelineProgramNoTexture->getGLProgramHandle());
 	vector<TMesh *>::const_iterator it;
-	// render all triangle meshes through hardware except for tMesh acting as reflector
+	
 	for (it = tMeshArray.begin(); it != tMeshArray.end(); ++it) {
 
 		if ((it - tMeshArray.begin()) != reflectorTMeshIndex) {
@@ -257,7 +326,12 @@ void HWReflections::draw()
 
 	for (unsigned int i = 0; i < MAX_IMPOSTORS; i++) {
 
-		GLuint glTexHandle = i+1;//tMeshTextureMap[0]; this is dangerous and only meant to be temporary
+		GLuint glTexHandle;
+		if (i == 0)
+			glTexHandle = renderedTexture;
+		else
+			glTexHandle = 2;
+		
 		glBindTexture(GL_TEXTURE_2D, glTexHandle);
 
 		TMesh *tMeshPtr = &impostorBillboards[i];
@@ -268,7 +342,7 @@ void HWReflections::draw()
 	}
 	
 }
-
+#if 0
 void HWReflections::drawRenderToTexture(void)
 {
 	// initialize opengl extension wrangler utility
@@ -283,7 +357,7 @@ void HWReflections::drawRenderToTexture(void)
 		cout << "Status: Using GLEW " << glewGetString(GLEW_VERSION) << endl;
 		loadShaders();
 		//loadTextures();
-		if (!createRenderTextureTarget())
+		if (!initRenderTextureTarget())
 			cout << "Error: Failed while settting up render to texture" << endl;
 		else
 			cout << "Render to texture set up successfully!" << endl;
@@ -366,6 +440,7 @@ void HWReflections::drawRenderToTexture(void)
 		tMeshPtr->hwGLVertexArrayObjectDraw();
 	}
 }
+#endif
 
 void HWReflections::setReflectorTMesh(unsigned int index)
 {
