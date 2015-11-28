@@ -293,7 +293,8 @@ void HWReflections::draw()
 	glUseProgram(reflectionShader->getGLProgramHandle());
 	// use placeholder texture for now. Eventually want to use render to texture here
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, renderedTexture); // upload billboard 1 texture manually for now
+	glBindTexture(GL_TEXTURE_2D, renderedTexture);
+	//glBindTexture(GL_TEXTURE_2D, 1); // upload billboard 1 texture manually for now
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, 2); // upload billboard 2 texture manually for now
 	
@@ -329,6 +330,7 @@ void HWReflections::draw()
 		GLuint glTexHandle;
 		if (i == 0)
 			glTexHandle = renderedTexture;
+			//glTexHandle = 1;
 		else
 			glTexHandle = 2;
 		
