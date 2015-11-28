@@ -21,7 +21,7 @@ HWReflections::~HWReflections()
 {
 	// undo render to target setup 
 	glDeleteFramebuffers(1, &renderToTextureFramebuffer);
-	glDeleteTextures(1, &renderedTexture);
+	glDeleteTextures(2, renderedTexture);
 	glDeleteRenderbuffers(1, &renderToTextureDepthbuffer);
 	// delete all the programs
 	delete fixedPipelineProgramNoTexture;
@@ -59,21 +59,15 @@ void HWReflections::loadShaders(void)
 	reflectionShader->createUniform("billboardTcs_2");
 }
 
-bool HWReflections::initRenderTextureTarget(void)
+void HWReflections::loadTextures(void)
 {
-	// -----------------------------------------------
-	// Render to Texture - set up code is placed here
-	// -----------------------------------------------
-
-	// The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
-	glGenFramebuffers(1, &renderToTextureFramebuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, renderToTextureFramebuffer);
+	HWFrameBuffer::loadTextures();
 
 	// The texture we're going to render to
-	glGenTextures(1, &renderedTexture);
+	glGenTextures(2, renderedTexture);
 
 	// "Bind" the newly created texture : all future texture functions will modify this texture
-	glBindTexture(GL_TEXTURE_2D, renderedTexture);
+	glBindTexture(GL_TEXTURE_2D, renderedTexture[0]);
 
 	// Give an empty image to OpenGL ( the last "0" means "empty" )
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1280, 720, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
@@ -84,29 +78,67 @@ bool HWReflections::initRenderTextureTarget(void)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	// The depth buffer
-	glGenRenderbuffers(1, &renderToTextureDepthbuffer);
-	glBindRenderbuffer(GL_RENDERBUFFER, renderToTextureDepthbuffer);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 1280, 720);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderToTextureDepthbuffer);
+	// "Bind" the newly created texture : all future texture functions will modify this texture
+	glBindTexture(GL_TEXTURE_2D, renderedTexture[1]);
 
-	// Set "renderedTexture" as our colour attachement #0
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTexture, 0);
+	// Give an empty image to OpenGL ( the last "0" means "empty" )
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1280, 720, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
-	// Set the list of draw buffers.
-	glDrawBuffers(1, renderToTextureDrawBuffers); // "1" is the size of DrawBuffers
-
-   // Always check that our framebuffer is ok
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		return false;
-	else
-		return true;
+	// Poor filtering
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
 
-bool HWReflections::createRenderTextureTarget(const PPC &ppc, unsigned int tMeshIndex)
+bool HWReflections::initRenderTextureTarget(unsigned int &renderedTextureHandle)
+{
+	// -----------------------------------------------
+	// Render to Texture - set up code is placed here
+	// -----------------------------------------------
+
+	static bool initRenderTextureTargetSuccess = false;
+
+	// do once
+	if (!initRenderTextureTargetSuccess) {
+		// The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
+		glGenFramebuffers(1, &renderToTextureFramebuffer);
+		glBindFramebuffer(GL_FRAMEBUFFER, renderToTextureFramebuffer);
+
+		// The depth buffer
+		glGenRenderbuffers(1, &renderToTextureDepthbuffer);
+		glBindRenderbuffer(GL_RENDERBUFFER, renderToTextureDepthbuffer);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 1280, 720);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderToTextureDepthbuffer);
+
+		// Set the list of draw buffers.
+		glDrawBuffers(1, renderToTextureDrawBuffers); // "1" is the size of DrawBuffers
+	}
+	else {
+		glBindFramebuffer(GL_FRAMEBUFFER, renderToTextureFramebuffer);
+		glBindRenderbuffer(GL_RENDERBUFFER, renderToTextureDepthbuffer);
+	}
+
+	// Set "renderedTexture" as our colour attachement #0
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, (GLuint) renderedTextureHandle, 0);
+
+   // Always check that our framebuffer is ok
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+		return false;
+	}
+	else {
+		initRenderTextureTargetSuccess = true;
+		return true;
+	}
+}
+
+bool HWReflections::createRenderTextureTarget(
+	const PPC &ppc, 
+	unsigned int tMeshIndex,
+	unsigned int &renderedTextureHandle)
 {
 	// initialize render to texture setup
-	if (!initRenderTextureTarget()) {
+	if (!initRenderTextureTarget(renderedTextureHandle)) {
 		cout << "Error: Failed while settting up render to texture" << endl;
 		return false;
 	}
@@ -128,10 +160,6 @@ bool HWReflections::createRenderTextureTarget(const PPC &ppc, unsigned int tMesh
 	glGetFloatv(GL_PROJECTION_MATRIX, perspectiveMatrix);
 	glGetFloatv(GL_MODELVIEW_MATRIX, modelviewMatrix);
 
-	glUseProgram(fixedPipelineProgram->getGLProgramHandle());
-	fixedPipelineProgram->uploadMatrixUniform("proj_matrix", perspectiveMatrix);
-	fixedPipelineProgram->uploadMatrixUniform("mv_matrix", modelviewMatrix);
-
 	glUseProgram(fixedPipelineProgramNoTexture->getGLProgramHandle());
 	fixedPipelineProgramNoTexture->uploadMatrixUniform("proj_matrix", perspectiveMatrix);
 	fixedPipelineProgramNoTexture->uploadMatrixUniform("mv_matrix", modelviewMatrix);
@@ -139,12 +167,10 @@ bool HWReflections::createRenderTextureTarget(const PPC &ppc, unsigned int tMesh
 	// Render to our render to texture framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, renderToTextureFramebuffer);
 	// clear framebuffer
-	glClearColor(0.0f, 0.0f, 1.0, 0.0f);
+	glClearColor(0.0f, 0.0f, 1.0, 0.0f); // background alpha is set to zero
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	// enable depth test
 	glEnable(GL_DEPTH_TEST);
-
-	glUseProgram(fixedPipelineProgramNoTexture->getGLProgramHandle());
 
 	// render requested triangle meshes through hardware
 	TMesh *tMeshPtr = tMeshArray[tMeshIndex];
@@ -229,15 +255,25 @@ void HWReflections::draw()
 		reflectionShader->uploadVectors2Uniform("billboardTcs_2", billboardTcs, 4);
 
 		// create camera looking at first tMesh to be reflected off of teapot's surface
-		//PPC tempCamera(*camera);
-		PPC tempCamera(85.0f, 1280, 720);
+		PPC tempCamera(85.0f, 1280, 720); // need a wide field of view here
 		tempCamera.positionAndOrient(
 			tMeshArray[reflectorTMeshIndex]->getCenter(),
 			tMeshArray[1]->getCenter(),
 			V3(0.0f, 1.0f, 0.0f));
+		// render to texture
+		if (!createRenderTextureTarget(tempCamera, 1, renderedTexture[0])) {
+			cout << "Error: Failed while aquiring render to texture 1" << endl;
+			return;
+		}
 
-		if (!createRenderTextureTarget(tempCamera, 1)) {
-			cout << "Error: Failed while aquiring render to texture" << endl;
+		// create camera looking at second tMesh to be reflected off of teapot's surface
+		tempCamera.positionAndOrient(
+			tMeshArray[reflectorTMeshIndex]->getCenter(),
+			tMeshArray[2]->getCenter(),
+			V3(0.0f, 1.0f, 0.0f));
+		// render to texture
+		if (!createRenderTextureTarget(tempCamera, 2, renderedTexture[1])) {
+			cout << "Error: Failed while aquiring render to texture 2" << endl;
 			return;
 		}
 
@@ -291,12 +327,12 @@ void HWReflections::draw()
 	
 	// draw reflector Tmesh through hardware using special shader 
 	glUseProgram(reflectionShader->getGLProgramHandle());
-	// use placeholder texture for now. Eventually want to use render to texture here
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, renderedTexture);
+	glBindTexture(GL_TEXTURE_2D, renderedTexture[0]); // use rendered to texture 1
 	//glBindTexture(GL_TEXTURE_2D, 1); // upload billboard 1 texture manually for now
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, 2); // upload billboard 2 texture manually for now
+	//glBindTexture(GL_TEXTURE_2D, 2); // upload billboard 2 texture manually for now
+	glBindTexture(GL_TEXTURE_2D, renderedTexture[1]);  // use rendered to texture 2
 	
 	if (!tMeshArray[reflectorTMeshIndex]->getIsGLVertexArrayObjectCreated()) {
 		tMeshArray[reflectorTMeshIndex]->createGLVertexArrayObject(); // enables hw support for this TMesh
@@ -304,7 +340,7 @@ void HWReflections::draw()
 	tMeshArray[reflectorTMeshIndex]->hwGLVertexArrayObjectDraw();
 	
 	// render all triangle meshes through hardware except for tMesh acting as reflector
-	glUseProgram(fixedPipelineProgramNoTexture->getGLProgramHandle());
+	/*glUseProgram(fixedPipelineProgramNoTexture->getGLProgramHandle());
 	vector<TMesh *>::const_iterator it;
 	
 	for (it = tMeshArray.begin(); it != tMeshArray.end(); ++it) {
@@ -318,7 +354,7 @@ void HWReflections::draw()
 			}
 			tMeshPtr->hwGLVertexArrayObjectDraw();
 		}
-	}
+	}*/
 
 	// render all impostor billboards through hardware
 	// temp draw impostor billboards with placeholder textures for now
@@ -329,10 +365,11 @@ void HWReflections::draw()
 
 		GLuint glTexHandle;
 		if (i == 0)
-			glTexHandle = renderedTexture;
-			//glTexHandle = 1;
+			glTexHandle = renderedTexture[0]; // use rendered to texture 1
+			//glTexHandle = 1; // upload billboard 1 texture manually for now
 		else
-			glTexHandle = 2;
+			glTexHandle = renderedTexture[1]; // use rendered to texture 2
+			//glTexHandle = 2; // upload billboard 2 texture manually for now
 		
 		glBindTexture(GL_TEXTURE_2D, glTexHandle);
 

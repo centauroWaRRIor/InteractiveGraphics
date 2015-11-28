@@ -15,22 +15,26 @@ class HWReflections :
 	ShaderProgram *fixedPipelineProgramNoTexture;
 	ShaderProgram *reflectionShader;
 
+	// only a maximum of two impostor billboards supported at the time
+	static const unsigned int MAX_IMPOSTORS = 2;
+	TMesh impostorBillboards[MAX_IMPOSTORS];
+
 	// TODO initialize in the constructor
 	GLuint renderToTextureFramebuffer = 0;
-	GLuint renderedTexture;
+	GLuint renderedTexture[MAX_IMPOSTORS];
 	GLuint renderToTextureDepthbuffer;
 	GLenum renderToTextureDrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
 
 	// TODO comment
 	unsigned int reflectorTMeshIndex;
 
-	// only a maximum of two impostor billboards supported at the time
-	static const unsigned int MAX_IMPOSTORS = 2;
-	TMesh impostorBillboards[MAX_IMPOSTORS];
-
 	void loadShaders(void);
-	bool initRenderTextureTarget(void);
-	bool createRenderTextureTarget(const PPC &ppc, unsigned int tMeshIndex);
+	void loadTextures(void);
+	bool initRenderTextureTarget(unsigned int &renderedTextureHandle);
+	bool createRenderTextureTarget(
+		const PPC &ppc, 
+		unsigned int tMeshIndex,
+		unsigned int &renderedTextureHandle);
 	bool createImpostorBillboards(void);
 public:
 	HWReflections(int u0, int v0, // top left coords
