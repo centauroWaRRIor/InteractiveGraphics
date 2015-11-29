@@ -6,6 +6,7 @@
 //       binding 1 corresponds to GL_TEXTURE1 unit so on and so forth
 layout (binding = 0) uniform sampler2D billboardTexColor_1;
 layout (binding = 1) uniform sampler2D billboardTexColor_2;
+layout (binding = 2) uniform samplerCube tex_cubemap;
 
 uniform vec3 eyePosition;
 
@@ -125,7 +126,7 @@ bool calcImpostorReflectColor(
 void main(void)
 {
 	const float INFINITY = 1e10;
-	const float MAXINTERSECTDISTANCE = 220.0;
+	const float MAXINTERSECTDISTANCE = 500.0;//220.0;
 	float intersectDistance = INFINITY;
 	float t, LdotV, mixFactor;
 	vec4 reflectedColor, S, P, L, V;
@@ -136,6 +137,10 @@ void main(void)
 	viewDirection = normalize(viewDirection);	
 	// because the two inputs are normalized reflectDir is normalized
 	vec3 reflectDir = reflect(viewDirection, normalize(fs_in.normalDirection));
+	
+	// use ray to compute color from environment
+	//vec4 envColor  = texture(tex_cubemap, reflectDir) * fs_in.color; // this works but makes harder to see reflection
+	vec4 envColor  = texture(tex_cubemap, reflectDir);
 	
 	// 4D plane equation is from "Mathematics for 3D Game Programming and Computer Graphics"
 	// calculate plane equation for billboard1
@@ -213,7 +218,7 @@ void main(void)
 	}
 	
 	if(intersectDistance == INFINITY) // if there was no intersection with ANY billboard
-		color = fs_in.color;
+		color = envColor;
 	else
 	{
 		// modulate reflected color by the distance to intersection
@@ -222,10 +227,10 @@ void main(void)
 		mixFactor = 1.0 - mixFactor; // the farther the less influence it has
 		// reflected color is always the color of the closest reflection modulated by the
 		// maximum distance allowed
-		color = mix(fs_in.color, reflectedColor, mixFactor);
+		color = mix(envColor, reflectedColor, mixFactor);
 	}
 	
-    // some useful for debug only tets
+    // some useful for debug only
 	//vec4 test = vec4(billboardVerts_1[0], 1.0) + vec4(-137.644196, 76.3608627, 82.6696091, -1.0); checksout
 	//vec4 test = vec4(billboardVerts_1[1], 1.0) + vec4(-137.644196, 76.3608627, -117.330391, -1.0); checksout
 	//vec4 test = vec4(billboardVerts_1[3], 1.0) + vec4(-141.01663, -123.610710, 82.6696091, -1.0);

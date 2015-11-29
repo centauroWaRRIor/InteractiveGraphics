@@ -441,6 +441,8 @@ void HWReflections::draw()
 	glActiveTexture(GL_TEXTURE1);
 	//glBindTexture(GL_TEXTURE_2D, 2); // upload billboard 2 texture manually for now
 	glBindTexture(GL_TEXTURE_2D, renderedTexture[1]);  // use rendered to texture 2
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, envMap); // bind the environment map here
 	
 	if (!tMeshArray[reflectorTMeshIndex]->getIsGLVertexArrayObjectCreated()) {
 		tMeshArray[reflectorTMeshIndex]->createGLVertexArrayObject(); // enables hw support for this TMesh

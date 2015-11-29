@@ -273,73 +273,8 @@ void Scene::dbgDraw() {
 
 	if (!isDGBInit) {
 
-		cleanForNewScene();
-
-		// create progr pipeline HW framebuffer
-		reflectionshwFb = new HWReflections(u0, v0, K_W, K_H);
-		reflectionshwFb->label("Programmable Pipeline HW Framebuffer for A6");
-
-		unsigned int tmsN = 5;
-		unsigned int n;
-		tms[0] = new TMesh();
-		tms[1] = new TMesh();
-		tms[2] = new TMesh();
-		tms[3] = new TMesh();
-		tms[4] = new TMesh();
-
-		tms[0]->createQuadTMesh(false);
-		tms[0]->translate(V3(-100.0f, 50.0f, 0.0f));
-		tms[1]->createQuadTMesh(false);
-		tms[1]->translate(V3(20.0f, 50.0f, 0.0f));
-		tms[2]->createQuadTMesh(true);
-		tms[2]->translate(V3(-100.0f, 0.0f, 0.0f));
-		tms[3]->createQuadTMesh(true);
-		tms[3]->translate(V3(20.0f, 0.0f, 0.0f));
-		tms[4]->loadBin("geometry/teapot1K.bin");
-		tms[4]->disableTexCoords(); // they don't look good
-		for (n = 0; n < tmsN; n++) {
-			reflectionshwFb->registerTMesh(tms[n]);
-		}
-
-		// load five different textures for demoing
-		unsigned int texObjectsN = 6;
-		texObjects[0] = new Texture("pngs\\White_brick_block_pxr128.png");
-		texObjects[1] = new Texture("pngs\\Macbeth_color_checker_pxr128.png"); // test tiling
-		texObjects[2] = new Texture("pngs\\Alloy_diamond_plate_pxr128.png");
-		texObjects[3] = new Texture("pngs\\Brown_staggered_pxr128.png");
-		texObjects[4] = new Texture("pngs\\Woven_flower_pxr128.png");
-		texObjects[5] = new Texture("pngs\\American_walnut_pxr128.png");
-		for (n = 0; n < texObjectsN; n++) {
-			reflectionshwFb->registerTexture(texObjects[n]);
-		}
-
-		// assign tMesh to texture mappings
-		reflectionshwFb->assignTMeshTexture(0, 0);
-		reflectionshwFb->assignTMeshTexture(1, 1);
-		reflectionshwFb->assignTMeshTexture(2, 2);
-		reflectionshwFb->assignTMeshTexture(3, 3);
-		reflectionshwFb->assignTMeshTexture(4, 3);
-
-		V3 center = tms[4]->getCenter();
-		ppc->moveForward(-200.0f);
-		ppc->positionAndOrient(ppc->getEyePoint(), center, V3(0.0f, 1.0f, 0.0f));
-		ppc->moveUp(10.0f);
-		reflectionshwFb->registerPPC(ppc);
-
-		reflectionshwFb->show();
 		isDGBInit = true;		
 	}
-	// clear screen
-	fb->set(0xFFFFFFFF);
-	// clear zBuffer
-	if (currentDrawMode == DrawModes::MODELSPACELERP)
-		fb->clearZB(FLT_MAX);
-	else
-		fb->clearZB(0.0f);
-	drawTMesh(*tms[0], *fb, *ppc, true);
-	
-	fb->redraw();
-	reflectionshwFb->redraw();
 	return;
 }
 
@@ -1950,7 +1885,8 @@ void Scene::a6Demo(void)
 	// used for dolly camera setup
 	const float speedFactor = 0.01f;
 	V3 lookAtPoint;
-	static CubeMap cubeMap("pngs\\uffizi_cross_debug.png");
+	//static CubeMap cubeMap("pngs\\uffizi_cross_debug.png");
+	static CubeMap cubeMap("pngs\\uffizi_cross.png");
 
 	if (!isA6DemoInit) {
 
