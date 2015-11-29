@@ -15,6 +15,7 @@ HWReflections::HWReflections(
 	fixedPipelineProgramNoTexture(nullptr),
 	fixedPipelineProgram(nullptr),
 	reflectionShader(nullptr),
+	skyboxShader(nullptr),
 	envMapData(nullptr),
 	reflectorTMeshIndex(0)
 {
@@ -30,6 +31,7 @@ HWReflections::~HWReflections()
 	delete fixedPipelineProgramNoTexture;
 	delete fixedPipelineProgram;
 	delete reflectionShader;
+	delete skyboxShader;
 }
 
 void HWReflections::loadShaders(void)
@@ -43,6 +45,10 @@ void HWReflections::loadShaders(void)
 	list<string> shaderList3;
 	shaderList3.push_back("glsl/reflectionShader.vs.glsl");
 	shaderList3.push_back("glsl/reflectionShader.fs.glsl");
+	list<string> shaderList4;
+	shaderList4.push_back("glsl/skybox.vs.glsl");
+	shaderList4.push_back("glsl/skybox.fs.glsl");
+
 
 	fixedPipelineProgramNoTexture = new ShaderProgram(shaderList1);
 	fixedPipelineProgramNoTexture->createUniform("proj_matrix");
@@ -60,6 +66,8 @@ void HWReflections::loadShaders(void)
 	reflectionShader->createUniform("billboardTcs_1");
 	reflectionShader->createUniform("billboardVerts_2");
 	reflectionShader->createUniform("billboardTcs_2");
+
+	skyboxShader = new ShaderProgram(shaderList4);
 }
 
 void HWReflections::loadTextures(void)

@@ -1524,7 +1524,7 @@ void Scene::testCubeMapFaces(void)
 void Scene::testCubeMapReflection(void)
 {
 	const float speedFactor = 0.01f;
-	CubeMap cubeMap("pngs\\uffizi_cross.png");
+	static CubeMap cubeMap("pngs\\uffizi_cross.png");
 	if (!isTestCMReflectInit) {
 
 		cleanForNewScene();
@@ -1579,7 +1579,7 @@ void Scene::testCubeMapRefraction(void)
 	const float nt = 1.51f; // refraction index of window glass
 	//const float nt = 2.42f; // refraction index of diamond
 	//const float nt = 1.33f; // refraction index of water
-	CubeMap cubeMap("pngs\\uffizi_cross.png");
+	static CubeMap cubeMap("pngs\\uffizi_cross.png");
 	if (!isTestCMRefractInit) {
 
 		cleanForNewScene();
@@ -1624,7 +1624,7 @@ void Scene::a5Demo(void)
 #endif
 	const float nl = 1.0f; // refraction index of air
 	const float nt = 1.51f; // refraction index of window glass
-	CubeMap cubeMap("pngs\\uffizi_cross.png");
+	static CubeMap cubeMap("pngs\\uffizi_cross.png");
 	cleanForNewScene();
 	tms[0] = new TMesh();
 	tms[1] = new TMesh();
@@ -1950,6 +1950,7 @@ void Scene::a6Demo(void)
 	// used for dolly camera setup
 	const float speedFactor = 0.01f;
 	V3 lookAtPoint;
+	static CubeMap cubeMap("pngs\\uffizi_cross.png");
 
 	if (!isA6DemoInit) {
 
@@ -1989,10 +1990,12 @@ void Scene::a6Demo(void)
 			reflectionshwFb->registerTexture(texObjects[n]);
 		}
 
-		// the following operation is exclusive of derived class and so
+		// the following operations are exclusive of derived class and so
 		// casting is needed here first
 		HWReflections *tempPointer = (HWReflections *) reflectionshwFb;
 		tempPointer->setReflectorTMesh(0);
+		// load cubemap
+		tempPointer->registerCubeMap(&cubeMap);
 
 		lookAtPoint = tms[0]->getCenter(); // teapot centroid
 		reflectionshwFb->registerPPC(ppc); 

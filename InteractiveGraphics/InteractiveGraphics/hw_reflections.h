@@ -14,6 +14,7 @@ class HWReflections :
 	ShaderProgram *fixedPipelineProgram;
 	ShaderProgram *fixedPipelineProgramNoTexture;
 	ShaderProgram *reflectionShader;
+	ShaderProgram *skyboxShader;
 
 	// only a maximum of two impostor billboards supported at the time
 	static const unsigned int MAX_IMPOSTORS = 2;
@@ -52,10 +53,9 @@ public:
 
 	// TODO: Document
 	void setReflectorTMesh(unsigned int index);
+	void registerCubeMap(CubeMap * const cubeMap);
 
 	virtual void keyboardHandle(void) override;
 	virtual void mouseLeftClickDragHandle(int event) override;
 	virtual void mouseRightClickDragHandle(int event) override;
-
-	void registerCubeMap(CubeMap * const cubeMap);
 };
