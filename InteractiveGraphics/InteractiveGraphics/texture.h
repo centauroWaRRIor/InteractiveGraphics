@@ -36,5 +36,7 @@ public:
 	// do vector interpolation (alpha the 4 component gets lost)
 	unsigned int sampleTexBilinearTile(float s, float t) const;
 	// flips image upside down
+	void flipAboutX(void);
+	// flips image left to right
 	void flipAboutY(void);
 };

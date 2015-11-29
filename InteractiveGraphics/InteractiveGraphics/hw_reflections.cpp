@@ -27,6 +27,8 @@ HWReflections::~HWReflections()
 	glDeleteFramebuffers(1, &renderToTextureFramebuffer);
 	glDeleteTextures(2, renderedTexture);
 	glDeleteRenderbuffers(1, &renderToTextureDepthbuffer);
+	// delete environment cubemap texture setup 
+	glDeleteTextures(1, &envMap);
 	// delete all the programs
 	delete fixedPipelineProgramNoTexture;
 	delete fixedPipelineProgram;
@@ -126,7 +128,7 @@ void HWReflections::loadTextures(void)
 		GL_RGBA,
 		GL_UNSIGNED_BYTE,
 		data);
-	texPointer = envMapData->getCubeFace(2);
+	texPointer = envMapData->getCubeFace(3); // 3
 	dataVector = texPointer->getTexelsPtr();
 	data = dataVector->data();
 	glTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
@@ -136,7 +138,7 @@ void HWReflections::loadTextures(void)
 		GL_RGBA,
 		GL_UNSIGNED_BYTE,
 		data);
-	texPointer = envMapData->getCubeFace(3);
+	texPointer = envMapData->getCubeFace(2); // 2
 	dataVector = texPointer->getTexelsPtr();
 	data = dataVector->data();
 	glTexSubImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
@@ -423,6 +425,7 @@ void HWReflections::draw()
 	// draw skybox first
 	glUseProgram(skyboxShader->getGLProgramHandle());
 	skyboxShader->uploadMatrixUniform("view_matrix", modelviewMatrix);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, envMap);
 	// even though we hardcoded  the vertices in the shader we still need
 	// a VAO so openGL let us draw
 	glBindVertexArray(skybox_vao);
@@ -444,8 +447,8 @@ void HWReflections::draw()
 	}
 	tMeshArray[reflectorTMeshIndex]->hwGLVertexArrayObjectDraw();
 	
-	// render all triangle meshes through hardware except for tMesh acting as reflector
-	/*glUseProgram(fixedPipelineProgramNoTexture->getGLProgramHandle());
+	// render all non reflective triangle meshes through hardware
+	glUseProgram(fixedPipelineProgramNoTexture->getGLProgramHandle());
 	vector<TMesh *>::const_iterator it;
 	
 	for (it = tMeshArray.begin(); it != tMeshArray.end(); ++it) {
@@ -459,10 +462,11 @@ void HWReflections::draw()
 			}
 			tMeshPtr->hwGLVertexArrayObjectDraw();
 		}
-	}*/
+	}
 
-	// render all impostor billboards through hardware
-	// temp draw impostor billboards with placeholder textures for now
+	// uncomment here to render all impostor billboards through hardware 
+	// (only useful for debug purposes)
+	/*
 	glUseProgram(fixedPipelineProgram->getGLProgramHandle());
 	glActiveTexture(GL_TEXTURE0);
 
@@ -483,8 +487,7 @@ void HWReflections::draw()
 			tMeshPtr->createGLVertexArrayObject(); // enables hw support for this TMesh 
 		}
 		tMeshPtr->hwGLVertexArrayObjectDraw();
-	}
-	
+	}*/
 }
 #if 0
 void HWReflections::drawRenderToTexture(void)

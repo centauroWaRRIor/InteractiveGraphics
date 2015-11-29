@@ -1950,7 +1950,7 @@ void Scene::a6Demo(void)
 	// used for dolly camera setup
 	const float speedFactor = 0.01f;
 	V3 lookAtPoint;
-	static CubeMap cubeMap("pngs\\uffizi_cross.png");
+	static CubeMap cubeMap("pngs\\uffizi_cross_debug.png");
 
 	if (!isA6DemoInit) {
 

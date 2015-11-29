@@ -234,9 +234,8 @@ unsigned int Texture::sampleTexBilinearTile(float floatS, float floatT) const
 #endif
 }
 
-void Texture::flipAboutY(void)
+void Texture::flipAboutX(void)
 {
-
 	unsigned int texelIndexI, texelIndexK;
 	unsigned int i, k;
 
@@ -249,6 +248,34 @@ void Texture::flipAboutY(void)
 			// grab pixel from other texture
 			texelIndexI = (i * texWidth + j) * 4;
 			texelIndexK = (k * texWidth + j) * 4;
+
+			// swap pixels component by component
+			unsigned char temp;
+			for (unsigned int z = 0; z < 4; z++) {
+				temp = texels[texelIndexI + z];
+				texels[texelIndexI + z] = texels[texelIndexK + z];
+				texels[texelIndexK + z] = temp;
+			}
+		}
+	}
+}
+
+void Texture::flipAboutY(void)
+{
+	unsigned int texelIndexI, texelIndexK;
+	unsigned int i, k;
+
+	for (
+		i = 0, k = texWidth - 1;
+		i < k;
+		i++, k--
+		)
+	{
+		for (unsigned int j = 0; j < texHeight; j++) {
+
+			// grab pixel from other texture
+			texelIndexI = (j * texWidth + i) * 4;
+			texelIndexK = (j * texWidth + k) * 4;
 
 			// swap pixels component by component
 			unsigned char temp;
