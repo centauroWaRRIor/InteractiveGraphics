@@ -40,7 +40,7 @@ CubeMap::CubeMap(const string & texFilename)
 	cubeMapFaces[2]->flipAboutY();
 	cubeMapFacesCams[2]->positionRelativeToPoint(
 		V3(0.0f, 0.0f, 0.0f),
-		V3(0.0f, 0.0f, -1.0f), // look at pos z direction
+		V3(0.0f, 0.0f, 1.0f), // look at neg z direction
 		V3(0.0f, 1.0f, 0.0f),
 		0.0f);
 
@@ -49,7 +49,7 @@ CubeMap::CubeMap(const string & texFilename)
 		1 * envMapResHeight, 2 * envMapResHeight);
 	cubeMapFacesCams[3]->positionRelativeToPoint(
 		V3(0.0f, 0.0f, 0.0f),
-		V3(0.0f, 0.0f, 1.0f), // look at neg z direction
+		V3(0.0f, 0.0f, -1.0f), // look at pos z direction
 		V3(0.0f, 1.0f, 0.0f),
 		0.0f);
 

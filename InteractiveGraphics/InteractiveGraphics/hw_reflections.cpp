@@ -128,7 +128,7 @@ void HWReflections::loadTextures(void)
 		GL_RGBA,
 		GL_UNSIGNED_BYTE,
 		data);
-	texPointer = envMapData->getCubeFace(3); // 3
+	texPointer = envMapData->getCubeFace(3);
 	dataVector = texPointer->getTexelsPtr();
 	data = dataVector->data();
 	glTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
@@ -138,7 +138,7 @@ void HWReflections::loadTextures(void)
 		GL_RGBA,
 		GL_UNSIGNED_BYTE,
 		data);
-	texPointer = envMapData->getCubeFace(2); // 2
+	texPointer = envMapData->getCubeFace(2);
 	dataVector = texPointer->getTexelsPtr();
 	data = dataVector->data();
 	glTexSubImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
