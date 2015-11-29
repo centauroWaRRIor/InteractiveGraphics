@@ -29,6 +29,9 @@ class HWReflections :
 	// GL Handle for the environment cubemap texture
 	GLuint envMap; // TODO: initialize this one in the constructor
 	CubeMap *envMapData;
+	// even though we hardcoded  the vertices in the shader we still need
+	// a VAO so openGL let us draw
+	GLuint skybox_vao;
 
 	// TODO comment
 	unsigned int reflectorTMeshIndex;

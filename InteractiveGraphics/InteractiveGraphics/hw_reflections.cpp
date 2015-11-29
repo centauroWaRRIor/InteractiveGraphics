@@ -68,6 +68,7 @@ void HWReflections::loadShaders(void)
 	reflectionShader->createUniform("billboardTcs_2");
 
 	skyboxShader = new ShaderProgram(shaderList4);
+	skyboxShader->createUniform("view_matrix");
 }
 
 void HWReflections::loadTextures(void)
@@ -351,6 +352,11 @@ void HWReflections::draw()
 			return;
 		}
 
+		// even though we hardcoded  the vertices in the shader we still need
+		// a VAO so openGL let us draw
+		glGenVertexArrays(1, &skybox_vao);
+		glBindVertexArray(skybox_vao);
+
 		isGlewInit = true;
 	}
 
@@ -398,6 +404,16 @@ void HWReflections::draw()
 			cameraEye.getY(),
 			cameraEye.getZ());
 	}
+
+	// draw skybox first
+	glUseProgram(skyboxShader->getGLProgramHandle());
+	skyboxShader->uploadMatrixUniform("view_matrix", modelviewMatrix);
+	// even though we hardcoded  the vertices in the shader we still need
+	// a VAO so openGL let us draw
+	glBindVertexArray(skybox_vao);
+	glDisable(GL_DEPTH_TEST);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glEnable(GL_DEPTH_TEST);
 	
 	// draw reflector Tmesh through hardware using special shader 
 	glUseProgram(reflectionShader->getGLProgramHandle());

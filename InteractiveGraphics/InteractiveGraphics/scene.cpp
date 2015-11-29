@@ -1512,7 +1512,7 @@ void Scene::testA4DemoExtra(void)
 
 void Scene::testCubeMapFaces(void)
 {
-	CubeMap cubeMap("pngs\\uffizi_cross.png");
+	static CubeMap cubeMap("pngs\\uffizi_cross.png");
 	cleanForNewScene();
 	static unsigned int i = 0;
 	fb->loadFromTexture(*(cubeMap.getCubeFace(i % 6)));

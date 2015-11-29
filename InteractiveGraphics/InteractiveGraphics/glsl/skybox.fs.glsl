@@ -15,4 +15,5 @@ void main(void)
 	// of the cubemap that maps to the provided texture coordinate 
 	// in order to do the texture lookup here.
     color = texture(tex_cubemap, fs_in.tc);
+	//color = vec4(1.0, 1.0, 0.0, 1.0f);
 }
