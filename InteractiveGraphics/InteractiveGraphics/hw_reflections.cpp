@@ -1,5 +1,6 @@
 #include "hw_reflections.h"
 #include "hw_shaderprogram.h"
+#include "cubemap.h"
 #include "ppc.h"
 #include "v3.h"
 #include "scene.h" // used to get access to global scene singleton handle for camera dolly purposes
@@ -14,6 +15,7 @@ HWReflections::HWReflections(
 	fixedPipelineProgramNoTexture(nullptr),
 	fixedPipelineProgram(nullptr),
 	reflectionShader(nullptr),
+	envMapData(nullptr),
 	reflectorTMeshIndex(0)
 {
 }
@@ -62,9 +64,72 @@ void HWReflections::loadShaders(void)
 
 void HWReflections::loadTextures(void)
 {
+	// load the textures registered so far
 	HWFrameBuffer::loadTextures();
 
-	// The texture we're going to render to
+	// Set up the environment cubemap texture target
+	glGenTextures(1, &envMap);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, envMap);
+	Texture *texPointer = envMapData->getCubeFace(0);
+	unsigned int envTexWidth = texPointer->getTexWidth();
+	unsigned int envTexHeight = texPointer->getTexHeight();
+
+	glTexStorage2D(GL_TEXTURE_CUBE_MAP, 1, GL_RGBA8, envTexWidth, envTexHeight);
+	
+	vector<unsigned char> &dataVector = texPointer->getTexelsRef();
+	unsigned char * data = &dataVector[0];
+
+	// upload environment cube face data 
+	glTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 
+					0, 
+					0, 0, 
+					envTexWidth, envTexHeight, 
+					GL_RGBA, 
+					GL_UNSIGNED_BYTE, 
+					data);
+	glTexSubImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+		0,
+		0, 0,
+		envTexWidth, envTexHeight,
+		GL_RGBA,
+		GL_UNSIGNED_BYTE,
+		data);
+	glTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+		0,
+		0, 0,
+		envTexWidth, envTexHeight,
+		GL_RGBA,
+		GL_UNSIGNED_BYTE,
+		data);
+	glTexSubImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+		0,
+		0, 0,
+		envTexWidth, envTexHeight,
+		GL_RGBA,
+		GL_UNSIGNED_BYTE,
+		data);
+	glTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+		0,
+		0, 0,
+		envTexWidth, envTexHeight,
+		GL_RGBA,
+		GL_UNSIGNED_BYTE,
+		data);
+	glTexSubImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+		0,
+		0, 0,
+		envTexWidth, envTexHeight,
+		GL_RGBA,
+		GL_UNSIGNED_BYTE,
+		data);
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
+	// Set up render-to-texture texture targets
+
+	// The textures we're going to render to
 	glGenTextures(2, renderedTexture);
 
 	// "Bind" the newly created texture : all future texture functions will modify this texture
@@ -550,5 +615,13 @@ void HWReflections::mouseRightClickDragHandle(int event)
 		break;
 	default: // never used
 		break;
+	}
+}
+
+void HWReflections::registerCubeMap(CubeMap * const cubeMap)
+{
+	// only allowed to be done once at init
+	if (!isGlewInit) {
+		envMapData = cubeMap;
 	}
 }

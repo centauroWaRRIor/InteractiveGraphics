@@ -25,6 +25,10 @@ class HWReflections :
 	GLuint renderToTextureDepthbuffer;
 	GLenum renderToTextureDrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
 
+	// GL Handle for the environment cubemap texture
+	GLuint envMap; // TODO: initialize this one in the constructor
+	CubeMap *envMapData;
+
 	// TODO comment
 	unsigned int reflectorTMeshIndex;
 
@@ -52,4 +56,6 @@ public:
 	virtual void keyboardHandle(void) override;
 	virtual void mouseLeftClickDragHandle(int event) override;
 	virtual void mouseRightClickDragHandle(int event) override;
+
+	void registerCubeMap(CubeMap * const cubeMap);
 };
