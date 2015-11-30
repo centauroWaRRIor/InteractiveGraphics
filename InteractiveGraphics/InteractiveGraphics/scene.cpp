@@ -1883,9 +1883,8 @@ void Scene::testProgrPipelineHW(void)
 void Scene::a6Demo(void)
 {
 	// used for dolly camera setup
-	const float speedFactor = 0.01f;
+	const float speedFactor = 0.08f;
 	V3 lookAtPoint;
-	//static CubeMap cubeMap("pngs\\uffizi_cross_debug.png");
 	static CubeMap cubeMap("pngs\\uffizi_cross.png");
 
 	if (!isA6DemoInit) {
@@ -1902,10 +1901,18 @@ void Scene::a6Demo(void)
 		tms[1] = new TMesh();
 		tms[2] = new TMesh();
 
-		tms[0]->loadBin("geometry/teapot1K.bin");
+		// low res models
+		//tms[0]->loadBin("geometry/teapot1K.bin");
+		//tms[0]->disableTexCoords(); // they don't look good
+		//tms[1]->loadBin("geometry/happy4.bin");
+		//tms[2]->loadBin("geometry/happy4.bin");
+
+		// hd models
+		tms[0]->loadBin("geometry/teapot57K.bin");
 		tms[0]->disableTexCoords(); // they don't look good
-		tms[1]->loadBin("geometry/happy4.bin");
-		tms[2]->loadBin("geometry/happy4.bin");
+		tms[1]->loadBin("geometry/happy2.bin");
+		tms[2]->loadBin("geometry/happy2.bin");
+
 		// scale happy mesh to be same scale as teapots
 		AABB teapotAABB = tms[0]->getAABB();
 		tms[1]->setToFitAABB(teapotAABB);
