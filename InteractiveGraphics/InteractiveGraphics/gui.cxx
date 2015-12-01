@@ -156,6 +156,20 @@ void GUI::cb_TestProgPipeline(Fl_Menu_* o, void* v) {
   ((GUI*)(o->parent()->user_data()))->cb_TestProgPipeline_i(o,v);
 }
 
+void GUI::cb_A6Demo1_i(Fl_Menu_*, void*) {
+  A6Demo_cb();
+}
+void GUI::cb_A6Demo1(Fl_Menu_* o, void* v) {
+  ((GUI*)(o->parent()->user_data()))->cb_A6Demo1_i(o,v);
+}
+
+void GUI::cb_A6Demo2_i(Fl_Menu_*, void*) {
+  A6Demo2_cb();
+}
+void GUI::cb_A6Demo2(Fl_Menu_* o, void* v) {
+  ((GUI*)(o->parent()->user_data()))->cb_A6Demo2_i(o,v);
+}
+
 Fl_Menu_Item GUI::menu_Main[] = {
  {"SW Rendering", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
  {"A1", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
@@ -192,6 +206,8 @@ Fl_Menu_Item GUI::menu_Main[] = {
  {"A6", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
  {"Fixed Pipeline Demo", 0,  (Fl_Callback*)GUI::cb_TestFixedPipeline, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Progr Pipeline Demo", 0,  (Fl_Callback*)GUI::cb_TestProgPipeline, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"A6 Demo 1", 0,  (Fl_Callback*)GUI::cb_A6Demo1, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"A6 Demo 2", 0,  (Fl_Callback*)GUI::cb_A6Demo2, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
  {0,0,0,0,0,0,0,0,0},
  {0,0,0,0,0,0,0,0,0}
@@ -223,6 +239,8 @@ Fl_Menu_Item* GUI::A5Demo = GUI::menu_Main + 28;
 Fl_Menu_Item* GUI::A6SubMenu = GUI::menu_Main + 32;
 Fl_Menu_Item* GUI::TestFixedPipeline = GUI::menu_Main + 33;
 Fl_Menu_Item* GUI::TestProgPipeline = GUI::menu_Main + 34;
+Fl_Menu_Item* GUI::A6Demo1 = GUI::menu_Main + 35;
+Fl_Menu_Item* GUI::A6Demo2 = GUI::menu_Main + 36;
 
 void GUI::cb_SaveCameraButton_i(Fl_Button*, void*) {
   SaveCameraButton_cb();
@@ -1435,4 +1453,9 @@ void GUI::TestProgHW_cb() {
 void GUI::A6Demo_cb() {
   scene->regFuncForKbRedraw(Scenes::A6);
 scene->a6Demo();
+}
+
+void GUI::A6Demo2_cb() {
+  scene->regFuncForKbRedraw(Scenes::A6_2);
+scene->a6Demo2();
 }

@@ -98,6 +98,7 @@ Scene::Scene() :
 	this->isTestFixedPipelineInit = false;
 	this->isTestProgrPipelineInit = false;
 	this->isA6DemoInit = false;
+	this->isA6Demo2Init = false;
 }
 
 Scene::~Scene()
@@ -266,6 +267,7 @@ void Scene::cleanForNewScene(void)
 	this->isTestFixedPipelineInit = false;
 	this->isTestProgrPipelineInit = false;
 	this->isA6DemoInit = false;
+	this->isA6Demo2Init = false;
 }
 
 // function linked to the DBG GUI button for testing new features
@@ -1964,6 +1966,13 @@ void Scene::a6Demo(void)
 	return;
 }
 
+void Scene::a6Demo2(void)
+{
+	if (!isA6DemoInit) {
+		isA6Demo2Init = true;
+	}
+}
+
 void Scene::saveCamera(void) const
 {
 	string filename = retrieveTimeDate();
@@ -2021,11 +2030,14 @@ void Scene::currentSceneRedraw(void)
 	case Scenes::REFLECTEST:
 		this->testCubeMapReflection();
 		break;
+	case Scenes::REFRACTEST:
+		this->testCubeMapRefraction();
+		break;
 	case Scenes::A6:
 		this->a6Demo();
 		break;
-	case Scenes::REFRACTEST:
-		this->testCubeMapRefraction();
+	case Scenes::A6_2:
+		this->a6Demo2();
 		break;
 	case Scenes::A4:
 	case Scenes::A4EXTRA:

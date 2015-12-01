@@ -130,6 +130,16 @@ private:
   void cb_TestProgPipeline_i(Fl_Menu_*, void*);
   static void cb_TestProgPipeline(Fl_Menu_*, void*);
 public:
+  static Fl_Menu_Item *A6Demo1;
+private:
+  void cb_A6Demo1_i(Fl_Menu_*, void*);
+  static void cb_A6Demo1(Fl_Menu_*, void*);
+public:
+  static Fl_Menu_Item *A6Demo2;
+private:
+  void cb_A6Demo2_i(Fl_Menu_*, void*);
+  static void cb_A6Demo2(Fl_Menu_*, void*);
+public:
   Fl_Group *CameraFBSaveGroup;
   Fl_Button *SaveCameraButton;
 private:
@@ -204,5 +214,6 @@ public:
   void TestFixedHW_cb();
   void TestProgHW_cb();
   void A6Demo_cb();
+  void A6Demo2_cb();
 };
 #endif

@@ -163,6 +163,16 @@ class GUI {open
               callback {TestProgHW_cb()}
               xywh {0 0 30 20}
             }
+            MenuItem A6Demo1 {
+              label {A6 Demo 1}
+              callback {A6Demo_cb()} selected
+              xywh {0 0 30 20}
+            }
+            MenuItem A6Demo2 {
+              label {A6 Demo 2}
+              callback {A6Demo2_cb()}
+              xywh {0 0 30 20}
+            }
           }
         }
       }
@@ -317,7 +327,11 @@ scene->testCubeMapRefraction();} {}
   Function {A6Demo_cb()} {open
   } {
     code {scene->regFuncForKbRedraw(Scenes::A6);
-scene->a6Demo();} {selected
-    }
+scene->a6Demo();} {}
+  }
+  Function {A6Demo2_cb()} {open
+  } {
+    code {scene->regFuncForKbRedraw(Scenes::A6_2);
+scene->a6Demo2();} {}
   }
 } 

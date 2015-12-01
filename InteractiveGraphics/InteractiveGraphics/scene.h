@@ -29,7 +29,8 @@ enum class Scenes {
 	A4EXTRA,
 	REFLECTEST,
 	REFRACTEST,
-	A6};
+	A6,
+	A6_2};
 
 enum class DrawModes { 
 	DOTS, 
@@ -58,7 +59,7 @@ private:
 	TMesh **tms; // an array of pointers to TMesh objects
 	Texture **texObjects; // and array of pointers to Texture objects
 
-	// use for camera dolly with the mouse in REFLECTEST and A6
+	// use for camera dolly with the mouse in REFLECTEST and A6 Demos
 	int mouseDeltaX, mouseDeltaY, mouseDeltaZ;
 
 	Scenes currentScene; // used for keyboard callback to invokate the correct redraw
@@ -71,7 +72,7 @@ private:
 		isTexProjectTestInit, isA4DemoInit, isA4DemoExtraInit,
 		isTestCMReflectInit, isTestCMRefractInit,
 		isTestFixedPipelineInit, isTestProgrPipelineInit,
-		isA6DemoInit;
+		isA6DemoInit, isA6Demo2Init;
 	
 	static const int u0, v0; // initial window coordinates
 
@@ -122,6 +123,7 @@ public:
 	void testFixedPipelineHW(void);
 	void testProgrPipelineHW(void);
 	void a6Demo(void);
+	void a6Demo2(void);
 
 	void saveCamera(void) const;
 	void saveThisFramebuffer(void) const;
