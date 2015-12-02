@@ -1968,9 +1968,79 @@ void Scene::a6Demo(void)
 
 void Scene::a6Demo2(void)
 {
-	if (!isA6DemoInit) {
+	// used for dolly camera setup
+	const float speedFactor = 0.08f;
+	V3 lookAtPoint;
+	static CubeMap cubeMap("pngs\\stpeters_cross.png");
+
+	if (!isA6Demo2Init) {
+
+		cleanForNewScene();
+
+		// create progr pipeline HW framebuffer
+		reflectionshwFb = new HWReflections(u0, v0, K_W, K_H);
+		reflectionshwFb->label("Programmable Pipeline HW Framebuffer for A6");
+
+		unsigned int tmsN = 3;
+		unsigned int n;
+		tms[0] = new TMesh();
+		tms[1] = new TMesh();
+		tms[2] = new TMesh();
+
+		// hd models
+		tms[0]->loadBin("geometry/teapot57K.bin");
+		tms[0]->disableTexCoords(); // they don't look good
+		tms[1]->loadBin("geometry/happy2.bin");
+		tms[2]->loadBin("geometry/happy2.bin");
+
+		// scale happy mesh to be same scale as teapots
+		AABB teapotAABB = tms[0]->getAABB();
+		tms[1]->setToFitAABB(teapotAABB);
+		tms[2]->setToFitAABB(teapotAABB);
+		//tms[1]->translate(V3(0.0f, 0.0f, -80.0f)); // works
+		tms[1]->translate(V3(150.0f, 0.0f, 0.0f)); // works
+		tms[2]->translate(V3(-150.0f, 0.0f, 0.0f));
+		for (n = 0; n < tmsN; n++) {
+			reflectionshwFb->registerTMesh(tms[n]);
+		}
+
+		// load textures
+		unsigned int texObjectsN = 2;
+		texObjects[0] = new Texture("pngs\\bansky.png");
+		texObjects[1] = new Texture("pngs\\Macbeth_color_checker_pxr128.png");
+		for (n = 0; n < texObjectsN; n++) {
+			reflectionshwFb->registerTexture(texObjects[n]);
+		}
+
+		// the following operations are exclusive of derived class and so
+		// casting is needed here first
+		HWReflections *tempPointer = (HWReflections *)reflectionshwFb;
+		tempPointer->setReflectorTMesh(0);
+		// load cubemap
+		tempPointer->registerCubeMap(&cubeMap);
+
+		lookAtPoint = tms[0]->getCenter(); // teapot centroid
+		reflectionshwFb->registerPPC(ppc);
+
+		reflectionshwFb->show();
 		isA6Demo2Init = true;
 	}
+
+	// set up dolly camera
+	const V3 up(0.0f, 1.0f, 0.0f);
+	V3 viewDirection = ppc->getViewDir();
+	// rotate view direction
+	V3 rotVD = viewDirection;
+	rotVD.rotateThisVectorAboutDirection(V3(0.0f, 1.0f, 0.0f), mouseDeltaX * speedFactor);
+	rotVD.rotateThisVectorAboutDirection(V3(1.0f, 0.0f, 0.0f), mouseDeltaY * speedFactor);
+	// set up the look at cube camera (dolly camera setup)
+	ppc->positionRelativeToPoint(lookAtPoint, rotVD, up, 380.0f);
+	// roll needs to be done independently from cam dolly at the end
+	ppc->roll(-(mouseDeltaZ * speedFactor));
+
+	// hw rendering through opengl
+	reflectionshwFb->redraw();
+	return;
 }
 
 void Scene::saveCamera(void) const

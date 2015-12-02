@@ -12,8 +12,8 @@ class GUI {open
       xywh {656 472 264 437} type Double visible
     } {
       Fl_Button dbgButton {
-        label Debug
-        callback {DBG_cb()}
+        label {A6 Demo 1}
+        callback {A6Demo_cb()}
         xywh {15 40 225 40} selection_color 72
       }
       Fl_Menu_Bar {} {
@@ -165,7 +165,7 @@ class GUI {open
             }
             MenuItem A6Demo1 {
               label {A6 Demo 1}
-              callback {A6Demo_cb()} selected
+              callback {A6Demo_cb()}
               xywh {0 0 30 20}
             }
             MenuItem A6Demo2 {
@@ -223,8 +223,8 @@ class GUI {open
         }
       }
       Fl_Button A6Button {
-        label {A6 Demo}
-        callback {A6Demo_cb()}
+        label {A6 Demo 2}
+        callback {A6Demo2_cb()} selected
         xywh {15 92 225 40} selection_color 72
       }
     }

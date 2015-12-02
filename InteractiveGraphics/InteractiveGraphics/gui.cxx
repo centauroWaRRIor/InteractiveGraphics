@@ -3,7 +3,7 @@
 #include "gui.h"
 
 void GUI::cb_dbgButton_i(Fl_Button*, void*) {
-  DBG_cb();
+  A6Demo_cb();
 }
 void GUI::cb_dbgButton(Fl_Button* o, void* v) {
   ((GUI*)(o->parent()->user_data()))->cb_dbgButton_i(o,v);
@@ -1257,7 +1257,7 @@ void GUI::cb_TextureRadialButton(Fl_Round_Button* o, void* v) {
 }
 
 void GUI::cb_A6Button_i(Fl_Button*, void*) {
-  A6Demo_cb();
+  A6Demo2_cb();
 }
 void GUI::cb_A6Button(Fl_Button* o, void* v) {
   ((GUI*)(o->parent()->user_data()))->cb_A6Button_i(o,v);
@@ -1267,7 +1267,7 @@ void GUI::cb_A6Button(Fl_Button* o, void* v) {
 GUI::GUI() {
   { uiw = new Fl_Double_Window(264, 437, "GUI");
     uiw->user_data((void*)(this));
-    { dbgButton = new Fl_Button(15, 40, 225, 40, "Debug");
+    { dbgButton = new Fl_Button(15, 40, 225, 40, "A6 Demo 1");
       dbgButton->selection_color(FL_DARK_RED);
       dbgButton->callback((Fl_Callback*)cb_dbgButton);
     } // Fl_Button* dbgButton
@@ -1321,7 +1321,7 @@ GUI::GUI() {
       } // Fl_Round_Button* TextureRadialButton
       RenderingOptionsGroup->end();
     } // Fl_Group* RenderingOptionsGroup
-    { A6Button = new Fl_Button(15, 92, 225, 40, "A6 Demo");
+    { A6Button = new Fl_Button(15, 92, 225, 40, "A6 Demo 2");
       A6Button->selection_color(FL_DARK_RED);
       A6Button->callback((Fl_Callback*)cb_A6Button);
     } // Fl_Button* A6Button
