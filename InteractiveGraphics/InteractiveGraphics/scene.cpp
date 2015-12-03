@@ -1997,9 +1997,10 @@ void Scene::a6Demo2(void)
 		AABB teapotAABB = tms[0]->getAABB();
 		tms[1]->setToFitAABB(teapotAABB);
 		tms[2]->setToFitAABB(teapotAABB);
-		//tms[1]->translate(V3(0.0f, 0.0f, -80.0f)); // works
-		tms[1]->translate(V3(150.0f, 0.0f, 0.0f)); // works
-		tms[2]->translate(V3(-150.0f, 0.0f, 0.0f));
+		tms[1]->rotateAboutAxis(V3(0.0f, 0.0f, 0.0f), V3(0.0f, 1.0f, 0.0f), 220.0f);
+		tms[1]->translate(V3(30.0f, 0.0f, 130.0f));
+		tms[2]->rotateAboutAxis(V3(0.0f, 0.0f, 0.0f), V3(0.0f, 1.0f, 0.0f), 45.0f);
+		tms[2]->translate(V3(-30.0f, 0.0f, -100.0f));
 		for (n = 0; n < tmsN; n++) {
 			reflectionshwFb->registerTMesh(tms[n]);
 		}
